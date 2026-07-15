@@ -40,11 +40,13 @@ selections highlight matching field context with the selected event's raw CSV
 values. Shot selections project the recorded ball velocity to the target goal
 line so the first replay dashboard can inspect goal approach geometry, then add
 an explainable quality hint from distance, angle, forward speed, and the latest
-team pressure sample before the shot. The timeline supports Arrow, Home, and End
-keyboard navigation using the same selection state as the field and detail
-panels, with event-type filters for passes, shots, possession changes, and
-collisions plus team scope, player search, and compact per-team counts. The
-heatmap view can
+team pressure sample before the shot. The viewer also groups completed passes
+inside the same possession segment into pass-to-shot chains, showing build-up
+duration, total pass distance, and the chain path in the tactical and selected
+shot panels. The timeline supports Arrow, Home, and End keyboard navigation
+using the same selection state as the field and detail panels, with event-type
+filters for passes, shots, possession changes, and collisions plus team scope,
+player search, and compact per-team counts. The heatmap view can
 filter the same grid by team, entity type, and individual player, and it shows
 movement metrics plus possession-zone summaries beside the field grid.
 
@@ -207,6 +209,11 @@ the latest pressure sample for the shooting team at or before the shot tick into
 a 0-100 score labelled `Excellent`, `Promising`, `Difficult`, or `Low`. This is
 a dashboard hint, not a rules event.
 
+Pass-to-shot chains are currently replay-viewer analytics built from the compact
+timeline. A shot owns the completed passes for the same team since the previous
+possession change. This keeps the first version deterministic while giving the
+tactical pause prototype a readable build-up summary.
+
 ## Collision CSV Columns
 
 Collision files are named `collisions_*.csv`. They infer contact episodes from
@@ -246,6 +253,6 @@ later, but the replay export starts with deterministic engine geometry.
 
 ## 2.0 Use
 
-These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, shot-quality hints, collisions, pass-lane, match timeline, selected-event inspection, selected-shot review, player heatmap review, movement panels, and restart prototypes without changing Lua strategy scripts yet.
+These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, shot-quality hints, pass-to-shot chains, collisions, pass-lane, match timeline, selected-event inspection, selected-shot review, player heatmap review, movement panels, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add possession-sequence summaries for pass-to-shot chains.
+The next slice should draw pass-to-shot chain markers on the field overlay.

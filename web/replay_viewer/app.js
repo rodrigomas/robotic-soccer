@@ -182,6 +182,94 @@
 		};
 	}
 
+	function passParticipant(rowPrefix, item) {
+		var raw = {};
+		(item.raw || []).forEach(function(row) {
+			raw[row[0]] = row[1];
+		});
+		return {
+			team: raw[rowPrefix + "_team"],
+			number: asNumber(raw[rowPrefix + "_number"]),
+			name: raw[rowPrefix + "_name"]
+		};
+	}
+
+	function passSequenceLabel(passItems, shotItem) {
+		var parts = passItems.map(function(item) {
+			var from = passParticipant("from", item);
+			var to = passParticipant("to", item);
+			return "#" + from.number + " " + from.name + " to #" + to.number + " " + to.name;
+		});
+		parts.push("shot #" + shotItem.shot.shooterNumber + " " + shotItem.shot.shooterName);
+		return parts.join(" -> ");
+	}
+
+	function pluralize(count, singular, plural) {
+		return count === 1 ? singular : plural;
+	}
+
+	function annotatePossessionSequences(items) {
+		(items || []).forEach(function(item, index) {
+			if(item.type !== "shot") {
+				return;
+			}
+			var passes = [];
+			for(var cursor = index - 1; cursor >= 0; cursor--) {
+				var previous = items[cursor];
+				if(previous.type === "possession_change") {
+					break;
+				}
+				if(previous.type === "pass_completed" && previous.team === item.team) {
+					passes.unshift(previous);
+				}
+			}
+			if(passes.length === 0) {
+				return;
+			}
+			var totalDistance = passes.reduce(function(total, pass) {
+				return total + asNumber(pass.value);
+			}, 0);
+			item.shotSequence = {
+				id: "sequence-" + item.id,
+				team: item.team,
+				shotId: item.id,
+				passCount: passes.length,
+				duration: item.time - passes[0].time,
+				totalPassDistance: totalDistance,
+				firstTick: passes[0].tick,
+				lastTick: item.tick,
+				label: passSequenceLabel(passes, item),
+				passes: passes.map(function(pass) {
+					return {
+						id: pass.id,
+						tick: pass.tick,
+						time: pass.time,
+						detail: pass.detail,
+						distance: asNumber(pass.value)
+					};
+				})
+			};
+		});
+		return items || [];
+	}
+
+	function possessionSequenceRows(sequences) {
+		var rows = [
+			["Shot chains", String((sequences || []).length)]
+		];
+		if(!sequences || sequences.length === 0) {
+			rows.push(["Latest chain", "No pass-to-shot chain"]);
+			return rows;
+		}
+		var latest = sequences[sequences.length - 1];
+		rows.push(["Latest chain", latest.team + " " + latest.passCount + " " +
+			pluralize(latest.passCount, "pass", "passes")]);
+		rows.push(["Chain duration", formatNumber(latest.duration, 2) + "s"]);
+		rows.push(["Chain distance", formatNumber(latest.totalPassDistance, 2)]);
+		rows.push(["Chain path", latest.label]);
+		return rows;
+	}
+
 	function buildTimelineItems(derivedRows, shotRows, collisionRows, pressureRows) {
 		var items = [];
 		(derivedRows || []).forEach(function(row, index) {
@@ -294,12 +382,13 @@
 			});
 		});
 
-		return items.sort(function(a, b) {
+		var sortedItems = items.sort(function(a, b) {
 			if(a.time === b.time) {
 				return a.title.localeCompare(b.title);
 			}
 			return a.time - b.time;
 		});
+		return annotatePossessionSequences(sortedItems);
 	}
 
 	function selectedEventDetails(item) {
@@ -363,6 +452,13 @@
 						", score " + formatNumber(item.shotQuality.pressureScore, 2) :
 					"No pressure sample, score " + formatNumber(item.shotQuality.pressureScore, 2)
 			]);
+		}
+		if(item.shotSequence) {
+			rows.push(["Build-up", item.shotSequence.passCount + " " +
+				pluralize(item.shotSequence.passCount, "pass", "passes") + " in " +
+				formatNumber(item.shotSequence.duration, 2) + "s"]);
+			rows.push(["Pass chain", item.shotSequence.label]);
+			rows.push(["Chain distance", formatNumber(item.shotSequence.totalPassDistance, 2)]);
 		}
 		return rows;
 	}
@@ -842,6 +938,11 @@
 		var heatmap = buildHeatmap(heatmapRows || [], teams);
 		var movementMetrics = buildMovementMetrics(metricsRows || []);
 		var possessionZones = buildPossessionZones(snapshotRows || [], teams);
+		var possessionSequences = timeline.filter(function(item) {
+			return item.shotSequence;
+		}).map(function(item) {
+			return item.shotSequence;
+		});
 
 		return {
 			id: entry.id,
@@ -891,7 +992,7 @@
 				["Best target", "#" + bestTargetNumber],
 				["Best score", formatNumber(bestScore, 2)],
 				["Pass distance", formatNumber(bestDistance, 2)]
-			],
+			].concat(possessionSequenceRows(possessionSequences)),
 			passLane: {
 				label: "#" + bestTargetNumber + " score " + formatNumber(bestScore, 2),
 				targetNumber: bestTargetNumber,
@@ -933,6 +1034,7 @@
 				opponentZ: latestPressure ? asNumber(latestPressure.opponent_z) : 0
 			},
 			timeline: timeline,
+			possessionSequences: possessionSequences,
 			movementMetrics: movementMetrics,
 			possessionZones: possessionZones,
 			heatmap: heatmap
@@ -1755,6 +1857,8 @@
 		selectedShotOverlay: selectedShotOverlay,
 		buildShotQuality: buildShotQuality,
 		latestPressureForShot: latestPressureForShot,
+		annotatePossessionSequences: annotatePossessionSequences,
+		possessionSequenceRows: possessionSequenceRows,
 		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,

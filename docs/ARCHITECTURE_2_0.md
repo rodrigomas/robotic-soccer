@@ -135,7 +135,8 @@ lanes or pressure context, with ranked pass-lane and pressure details beside the
 field plus selected-shot geometry details and projected shot paths to the target
 goal line for shot timeline entries. Shot detail rows include the first
 explainable quality hint from distance, projected angle, forward speed, and
-pressure.
+pressure, and the tactical summary groups same-possession completed passes into
+pass-to-shot chains.
 Timeline selection highlights matching field context while exposing raw
 selected-event values. Timeline buttons support
 keyboard navigation, event-type filters, team filters, player search, and

@@ -59,6 +59,7 @@ const passCompleted = viewer.selectedTimelineItem(timeline, "pass_completed-10-0
 const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
 const selectedShotSummary = viewer.selectedShotDetails(selectedShot);
 const selectedShotOverlay = viewer.selectedShotOverlay(selectedShot);
+const selectedShotSequence = selectedShot.shotSequence;
 const nonShotSummary = viewer.selectedShotDetails(passCompleted);
 const nonShotOverlay = viewer.selectedShotOverlay(passCompleted);
 const shotEventType = selectedShotDetails.find(([key]) => key === "event_type");
@@ -240,7 +241,14 @@ const viewModel = viewer.buildReplayViewModel(entry,
 if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.scoreline !== "Botafogo 1 - 0 Flamengo" ||
    viewModel.metrics.length !== 4 ||
-   viewModel.tactical.length < 8 ||
+   viewModel.tactical.length !== 16 ||
+   viewModel.tactical[11][0] !== "Shot chains" ||
+   viewModel.tactical[11][1] !== "1" ||
+   viewModel.tactical[12][1] !== "Botafogo 1 pass" ||
+   viewModel.tactical[13][1] !== "1.00s" ||
+   viewModel.tactical[14][0] !== "Chain distance" ||
+   viewModel.tactical[14][1] !== "24.50" ||
+   viewModel.tactical[15][1] !== "#9 Striker to #11 Winger -> shot #9 Striker" ||
    viewModel.passLane.targetNumber !== 9 ||
    viewModel.passLane.options.length !== 2 ||
    viewModel.passLane.options[0].targetName !== "Striker" ||
@@ -333,7 +341,7 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShot.field.x !== -1 ||
    selectedShot.field.fromZ !== 18 ||
    selectedShotDetails.length < 18 ||
-   selectedShotSummary.length !== 14 ||
+   selectedShotSummary.length !== 17 ||
    selectedShotSummary[0][1] !== "#9 Striker" ||
    selectedShotSummary[2][1] !== "16.25" ||
    selectedShotSummary[3][1] !== "15.75" ||
@@ -347,10 +355,23 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShotSummary[11][1] !== "5.78 deg, score 71.11" ||
    selectedShotSummary[12][1] !== "15.75 fwd, score 87.50" ||
    selectedShotSummary[13][1] !== "#11 Winger 12.00 stable, score 75.00" ||
+   selectedShotSummary[14][1] !== "1 pass in 1.00s" ||
+   selectedShotSummary[15][1] !== "#9 Striker to #11 Winger -> shot #9 Striker" ||
+   selectedShotSummary[16][1] !== "24.50" ||
    selectedShot.shotPressure.carrierName !== "Winger" ||
    selectedShot.shotPressure.distance !== 12 ||
    selectedShot.shotQuality.score !== 68 ||
    selectedShot.shotQuality.label !== "Promising" ||
+   selectedShotSequence.passCount !== 1 ||
+   selectedShotSequence.duration !== 1 ||
+   selectedShotSequence.totalPassDistance !== 24.5 ||
+   selectedShotSequence.firstTick !== 10 ||
+   selectedShotSequence.lastTick !== 20 ||
+   selectedShotSequence.passes[0].id !== passCompleted.id ||
+   selectedShotSequence.passes[0].distance !== 24.5 ||
+   viewModel.possessionSequences.length !== 1 ||
+   viewModel.possessionSequences[0].shotId !== selectedShot.id ||
+   viewModel.possessionSequences[0].label !== "#9 Striker to #11 Winger -> shot #9 Striker" ||
    selectedShotOverlay.targetX !== 4.25 ||
    selectedShotOverlay.projectedTargetX !== 4.25 ||
    selectedShotOverlay.targetZ !== 60 ||
