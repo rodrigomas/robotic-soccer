@@ -395,6 +395,49 @@ namespace soccer {
 			glDisable(GL_BLEND);
 		}
 
+		void drawPlayerHeatmapOnTacticalField(const string &teamName,
+						      CPlayer *player,
+						      double centerX, double centerY,
+						      double fieldW, double fieldH)
+		{
+			if(!player) {
+				return;
+			}
+
+			int columns = Telemetry.getHeatmapColumns();
+			int rows = Telemetry.getHeatmapRows();
+			int maxSamples = Telemetry.getPlayerHeatmapMaxSamples(teamName, player->num);
+
+			if(columns <= 0 || rows <= 0 || maxSamples <= 0) {
+				return;
+			}
+
+			double cellW = fieldW / columns;
+			double cellH = fieldH / rows;
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			for(register int row = 0 ; row < rows ; row++ ) {
+				for(register int column = 0 ; column < columns ; column++ ) {
+					int samples = Telemetry.getPlayerHeatmapSamples(teamName, player->num, column, row);
+
+					if(samples <= 0) {
+						continue;
+					}
+
+					double strength = static_cast<double>(samples) / maxSamples;
+					double x = centerX - fieldW / 2.0 + column * cellW + cellW / 2.0;
+					double y = centerY - fieldH / 2.0 + row * cellH + cellH / 2.0;
+
+					glColor4f(0.20f,0.78f,1.0f,0.10f + 0.44f * strength);
+					drawRect2D(x, y, cellW, cellH);
+				}
+			}
+
+			glDisable(GL_BLEND);
+		}
+
 		void drawTacticalPauseOverlay(int w2, int h2)
 		{
 			double panelX = -w2 + 270;
@@ -469,6 +512,8 @@ namespace soccer {
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);
 			drawTeamHeatmapOnTacticalField(Team01Ball ? gdata->team1->name : gdata->team2->name,
 						       fieldX, fieldY, fieldW, fieldH);
+			drawPlayerHeatmapOnTacticalField(Team01Ball ? gdata->team1->name : gdata->team2->name,
+							 carrier, fieldX, fieldY, fieldW, fieldH);
 			glColor3f(0.8f,0.8f,0.8f);
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(fieldX - fieldW / 2.0, fieldY - fieldH / 2.0);

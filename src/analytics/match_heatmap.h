@@ -50,6 +50,11 @@ namespace soccer {
 				   int column,
 				   int row) const;
 		int getTeamMaxSamples(const std::string &teamName) const;
+		int getPlayerSamples(const std::string &teamName,
+				     int number,
+				     int column,
+				     int row) const;
+		int getPlayerMaxSamples(const std::string &teamName, int number) const;
 		bool writeCsv(const std::string &path) const;
 	};
 

@@ -64,6 +64,11 @@ namespace soccer {
 					  int column,
 					  int row) const;
 		int getTeamHeatmapMaxSamples(const std::string &teamName) const;
+		int getPlayerHeatmapSamples(const std::string &teamName,
+					    int number,
+					    int column,
+					    int row) const;
+		int getPlayerHeatmapMaxSamples(const std::string &teamName, int number) const;
 	};
 
 };

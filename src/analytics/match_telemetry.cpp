@@ -301,4 +301,18 @@ namespace soccer {
 		return heatmap.getTeamMaxSamples(teamName);
 	}
 
+	int MatchTelemetry::getPlayerHeatmapSamples(const std::string &teamName,
+						    int number,
+						    int column,
+						    int row) const
+	{
+		return heatmap.getPlayerSamples(teamName, number, column, row);
+	}
+
+	int MatchTelemetry::getPlayerHeatmapMaxSamples(const std::string &teamName,
+						       int number) const
+	{
+		return heatmap.getPlayerMaxSamples(teamName, number);
+	}
+
 };

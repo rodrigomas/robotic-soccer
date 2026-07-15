@@ -157,6 +157,44 @@ namespace soccer {
 		return best;
 	}
 
+	int MatchHeatmap::getPlayerSamples(const std::string &teamName,
+					   int number,
+					   int column,
+					   int row) const
+	{
+		if(column < 0 || column >= columns || row < 0 || row >= rows) {
+			return 0;
+		}
+
+		int index = row * columns + column;
+
+		for(std::vector<Series>::const_iterator it = series.begin(); it != series.end(); ++it) {
+			if(it->entityType == "player" &&
+			   it->teamName == teamName &&
+			   it->number == number) {
+				return it->cells[index];
+			}
+		}
+
+		return 0;
+	}
+
+	int MatchHeatmap::getPlayerMaxSamples(const std::string &teamName, int number) const
+	{
+		int best = 0;
+
+		for(int row = 0; row < rows; row++) {
+			for(int column = 0; column < columns; column++) {
+				int samples = getPlayerSamples(teamName, number, column, row);
+				if(samples > best) {
+					best = samples;
+				}
+			}
+		}
+
+		return best;
+	}
+
 	bool MatchHeatmap::writeCsv(const std::string &path) const
 	{
 		std::ofstream out(path.c_str());

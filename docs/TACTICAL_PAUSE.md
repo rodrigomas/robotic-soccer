@@ -10,7 +10,7 @@ Current overlay:
 - Ball position and current possession team.
 - A deterministic suggested pass lane.
 - Lane score, pass distance, goal distance, and opponent pressure.
-- A top-down mini field with the possession team's live heatmap, players, ball, and up to three ranked pass lanes.
+- A top-down mini field with the possession team's live heatmap, the carrier player's live heatmap, players, ball, and up to three ranked pass lanes.
 
 The pass suggestion lives in `src/analytics/tactical_advisor.*` and uses simple
 geometry for now:
