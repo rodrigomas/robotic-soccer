@@ -24,7 +24,7 @@ if(catalog.format !== "robotic-soccer-replay-catalog" ||
    !Array.isArray(catalog.replays) ||
    catalog.replays.length < 1 ||
    viewer.focusViews.join(",") !== "field,timeline,heatmap" ||
-   viewer.fieldLayers.join(",") !== "passLanes,pressure") {
+   viewer.fieldLayers.join(",") !== "passLanes,pressure,shotPaths") {
 	throw new Error("replay catalog shape was not recognized");
 }
 
@@ -58,7 +58,9 @@ const selectedShot = viewer.selectedTimelineItem(timeline, "shot-20-0");
 const passCompleted = viewer.selectedTimelineItem(timeline, "pass_completed-10-0");
 const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
 const selectedShotSummary = viewer.selectedShotDetails(selectedShot);
+const selectedShotOverlay = viewer.selectedShotOverlay(selectedShot);
 const nonShotSummary = viewer.selectedShotDetails(passCompleted);
+const nonShotOverlay = viewer.selectedShotOverlay(passCompleted);
 const shotEventType = selectedShotDetails.find(([key]) => key === "event_type");
 const shotSpeed = selectedShotDetails.find(([key]) => key === "shot_speed");
 const shotForwardSpeed = selectedShotDetails.find(([key]) => key === "forward_speed");
@@ -340,7 +342,15 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShotSummary[6][1] !== "-3.00, 18.00" ||
    selectedShotSummary[7][1] !== "-1.00, 18.00" ||
    selectedShotSummary[8][1] !== "2.00, 0.00, 16.00" ||
+   selectedShotOverlay.targetX !== 4.25 ||
+   selectedShotOverlay.projectedTargetX !== 4.25 ||
+   selectedShotOverlay.targetZ !== 60 ||
+   selectedShotOverlay.ballX !== -1 ||
+   selectedShotOverlay.ballZ !== 18 ||
+   selectedShotOverlay.label !== "Target goal 60" ||
+   viewer.formatNumber(selectedShotOverlay.pathDistance, 2) !== "42.33" ||
    nonShotSummary.length !== 0 ||
+   nonShotOverlay !== null ||
    shotEventType?.[1] !== "shot" ||
    shotSpeed?.[1] !== "16.25000" ||
    shotForwardSpeed?.[1] !== "15.75000" ||

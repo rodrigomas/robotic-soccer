@@ -34,13 +34,15 @@ file paths, parses the pass-lane and pressure CSV streams, merges derived
 events, shots, and collisions into a compact timeline, and lets the user switch
 focus between
 dashboard field overlays, timeline, and heatmap views. The field focus can
-toggle pass-lane and pressure layers independently, shows ranked pass-lane,
-pressure, and selected-shot detail rows, and timeline selections highlight
-matching field context with the selected event's raw CSV values. The timeline
-supports Arrow, Home, and End keyboard navigation using the same selection state
-as the field and detail panels, with event-type filters for passes, shots,
-possession changes, and collisions plus team scope, player search, and compact
-per-team counts. The heatmap view can
+toggle pass-lane, pressure, and selected-shot path layers independently, shows
+ranked pass-lane, pressure, and selected-shot detail rows, and timeline
+selections highlight matching field context with the selected event's raw CSV
+values. Shot selections project the recorded ball velocity to the target goal
+line so the first replay dashboard can inspect goal approach geometry. The
+timeline supports Arrow, Home, and End keyboard navigation using the same
+selection state as the field and detail panels, with event-type filters for
+passes, shots, possession changes, and collisions plus team scope, player
+search, and compact per-team counts. The heatmap view can
 filter the same grid by team, entity type, and individual player, and it shows
 movement metrics plus possession-zone summaries beside the field grid.
 
@@ -238,4 +240,4 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, selected-event inspection, selected-shot review, player heatmap review, movement panels, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add shot path overlays with target-goal context.
+The next slice should add shot quality hints from distance, angle, and pressure.

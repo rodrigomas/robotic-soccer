@@ -8,7 +8,9 @@
 	"use strict";
 
 	var FOCUS_VIEWS = ["field", "timeline", "heatmap"];
-	var FIELD_LAYERS = ["passLanes", "pressure"];
+	var FIELD_LAYERS = ["passLanes", "pressure", "shotPaths"];
+	var FIELD_MIN_X = -45;
+	var FIELD_MAX_X = 45;
 
 	function formatNumber(value, digits) {
 		if(!Number.isFinite(value)) {
@@ -261,6 +263,38 @@
 			["Ball pos", fieldPosition(item.shot.ballX, item.shot.ballZ)],
 			["Ball velocity", fieldVelocity(item.shot.ballVx, item.shot.ballVy, item.shot.ballVz)]
 		];
+	}
+
+	function clampNumber(value, minimum, maximum) {
+		return Math.max(minimum, Math.min(maximum, value));
+	}
+
+	function selectedShotOverlay(item) {
+		if(!item || item.type !== "shot" || !item.shot) {
+			return null;
+		}
+		var targetX = item.shot.ballX;
+		var targetZ = item.shot.targetGoalZ;
+		if(Number.isFinite(item.shot.ballVz) && Math.abs(item.shot.ballVz) > 0.0001) {
+			var travelTime = (targetZ - item.shot.ballZ) / item.shot.ballVz;
+			if(Number.isFinite(travelTime) && travelTime >= 0) {
+				targetX = item.shot.ballX + item.shot.ballVx * travelTime;
+			}
+		}
+		var clampedTargetX = clampNumber(targetX, FIELD_MIN_X, FIELD_MAX_X);
+		var dx = clampedTargetX - item.shot.ballX;
+		var dz = targetZ - item.shot.ballZ;
+		return {
+			shooterX: item.shot.shooterX,
+			shooterZ: item.shot.shooterZ,
+			ballX: item.shot.ballX,
+			ballZ: item.shot.ballZ,
+			targetX: clampedTargetX,
+			projectedTargetX: targetX,
+			targetZ: targetZ,
+			pathDistance: Math.sqrt((dx * dx) + (dz * dz)),
+			label: "Target goal " + formatNumber(targetZ, 0)
+		};
 	}
 
 	function timelineSearchText(item) {
@@ -1126,9 +1160,11 @@
 	function fieldLayerState(documentRef) {
 		var passLanes = documentRef.getElementById("toggle-pass-lanes");
 		var pressure = documentRef.getElementById("toggle-pressure");
+		var shotPaths = documentRef.getElementById("toggle-shot-paths");
 		return {
 			passLanes: !passLanes || passLanes.checked,
-			pressure: !pressure || pressure.checked
+			pressure: !pressure || pressure.checked,
+			shotPaths: !shotPaths || shotPaths.checked
 		};
 	}
 
@@ -1184,6 +1220,55 @@
 			cx: "270", cy: "180", r: "54", fill: "none",
 			stroke: "#f4f7ee", "stroke-width": "3", opacity: "0.8"
 		}));
+
+		var shotOverlay = activeLayers.shotPaths ? selectedShotOverlay(selectedEvent) : null;
+		if(shotOverlay) {
+			var defs = svgNode(documentRef, "defs", {});
+			var arrowMarker = svgNode(documentRef, "marker", {
+				id: "shot-path-arrow",
+				viewBox: "0 0 10 10",
+				refX: "8",
+				refY: "5",
+				markerWidth: "7",
+				markerHeight: "7",
+				orient: "auto-start-reverse"
+			});
+			arrowMarker.appendChild(svgNode(documentRef, "path", {
+				d: "M 0 0 L 10 5 L 0 10 z",
+				fill: "#f5d06d"
+			}));
+			defs.appendChild(arrowMarker);
+			svgEl.appendChild(defs);
+
+			var goalLeft = fieldPoint(FIELD_MIN_X, shotOverlay.targetZ);
+			var goalRight = fieldPoint(FIELD_MAX_X, shotOverlay.targetZ);
+			var ballPoint = fieldPoint(shotOverlay.ballX, shotOverlay.ballZ);
+			var targetPoint = fieldPoint(shotOverlay.targetX, shotOverlay.targetZ);
+			svgEl.appendChild(svgNode(documentRef, "line", {
+				x1: String(goalLeft.x), y1: String(goalLeft.y),
+				x2: String(goalRight.x), y2: String(goalRight.y),
+				stroke: "#f5d06d", "stroke-width": "5",
+				"stroke-dasharray": "12 8", opacity: "0.82"
+			}));
+			svgEl.appendChild(svgNode(documentRef, "line", {
+				x1: String(ballPoint.x), y1: String(ballPoint.y),
+				x2: String(targetPoint.x), y2: String(targetPoint.y),
+				stroke: "#f5d06d", "stroke-width": "6",
+				"stroke-linecap": "round",
+				"marker-end": "url(#shot-path-arrow)"
+			}));
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(targetPoint.x), cy: String(targetPoint.y), r: "15",
+				fill: "#fff5cf", stroke: "#172019", "stroke-width": "4"
+			}));
+			var shotLabel = svgNode(documentRef, "text", {
+				x: String(targetPoint.x), y: String(targetPoint.y + (shotOverlay.targetZ >= 0 ? 30 : -22)),
+				fill: "#172019", "font-size": "13",
+				"font-weight": "800", "text-anchor": "middle"
+			});
+			shotLabel.textContent = "shot path";
+			svgEl.appendChild(shotLabel);
+		}
 
 		if(activeLayers.pressure && viewModel.pressure.opponentNumber !== 0) {
 			var pressureCarrier = fieldPoint(viewModel.pressure.carrierX, viewModel.pressure.carrierZ);
@@ -1564,6 +1649,7 @@
 		timelineTeamCounts: timelineTeamCounts,
 		selectedEventDetails: selectedEventDetails,
 		selectedShotDetails: selectedShotDetails,
+		selectedShotOverlay: selectedShotOverlay,
 		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,
