@@ -95,29 +95,45 @@
 
 	function buildTimelineItems(derivedRows, shotRows) {
 		var items = [];
-		(derivedRows || []).forEach(function(row) {
+		(derivedRows || []).forEach(function(row, index) {
 			var type = row.event_type;
 			var fromLabel = row.from_name + " #" + row.from_number;
 			var toLabel = row.to_name + " #" + row.to_number;
 			items.push({
+				id: type + "-" + row.tick + "-" + index,
 				type: type,
+				tick: asNumber(row.tick),
 				time: asNumber(row.match_time),
 				title: eventTitle(type),
 				team: type === "possession_change" ? row.to_team : row.from_team,
 				detail: fromLabel + " to " + toLabel,
 				value: type === "pass_completed" ?
 					formatNumber(asNumber(row.pass_distance), 2) :
-					row.to_team
+					row.to_team,
+				field: {
+					x: asNumber(row.ball_x),
+					z: asNumber(row.ball_z),
+					label: type === "pass_completed" ? "pass" : "change"
+				}
 			});
 		});
-		(shotRows || []).forEach(function(row) {
+		(shotRows || []).forEach(function(row, index) {
 			items.push({
+				id: "shot-" + row.tick + "-" + index,
 				type: "shot",
+				tick: asNumber(row.tick),
 				time: asNumber(row.match_time),
 				title: "Shot",
 				team: row.team,
 				detail: row.shooter_name + " #" + row.shooter_number,
-				value: formatNumber(asNumber(row.shot_speed), 2)
+				value: formatNumber(asNumber(row.shot_speed), 2),
+				field: {
+					x: asNumber(row.ball_x),
+					z: asNumber(row.ball_z),
+					fromX: asNumber(row.shooter_x),
+					fromZ: asNumber(row.shooter_z),
+					label: "shot"
+				}
 			});
 		});
 
@@ -127,6 +143,15 @@
 			}
 			return a.time - b.time;
 		});
+	}
+
+	function selectedTimelineItem(items, selectedId) {
+		for(var i = 0; i < items.length; i++) {
+			if(items[i].id === selectedId) {
+				return items[i];
+			}
+		}
+		return items.length > 0 ? items[0] : null;
 	}
 
 	function heatmapColor(cell, teams) {
@@ -350,16 +375,27 @@
 		});
 	}
 
-	function renderTimeline(documentRef, timelineEl, items) {
+	function renderTimeline(documentRef, timelineEl, items, selectedId, onSelect) {
 		timelineEl.innerHTML = "";
 		items.forEach(function(item) {
 			var row = createEl(documentRef, "li", "timeline-item " + item.type, "");
-			row.appendChild(createEl(documentRef, "span", "timeline-time", formatNumber(item.time, 2) + "s"));
+			var button = createEl(documentRef, "button", "timeline-button", "");
+			button.type = "button";
+			button.setAttribute("data-event-id", item.id);
+			button.setAttribute("aria-pressed", item.id === selectedId ? "true" : "false");
+			if(item.id === selectedId) {
+				button.classList.add("active");
+			}
+			button.appendChild(createEl(documentRef, "span", "timeline-time", formatNumber(item.time, 2) + "s"));
 			var body = createEl(documentRef, "span", "timeline-body", "");
 			body.appendChild(createEl(documentRef, "strong", "", item.title));
 			body.appendChild(createEl(documentRef, "span", "", item.detail));
-			row.appendChild(body);
-			row.appendChild(createEl(documentRef, "span", "timeline-value", item.value));
+			button.appendChild(body);
+			button.appendChild(createEl(documentRef, "span", "timeline-value", item.value));
+			button.addEventListener("click", function() {
+				onSelect(item.id);
+			});
+			row.appendChild(button);
 			timelineEl.appendChild(row);
 		});
 	}
@@ -425,7 +461,7 @@
 		};
 	}
 
-	function renderField(documentRef, svgEl, viewModel, layers) {
+	function renderField(documentRef, svgEl, viewModel, layers, selectedEvent) {
 		var activeLayers = layers || fieldLayerState(documentRef);
 		svgEl.innerHTML = "";
 		svgEl.appendChild(svgNode(documentRef, "rect", {
@@ -507,9 +543,38 @@
 			label.textContent = String(best.targetNumber);
 			svgEl.appendChild(label);
 		}
+
+		if(selectedEvent && selectedEvent.field) {
+			var selectedPoint = fieldPoint(selectedEvent.field.x, selectedEvent.field.z);
+			if(selectedEvent.field.fromX !== undefined) {
+				var fromPoint = fieldPoint(selectedEvent.field.fromX, selectedEvent.field.fromZ);
+				svgEl.appendChild(svgNode(documentRef, "line", {
+					x1: String(fromPoint.x), y1: String(fromPoint.y),
+					x2: String(selectedPoint.x), y2: String(selectedPoint.y),
+					stroke: "#172019", "stroke-width": "4",
+					"stroke-linecap": "round", opacity: "0.85"
+				}));
+			}
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(selectedPoint.x), cy: String(selectedPoint.y), r: "23",
+				fill: "none", stroke: "#172019", "stroke-width": "5"
+			}));
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(selectedPoint.x), cy: String(selectedPoint.y), r: "13",
+				fill: "#f5d06d", stroke: "#ffffff", "stroke-width": "4"
+			}));
+			var marker = svgNode(documentRef, "text", {
+				x: String(selectedPoint.x), y: String(selectedPoint.y - 30),
+				fill: "#172019", "font-size": "14",
+				"font-weight": "800", "text-anchor": "middle"
+			});
+			marker.textContent = selectedEvent.title;
+			svgEl.appendChild(marker);
+		}
 	}
 
-	function renderReplay(documentRef, viewModel) {
+	function renderReplay(documentRef, viewModel, selectedEventId, onTimelineSelect) {
+		var selectedEvent = selectedTimelineItem(viewModel.timeline, selectedEventId);
 		documentRef.getElementById("run-id").textContent = viewModel.runId;
 		documentRef.getElementById("match-title").textContent = viewModel.title;
 		documentRef.getElementById("scoreline").textContent = viewModel.scoreline;
@@ -520,9 +585,17 @@
 			viewModel.heatmap.totalSamples + " samples, max " + viewModel.heatmap.maxSamples;
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
-		renderTimeline(documentRef, documentRef.getElementById("match-timeline"), viewModel.timeline);
+		renderTimeline(documentRef,
+			documentRef.getElementById("match-timeline"),
+			viewModel.timeline,
+			selectedEvent ? selectedEvent.id : "",
+			onTimelineSelect);
 		renderHeatmap(documentRef, documentRef.getElementById("heatmap-view"), viewModel.heatmap);
-		renderField(documentRef, documentRef.getElementById("field-view"), viewModel, fieldLayerState(documentRef));
+		renderField(documentRef,
+			documentRef.getElementById("field-view"),
+			viewModel,
+			fieldLayerState(documentRef),
+			selectedEvent);
 	}
 
 	function setFocusView(documentRef, view) {
@@ -552,7 +625,7 @@
 		setFocusView(documentRef, "field");
 	}
 
-	function initLayerControls(documentRef, getViewModel) {
+	function initLayerControls(documentRef, getViewModel, getSelectedEvent) {
 		var toggles = documentRef.querySelectorAll(".layer-toggle");
 		for(var i = 0; i < toggles.length; i++) {
 			toggles[i].addEventListener("change", function() {
@@ -561,7 +634,8 @@
 					renderField(documentRef,
 						documentRef.getElementById("field-view"),
 						viewModel,
-						fieldLayerState(documentRef));
+						fieldLayerState(documentRef),
+						getSelectedEvent());
 				}
 			});
 		}
@@ -591,7 +665,23 @@
 		var entries = catalog.replays;
 		var replayData = {};
 		var activeViewModel = null;
-		initLayerControls(documentRef, function() { return activeViewModel; });
+		var selectedEventId = "";
+		initLayerControls(documentRef,
+			function() { return activeViewModel; },
+			function() {
+				return activeViewModel ?
+					selectedTimelineItem(activeViewModel.timeline, selectedEventId) :
+					null;
+			});
+
+		function selectTimelineEvent(id) {
+			if(!activeViewModel) {
+				return;
+			}
+			selectedEventId = id;
+			setFocusView(documentRef, "field");
+			renderReplay(documentRef, activeViewModel, selectedEventId, selectTimelineEvent);
+		}
 
 		async function selectReplay(id) {
 			var entry = entries.find(function(item) { return item.id === id; });
@@ -627,8 +717,11 @@
 				data.shotRows,
 				data.heatmapRows);
 			activeViewModel = viewModel;
+			if(!selectedEventId && viewModel.timeline.length > 0) {
+				selectedEventId = viewModel.timeline[0].id;
+			}
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
-			renderReplay(documentRef, viewModel);
+			renderReplay(documentRef, viewModel, selectedEventId, selectTimelineEvent);
 		}
 
 		renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, "", selectReplay);
@@ -660,6 +753,7 @@
 		formatNumber: formatNumber,
 		buildHeatmap: buildHeatmap,
 		buildTimelineItems: buildTimelineItems,
+		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,
 		joinPath: joinPath,
 		latestPassLaneOptions: latestPassLaneOptions,

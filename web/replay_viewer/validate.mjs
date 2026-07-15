@@ -48,6 +48,7 @@ const shotText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.shots)));
 const shotRows = viewer.parseCsv(shotText);
 const timeline = viewer.buildTimelineItems(derivedRows, shotRows);
+const selectedShot = viewer.selectedTimelineItem(timeline, "shot-20-0");
 const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
@@ -76,6 +77,9 @@ if(viewModel.runId !== "basic_match_fixture" ||
    timeline[1].type !== "shot" ||
    timeline[2].type !== "possession_change" ||
    viewModel.timeline[1].value !== "16.25" ||
+   selectedShot.type !== "shot" ||
+   selectedShot.field.x !== -1 ||
+   selectedShot.field.fromZ !== 18 ||
    heatmap.cells.length !== 4 ||
    heatmap.maxSamples !== 2 ||
    viewModel.heatmap.totalSamples !== 6) {

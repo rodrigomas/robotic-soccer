@@ -350,13 +350,30 @@ h3 {
 }
 
 .timeline-item {
+  min-height: 76px;
+  border-right: 1px solid var(--line);
+}
+
+.timeline-button {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px;
+  width: 100%;
   min-height: 76px;
   padding: 14px 16px;
-  border-right: 1px solid var(--line);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.timeline-button:hover,
+.timeline-button:focus-visible,
+.timeline-button.active {
+  background: #fffaf0;
+  outline: none;
 }
 
 .timeline-item:last-child {
