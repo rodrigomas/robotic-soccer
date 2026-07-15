@@ -1,5 +1,6 @@
 #include "match_telemetry.h"
 
+#include "analytics/replay_manifest.h"
 #include "engine/core/deterministic_random.h"
 
 #include <cctype>
@@ -70,43 +71,6 @@ namespace soccer {
 		return result;
 	}
 
-	std::string MatchTelemetry::json(const std::string &value)
-	{
-		std::string result = "\"";
-
-		for(std::string::const_iterator it = value.begin(); it != value.end(); ++it) {
-			switch(*it) {
-				case '"':
-					result += "\\\"";
-					break;
-				case '\\':
-					result += "\\\\";
-					break;
-				case '\b':
-					result += "\\b";
-					break;
-				case '\f':
-					result += "\\f";
-					break;
-				case '\n':
-					result += "\\n";
-					break;
-				case '\r':
-					result += "\\r";
-					break;
-				case '\t':
-					result += "\\t";
-					break;
-				default:
-					result += *it;
-					break;
-			}
-		}
-
-		result += "\"";
-		return result;
-	}
-
 	bool MatchTelemetry::writeMetadata(const std::string &stamp)
 	{
 		std::ofstream metadataOut(metadataPath.c_str());
@@ -134,33 +98,20 @@ namespace soccer {
 
 	bool MatchTelemetry::writeReplayManifest(const std::string &stamp)
 	{
-		std::ofstream manifestOut(manifestPath.c_str());
+		ReplayManifest manifest;
+		manifest.runId = runId;
+		manifest.createdAt = stamp;
+		manifest.randomSeed = getDeterministicRandomSeed();
+		manifest.team01Name = team01Name;
+		manifest.team02Name = team02Name;
+		manifest.sampleStride = sampleStride;
+		manifest.metadataPath = metadataPath;
+		manifest.snapshotsPath = snapshotsPath;
+		manifest.eventsPath = eventsPath;
+		manifest.heatmapPath = heatmapPath;
+		manifest.metricsPath = metricsPath;
 
-		if(!manifestOut.is_open()) {
-			return false;
-		}
-
-		manifestOut << "{\n";
-		manifestOut << "  \"format\": \"robotic-soccer-replay-manifest\",\n";
-		manifestOut << "  \"format_version\": 1,\n";
-		manifestOut << "  \"run_id\": " << json(runId) << ",\n";
-		manifestOut << "  \"created_at\": " << json(stamp) << ",\n";
-		manifestOut << "  \"random_seed\": " << getDeterministicRandomSeed() << ",\n";
-		manifestOut << "  \"teams\": [\n";
-		manifestOut << "    {\"slot\": \"team01\", \"name\": " << json(team01Name) << "},\n";
-		manifestOut << "    {\"slot\": \"team02\", \"name\": " << json(team02Name) << "}\n";
-		manifestOut << "  ],\n";
-		manifestOut << "  \"sample_stride\": " << sampleStride << ",\n";
-		manifestOut << "  \"files\": {\n";
-		manifestOut << "    \"metadata\": " << json(metadataPath) << ",\n";
-		manifestOut << "    \"snapshots\": " << json(snapshotsPath) << ",\n";
-		manifestOut << "    \"events\": " << json(eventsPath) << ",\n";
-		manifestOut << "    \"heatmap\": " << json(heatmapPath) << ",\n";
-		manifestOut << "    \"metrics\": " << json(metricsPath) << "\n";
-		manifestOut << "  }\n";
-		manifestOut << "}\n";
-
-		return true;
+		return manifest.write(manifestPath);
 	}
 
 	bool MatchTelemetry::begin(const std::string &team01,

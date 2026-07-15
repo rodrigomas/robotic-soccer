@@ -33,7 +33,6 @@ namespace soccer {
 
 		static std::string csv(const std::string &value);
 		static std::string fileSafe(const std::string &value);
-		static std::string json(const std::string &value);
 		bool writeMetadata(const std::string &stamp);
 		bool writeReplayManifest(const std::string &stamp);
 		void writeEntity(double matchTime, const std::string &entityType,

@@ -1,4 +1,5 @@
 #include "analytics/match_telemetry.h"
+#include "analytics/replay_manifest.h"
 #include "engine/core/deterministic_random.h"
 
 #include <cstdio>
@@ -7,6 +8,7 @@
 #include <string>
 
 using soccer::MatchTelemetry;
+using soccer::ReplayManifest;
 using soccer::seedDeterministicRandom;
 
 static int fail(const char *message)
@@ -71,6 +73,28 @@ int main(void)
 
 	if(!fileContains(telemetry.getMetadataPath(), "manifest_path,")) {
 		return fail("metadata did not include manifest path");
+	}
+
+	ReplayManifest manifest;
+	if(!ReplayManifest::load(telemetry.getManifestPath(), &manifest)) {
+		return fail("manifest loader could not read generated manifest");
+	}
+
+	if(manifest.runId != telemetry.getRunId()) {
+		return fail("manifest run id did not match telemetry run id");
+	}
+
+	if(manifest.randomSeed != 4242) {
+		return fail("manifest loader did not read deterministic seed");
+	}
+
+	if(manifest.team01Name != "Test Team A" ||
+	   manifest.team02Name != "Test Team B") {
+		return fail("manifest loader did not read teams");
+	}
+
+	if(manifest.sampleStride != 3) {
+		return fail("manifest loader did not read sample stride");
 	}
 
 	telemetry.finish();

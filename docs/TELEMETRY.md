@@ -13,6 +13,7 @@ produced it.
 
 The JSON manifest is the preferred replay entry point for future tooling because
 it keeps the run metadata and file bundle in one structured document.
+The engine reader/writer for this file lives in `src/analytics/replay_manifest.*`.
 
 ## Metadata CSV Keys
 
