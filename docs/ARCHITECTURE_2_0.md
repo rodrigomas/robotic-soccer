@@ -53,6 +53,11 @@ The 2.0 loop should be deterministic and replayable:
 
 Variable frame rendering is fine, but simulation should not depend on frame rate.
 
+Current bridge: `src/engine/core/fixed_timestep.*` now provides the first
+engine-owned fixed timestep accumulator, and the revived match scene consumes
+one deterministic simulation step from it when GLUT idle has accumulated enough
+real time.
+
 ## Lua Strategy API
 
 Lua remains a first-class customization layer. The engine should expose stable, versioned APIs:

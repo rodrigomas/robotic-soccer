@@ -28,6 +28,7 @@
 #include "ai/lua_strategy_profile.h"
 #include "analytics/match_telemetry.h"
 #include "analytics/tactical_advisor.h"
+#include "engine/core/fixed_timestep.h"
 
 using std::string;
 using std::ostringstream;
@@ -120,6 +121,7 @@ namespace soccer {
 
 		MatchTelemetry Telemetry;
 		TacticalAdvisor Advisor;
+		FixedTimestep SimulationStep;
 
 	public:
 
@@ -1076,6 +1078,16 @@ namespace soccer {
 
 			if ( !Paused && !End ) {
 
+				start = clock();
+				double frameElapsed = ((double) (start - end )) / CLOCKS_PER_SEC;
+				end = start;
+
+				if( !SimulationStep.beginFrame(frameElapsed) ) {
+					return;
+				}
+
+				elapsed = SimulationStep.consumeStep();
+
 				double oldZpos = Ball.pos.z;
 				double oldXpos = Ball.pos.x;
 
@@ -1083,10 +1095,6 @@ namespace soccer {
 				bool Test = true;
 
 				CVector3D cameraVel = CurrCamera->getPos();
-
-				start = clock();
-
-				elapsed = ((double) (start - end )) / CLOCKS_PER_SEC;
 
 				if( !WaitForKick ) {
 					ClockSec = ClockSec + elapsed * 9.0 ;
@@ -1102,10 +1110,6 @@ namespace soccer {
 						Team02->Posse += elapsed / 6.0;
 					}
 				}
-
-				end = start;
-
-				elapsed = fabs(elapsed);
 
 				// Animação
 				for( register int i = 0 ; i < gdata->team1->nplayers ; i++ ) {
@@ -2030,6 +2034,7 @@ namespace soccer {
 			CurrPlayer02 = Team02Players[CurrPlayerIndex1];
 
 			start = end = clock();
+			SimulationStep.reset();
 
 			ClockMin = 0;
 			ClockSec = 0;
