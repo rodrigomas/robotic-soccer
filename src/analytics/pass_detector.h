@@ -32,6 +32,21 @@ namespace soccer {
 		CVector3D ballPos;
 	} PassDetectorEvent;
 
+	typedef struct {
+		int totalEvents;
+		int completedPasses;
+		int possessionChanges;
+		double longestPassDistance;
+		std::string longestPassTeam;
+		int longestPassFromNumber;
+		int longestPassToNumber;
+		std::string lastEventType;
+		std::string lastFromTeam;
+		int lastFromNumber;
+		std::string lastToTeam;
+		int lastToNumber;
+	} PassDetectorSummary;
+
 	class PassDetector {
 
 		bool hasPrevious;
@@ -46,6 +61,7 @@ namespace soccer {
 		void reset(void);
 		bool record(const PassDetectorSample &sample);
 		const std::vector<PassDetectorEvent> &getEvents(void) const;
+		PassDetectorSummary getSummary(void) const;
 		bool writeCsv(const std::string &path) const;
 	};
 

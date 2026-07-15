@@ -9,7 +9,7 @@ Current overlay:
 - Fouls, corners, and throw-ins.
 - Ball position and current possession team.
 - Fixed timestep step, accumulator, and interpolation alpha.
-- Replay seed, derived event count, and manifest filename.
+- Completed passes, possession turns, longest inferred pass, replay seed, derived event count, and manifest filename.
 - A deterministic suggested pass lane.
 - Lane score, pass distance, goal distance, and opponent pressure.
 - A top-down mini field with the possession team's live heatmap, the carrier player's live heatmap, players, ball, and up to three ranked pass lanes.

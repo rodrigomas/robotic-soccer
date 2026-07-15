@@ -73,6 +73,10 @@ sampled positions rather than explicit rules. The first detector infers
 `pass_completed` when the nearest carrier changes within the possession team,
 and `possession_change` when the possession team changes.
 
+The same detector also exposes an in-engine summary for tactical pause and
+future replay dashboards: total derived events, completed passes, possession
+changes, the longest inferred pass, and the latest inferred event.
+
 - `tick`: scene update tick seen by the telemetry recorder.
 - `match_time`: in-game seconds from kickoff.
 - `event_type`: `pass_completed` or `possession_change`.

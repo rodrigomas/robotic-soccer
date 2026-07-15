@@ -401,6 +401,11 @@ namespace soccer {
 		return static_cast<int>(passDetector.getEvents().size());
 	}
 
+	PassDetectorSummary MatchTelemetry::getDerivedEventSummary(void) const
+	{
+		return passDetector.getSummary();
+	}
+
 	int MatchTelemetry::getHeatmapColumns(void) const
 	{
 		return heatmap.getColumns();

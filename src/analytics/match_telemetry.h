@@ -74,6 +74,7 @@ namespace soccer {
 		const std::string &getHeatmapPath(void) const;
 		const std::string &getMetricsPath(void) const;
 		int getDerivedEventCount(void) const;
+		PassDetectorSummary getDerivedEventSummary(void) const;
 		int getHeatmapColumns(void) const;
 		int getHeatmapRows(void) const;
 		int getTeamHeatmapSamples(const std::string &teamName,

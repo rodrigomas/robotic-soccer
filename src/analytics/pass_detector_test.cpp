@@ -14,6 +14,7 @@
 
 using soccer::PassDetector;
 using soccer::PassDetectorSample;
+using soccer::PassDetectorSummary;
 using soccer::CVector3D;
 
 static int fail(const char *message)
@@ -85,6 +86,26 @@ int main(void)
 
 	if(detector.getEvents().size() != 2) {
 		return fail("unexpected event count");
+	}
+
+	PassDetectorSummary summary = detector.getSummary();
+	if(summary.totalEvents != 2 ||
+	   summary.completedPasses != 1 ||
+	   summary.possessionChanges != 1) {
+		return fail("summary counts did not match detected events");
+	}
+
+	if(summary.longestPassDistance < 10.9 ||
+	   summary.longestPassDistance > 11.1 ||
+	   summary.longestPassFromNumber != 7 ||
+	   summary.longestPassToNumber != 9) {
+		return fail("summary longest pass did not match first pass");
+	}
+
+	if(summary.lastEventType != "possession_change" ||
+	   summary.lastFromNumber != 9 ||
+	   summary.lastToNumber != 3) {
+		return fail("summary last event did not match final detector event");
 	}
 
 	if(detector.getEvents()[0].eventType != "pass_completed") {

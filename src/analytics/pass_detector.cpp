@@ -82,6 +82,46 @@ namespace soccer {
 		return events;
 	}
 
+	PassDetectorSummary PassDetector::getSummary(void) const
+	{
+		PassDetectorSummary summary;
+		summary.totalEvents = static_cast<int>(events.size());
+		summary.completedPasses = 0;
+		summary.possessionChanges = 0;
+		summary.longestPassDistance = 0.0;
+		summary.longestPassTeam = "";
+		summary.longestPassFromNumber = 0;
+		summary.longestPassToNumber = 0;
+		summary.lastEventType = "";
+		summary.lastFromTeam = "";
+		summary.lastFromNumber = 0;
+		summary.lastToTeam = "";
+		summary.lastToNumber = 0;
+
+		for(std::vector<PassDetectorEvent>::const_iterator it = events.begin();
+		    it != events.end(); ++it) {
+			if(it->eventType == "pass_completed") {
+				summary.completedPasses++;
+				if(it->passDistance > summary.longestPassDistance) {
+					summary.longestPassDistance = it->passDistance;
+					summary.longestPassTeam = it->fromTeam;
+					summary.longestPassFromNumber = it->fromNumber;
+					summary.longestPassToNumber = it->toNumber;
+				}
+			} else if(it->eventType == "possession_change") {
+				summary.possessionChanges++;
+			}
+
+			summary.lastEventType = it->eventType;
+			summary.lastFromTeam = it->fromTeam;
+			summary.lastFromNumber = it->fromNumber;
+			summary.lastToTeam = it->toTeam;
+			summary.lastToNumber = it->toNumber;
+		}
+
+		return summary;
+	}
+
 	bool PassDetector::writeCsv(const std::string &path) const
 	{
 		std::ofstream out(path.c_str());

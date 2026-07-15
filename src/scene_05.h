@@ -528,15 +528,22 @@ namespace soccer {
 				SimulationStep.getAlpha());
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 144, output);
 
+			PassDetectorSummary eventSummary = Telemetry.getDerivedEventSummary();
+			sprintf(output,"Passes %d  Turns %d  Long %.1f",
+				eventSummary.completedPasses,
+				eventSummary.possessionChanges,
+				eventSummary.longestPassDistance);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 164, output);
+
 			string replayFile = telemetryDisplayName(Telemetry.getManifestPath());
-			if(replayFile.length() > 32) {
-				replayFile = replayFile.substr(0, 29) + "...";
+			if(replayFile.length() > 26) {
+				replayFile = replayFile.substr(0, 23) + "...";
 			}
 			sprintf(output,"Seed %u  Derived %d  Replay %s",
 				getDeterministicRandomSeed(),
-				Telemetry.getDerivedEventCount(),
+				eventSummary.totalEvents,
 				replayFile.c_str());
-			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 164, output);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 184, output);
 
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);
