@@ -1,0 +1,5 @@
+entity_type,team,number,name,samples,distance,average_speed,max_speed
+ball,,0,Ball,2,9.48683,18.97367,18.97367
+player,Botafogo,9,Striker,1,0.00000,4.12311,4.12311
+player,Botafogo,11,Winger,1,0.00000,3.60555,3.60555
+player,Flamengo,5,Marker,2,4.24264,1.00000,1.00000

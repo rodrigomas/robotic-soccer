@@ -1,0 +1,48 @@
+{
+  "format": "robotic-soccer-match-summary",
+  "format_version": 1,
+  "run_id": "basic_match_fixture",
+  "random_seed": 20260715,
+  "teams": {
+    "team01": "Botafogo",
+    "team02": "Flamengo"
+  },
+  "samples": 6,
+  "ticks": 30,
+  "last_match_time": 3.000,
+  "passes": {
+    "derived_events": 2,
+    "completed": 1,
+    "possession_changes": 1,
+    "longest_distance": 24.50000
+  },
+  "pressure": {
+    "samples": 3,
+    "high_pressure_samples": 1,
+    "average_distance": 9.16667,
+    "min_distance": 5.50000,
+    "last_distance": 12.00000
+  },
+  "shots": {
+    "total": 1,
+    "team01": 1,
+    "team02": 0,
+    "last_team": "Botafogo",
+    "last_shooter_number": 9,
+    "last_speed": 16.25000
+  },
+  "collisions": {
+    "total": 2,
+    "player_player": 1,
+    "player_ball": 1,
+    "last_relative_speed": 6.75000
+  },
+  "pass_lanes": {
+    "samples": 2,
+    "options": 4,
+    "last_option_count": 2,
+    "last_best_target_number": 11,
+    "last_best_score": 13.50000,
+    "last_best_pass_distance": 18.00000
+  }
+}

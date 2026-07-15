@@ -1,0 +1,4 @@
+tick,match_time,possession_team,carrier_number,carrier_name,opponent_team,opponent_number,opponent_name,pressure_distance,high_pressure,carrier_x,carrier_z,opponent_x,opponent_z
+5,0.500,Botafogo,9,Striker,Flamengo,4,Defender,5.50000,1,-8,-18,-5,-10
+10,1.000,Botafogo,11,Winger,Flamengo,5,Marker,10.00000,0,10,-2,14,1
+15,1.500,Botafogo,11,Winger,Flamengo,5,Marker,12.00000,0,12,1,18,4

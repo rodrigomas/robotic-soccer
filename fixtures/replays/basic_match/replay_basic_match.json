@@ -1,0 +1,25 @@
+{
+  "format": "robotic-soccer-replay-manifest",
+  "format_version": 1,
+  "run_id": "basic_match_fixture",
+  "created_at": "fixture",
+  "random_seed": 20260715,
+  "teams": [
+    {"slot": "team01", "name": "Botafogo"},
+    {"slot": "team02", "name": "Flamengo"}
+  ],
+  "sample_stride": 5,
+  "files": {
+    "metadata": "metadata_basic_match.csv",
+    "snapshots": "match_basic_match.csv",
+    "events": "events_basic_match.csv",
+    "derived_events": "derived_events_basic_match.csv",
+    "heatmap": "heatmap_basic_match.csv",
+    "metrics": "metrics_basic_match.csv",
+    "pressure": "pressure_basic_match.csv",
+    "shots": "shots_basic_match.csv",
+    "collisions": "collisions_basic_match.csv",
+    "pass_lanes": "pass_lanes_basic_match.csv",
+    "summary": "summary_basic_match.json"
+  }
+}

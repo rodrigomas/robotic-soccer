@@ -1,0 +1,3 @@
+tick,match_time,event_type,team,number,name,x,y,z,team_in_possession,detail
+0,0.000,match_start,,,,0,0,0,Botafogo,kickoff
+30,3.000,throw_in,Flamengo,5,Marker,45,0,12,Flamengo,restart_to_team2

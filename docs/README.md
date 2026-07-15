@@ -55,6 +55,8 @@ option with the current Strategy API fields.
 
 After a telemetry capture, `build/<platform>/tools/replay_report --text
 config/telemetry/replay_<run>.json` prints a compact command-line match report.
+The tracked fixture at `fixtures/replays/basic_match/replay_basic_match.json`
+is used by `make smoke` to validate the report tool without opening the game.
 
 To force deterministic gameplay randomness for debugging:
 

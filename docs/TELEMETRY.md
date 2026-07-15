@@ -18,6 +18,11 @@ The first report helper is `build/<platform>/tools/replay_report`; pass it a
 `replay_*.json` manifest and it prints the compact summary JSON. Use
 `--text` for a human-readable match overview.
 
+Tracked sample replays live in `fixtures/replays/`. They are intentionally
+small, stable bundles for command-line tools, future browser dashboards, and
+documentation screenshots. Runtime telemetry remains ignored under
+`config/telemetry/`.
+
 ## Metadata CSV Keys
 
 - `format_version`: metadata schema version.
@@ -208,5 +213,6 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should start separating native tools from smoke-test binaries and
-add a replay fixture that can be used by the future browser dashboard.
+The next slice should add a small browser-facing replay index or JSON fixture
+catalog so the web dashboard can discover sample matches without hard-coded
+paths.

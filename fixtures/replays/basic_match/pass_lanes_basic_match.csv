@@ -1,0 +1,5 @@
+tick,match_time,possession_team,carrier_number,carrier_name,rank,target_number,target_name,score,pass_distance,target_pressure,target_goal_distance,forward_progress,carrier_x,carrier_z,target_x,target_z,ball_x,ball_z
+10,1.000,Botafogo,9,Striker,1,11,Winger,12.50000,24.50000,10.00000,62.00000,16.00000,-8,-18,10,-2,3,-4
+10,1.000,Botafogo,9,Striker,2,7,Midfielder,8.25000,15.00000,6.00000,70.00000,8.00000,-8,-18,0,-10,3,-4
+15,1.500,Botafogo,11,Winger,1,9,Striker,13.50000,18.00000,12.00000,42.00000,10.00000,10,-2,-3,8,12,1
+15,1.500,Botafogo,11,Winger,2,7,Midfielder,9.75000,12.00000,8.00000,50.00000,4.00000,10,-2,2,0,12,1

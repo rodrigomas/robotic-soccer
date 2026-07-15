@@ -1,0 +1,2 @@
+tick,match_time,team,shooter_number,shooter_name,shot_speed,forward_speed,goal_distance,target_goal_z,shooter_x,shooter_z,ball_x,ball_y,ball_z,ball_vx,ball_vy,ball_vz
+20,2.000,Botafogo,9,Striker,16.25000,15.75000,42.00000,60,-3,18,-1,2,18,2,0,16

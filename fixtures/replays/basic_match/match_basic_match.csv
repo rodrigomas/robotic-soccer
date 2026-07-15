@@ -1,0 +1,7 @@
+sample,tick,match_time,entity_type,team,number,name,x,y,z,vx,vy,vz,team_in_possession
+0,0,0.000,ball,,0,Ball,0,2,0,0,0,0,Botafogo
+0,0,0.000,player,Botafogo,9,Striker,-8,0,-18,1,0,4,Botafogo
+0,0,0.000,player,Flamengo,4,Defender,-5,0,-10,0,0,-1,Botafogo
+1,5,0.500,ball,,0,Ball,-3,2,-9,-6,0,18,Botafogo
+1,5,0.500,player,Botafogo,11,Winger,10,0,-2,2,0,3,Botafogo
+1,5,0.500,player,Flamengo,5,Marker,14,0,1,-1,0,0,Botafogo

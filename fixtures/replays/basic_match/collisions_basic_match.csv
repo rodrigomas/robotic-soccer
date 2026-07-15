@@ -1,0 +1,3 @@
+tick,match_time,event_type,team_a,number_a,name_a,team_b,number_b,name_b,distance,relative_speed,a_x,a_z,b_x,b_z
+8,0.800,player_ball,Botafogo,9,Striker,,0,Ball,2.50000,6.75000,-5,-9,-3,-8
+18,1.800,player_player,Botafogo,11,Winger,Flamengo,5,Marker,3.00000,4.25000,12,1,15,2
