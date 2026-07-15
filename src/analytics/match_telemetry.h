@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 
+#include "analytics/collision_detector.h"
 #include "analytics/match_heatmap.h"
 #include "analytics/match_metrics.h"
 #include "analytics/pass_detector.h"
@@ -32,8 +33,10 @@ namespace soccer {
 		std::string metricsPath;
 		std::string pressurePath;
 		std::string shotsPath;
+		std::string collisionsPath;
 		std::string team01Name;
 		std::string team02Name;
+		CollisionDetector collisionDetector;
 		MatchHeatmap heatmap;
 		MatchMetrics metrics;
 		PassDetector passDetector;
@@ -81,7 +84,9 @@ namespace soccer {
 		const std::string &getMetricsPath(void) const;
 		const std::string &getPressurePath(void) const;
 		const std::string &getShotsPath(void) const;
+		const std::string &getCollisionsPath(void) const;
 		int getDerivedEventCount(void) const;
+		CollisionSummary getCollisionSummary(void) const;
 		PassDetectorSummary getDerivedEventSummary(void) const;
 		PressureSummary getPressureSummary(void) const;
 		ShotSummary getShotSummary(void) const;

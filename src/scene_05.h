@@ -456,7 +456,7 @@ namespace soccer {
 			double panelX = -w2 + 270;
 			double panelY = h2 - 150;
 			double panelW = 520;
-			double panelH = 250;
+			double panelH = 270;
 			double fieldX = panelX + 165;
 			double fieldY = panelY - 26;
 			double fieldW = 150;
@@ -553,6 +553,13 @@ namespace soccer {
 				shotSummary.lastShotSpeed);
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 204, output);
 
+			CollisionSummary collisionSummary = Telemetry.getCollisionSummary();
+			sprintf(output,"Collisions P-P %d  P-B %d  last %.1f",
+				collisionSummary.playerPlayerCollisions,
+				collisionSummary.playerBallCollisions,
+				collisionSummary.lastRelativeSpeed);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 224, output);
+
 			string replayFile = telemetryDisplayName(Telemetry.getManifestPath());
 			if(replayFile.length() > 26) {
 				replayFile = replayFile.substr(0, 23) + "...";
@@ -561,7 +568,7 @@ namespace soccer {
 				getDeterministicRandomSeed(),
 				eventSummary.totalEvents,
 				replayFile.c_str());
-			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 224, output);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 244, output);
 
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);

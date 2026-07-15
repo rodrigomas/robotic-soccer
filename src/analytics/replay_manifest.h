@@ -43,6 +43,7 @@ namespace soccer {
 		std::string metricsPath;
 		std::string pressurePath;
 		std::string shotsPath;
+		std::string collisionsPath;
 
 		ReplayManifest();
 

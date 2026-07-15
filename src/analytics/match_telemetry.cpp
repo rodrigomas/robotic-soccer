@@ -96,6 +96,7 @@ namespace soccer {
 		metadataOut << "metrics_path," << csv(metricsPath) << "\n";
 		metadataOut << "pressure_path," << csv(pressurePath) << "\n";
 		metadataOut << "shots_path," << csv(shotsPath) << "\n";
+		metadataOut << "collisions_path," << csv(collisionsPath) << "\n";
 
 		return true;
 	}
@@ -117,6 +118,7 @@ namespace soccer {
 		manifest.metricsPath = metricsPath;
 		manifest.pressurePath = pressurePath;
 		manifest.shotsPath = shotsPath;
+		manifest.collisionsPath = collisionsPath;
 
 		return manifest.write(manifestPath);
 	}
@@ -184,6 +186,8 @@ namespace soccer {
 		metricsPath = std::string("telemetry/metrics_") + runId + ".csv";
 		pressurePath = std::string("telemetry/pressure_") + runId + ".csv";
 		shotsPath = std::string("telemetry/shots_") + runId + ".csv";
+		collisionsPath = std::string("telemetry/collisions_") + runId + ".csv";
+		collisionDetector.reset();
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 		metrics.reset();
 		passDetector.reset();
@@ -305,6 +309,45 @@ namespace soccer {
 			shotDetector.record(shotSample);
 		}
 
+		CollisionDetectorSample collisionSample;
+		collisionSample.tick = tick;
+		collisionSample.matchTime = matchTime;
+		collisionSample.ballPos = ball.pos;
+		collisionSample.ballVel = ball.vel;
+		collisionSample.ballRadius = ball.r;
+
+		for(register int i = 0; i < nTeam01Players; i++) {
+			if(team01Players[i] == NULL || team01Players[i]->ncards >= 2) {
+				continue;
+			}
+
+			CollisionParticipant player;
+			player.team = team01Name;
+			player.number = team01Players[i]->num;
+			player.name = team01Players[i]->name;
+			player.pos = team01Players[i]->pos;
+			player.vel = team01Players[i]->vel;
+			player.radius = team01Players[i]->r;
+			collisionSample.players.push_back(player);
+		}
+
+		for(register int i = 0; i < nTeam02Players; i++) {
+			if(team02Players[i] == NULL || team02Players[i]->ncards >= 2) {
+				continue;
+			}
+
+			CollisionParticipant player;
+			player.team = team02Name;
+			player.number = team02Players[i]->num;
+			player.name = team02Players[i]->name;
+			player.pos = team02Players[i]->pos;
+			player.vel = team02Players[i]->vel;
+			player.radius = team02Players[i]->r;
+			collisionSample.players.push_back(player);
+		}
+
+		collisionDetector.record(collisionSample);
+
 		for(register int i = 0; i < nTeam01Players; i++) {
 			if(team01Players[i] != NULL) {
 				heatmap.record("player", team01Name,
@@ -397,6 +440,10 @@ namespace soccer {
 			shotDetector.writeCsv(shotsPath);
 		}
 
+		if(active && collisionsPath != "") {
+			collisionDetector.writeCsv(collisionsPath);
+		}
+
 		if(snapshotsOut.is_open()) {
 			snapshotsOut.flush();
 			snapshotsOut.close();
@@ -460,9 +507,19 @@ namespace soccer {
 		return shotsPath;
 	}
 
+	const std::string &MatchTelemetry::getCollisionsPath(void) const
+	{
+		return collisionsPath;
+	}
+
 	int MatchTelemetry::getDerivedEventCount(void) const
 	{
 		return static_cast<int>(passDetector.getEvents().size());
+	}
+
+	CollisionSummary MatchTelemetry::getCollisionSummary(void) const
+	{
+		return collisionDetector.getSummary();
 	}
 
 	PassDetectorSummary MatchTelemetry::getDerivedEventSummary(void) const

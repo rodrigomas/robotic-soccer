@@ -248,7 +248,8 @@ namespace soccer {
 		out << "    \"heatmap\": " << json(heatmapPath) << ",\n";
 		out << "    \"metrics\": " << json(metricsPath) << ",\n";
 		out << "    \"pressure\": " << json(pressurePath) << ",\n";
-		out << "    \"shots\": " << json(shotsPath) << "\n";
+		out << "    \"shots\": " << json(shotsPath) << ",\n";
+		out << "    \"collisions\": " << json(collisionsPath) << "\n";
 		out << "  }\n";
 		out << "}\n";
 
@@ -286,6 +287,7 @@ namespace soccer {
 		readFilePath(body, "derived_events", &parsed.derivedEventsPath);
 		readFilePath(body, "pressure", &parsed.pressurePath);
 		readFilePath(body, "shots", &parsed.shotsPath);
+		readFilePath(body, "collisions", &parsed.collisionsPath);
 
 		if(parsed.format != "robotic-soccer-replay-manifest" ||
 		   parsed.formatVersion != 1) {

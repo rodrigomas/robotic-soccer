@@ -87,6 +87,10 @@ int main(void)
 		return fail("metadata did not include shots path");
 	}
 
+	if(!fileContains(telemetry.getMetadataPath(), "collisions_path,")) {
+		return fail("metadata did not include collisions path");
+	}
+
 	ReplayManifest manifest;
 	if(!ReplayManifest::load(telemetry.getManifestPath(), &manifest)) {
 		return fail("manifest loader could not read generated manifest");
@@ -121,6 +125,10 @@ int main(void)
 		return fail("manifest loader did not read shots path");
 	}
 
+	if(manifest.collisionsPath != telemetry.getCollisionsPath()) {
+		return fail("manifest loader did not read collisions path");
+	}
+
 	telemetry.finish();
 
 	removeFile(telemetry.getManifestPath());
@@ -132,6 +140,7 @@ int main(void)
 	removeFile(telemetry.getMetricsPath());
 	removeFile(telemetry.getPressurePath());
 	removeFile(telemetry.getShotsPath());
+	removeFile(telemetry.getCollisionsPath());
 
 	return 0;
 }
