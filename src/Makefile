@@ -197,6 +197,7 @@ core-tests: $(TEST_DIR)/fixed_timestep_test $(TEST_DIR)/deterministic_random_tes
 smoke: core-tests
 	cd ../config && $(XMLLINT) --noout config.xml data/*.xml
 	cd ../config && $(LUA) -e 'dofile("scripts/botafogo.lua"); dofile("scripts/flamengo.lua")'
+	cd ../config && $(LUA) scripts/smoke_strategy.lua
 
 test:
 	make clean

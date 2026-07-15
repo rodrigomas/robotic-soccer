@@ -48,6 +48,8 @@ make smoke
 ```
 
 This also runs the current `engine/core` unit-style checks.
+It also validates that the sample Lua strategy files can rank a tactical pass
+option with the current Strategy API fields.
 
 To force deterministic gameplay randomness for debugging:
 
@@ -80,4 +82,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](../LICENSE
 ## Acknowledgments
 
 * None Yet
-
