@@ -126,13 +126,67 @@
 		});
 	}
 
+	function heatmapColor(cell, teams) {
+		if(cell.entityType === "ball") {
+			return "#ffffff";
+		}
+		if(cell.team === teams[0]) {
+			return "#1f5f99";
+		}
+		if(cell.team === teams[1]) {
+			return "#b53f3f";
+		}
+		return "#f5d06d";
+	}
+
+	function buildHeatmap(rows, teams) {
+		var cells = (rows || []).map(function(row) {
+			return {
+				entityType: row.entity_type,
+				team: row.team,
+				number: asNumber(row.number),
+				name: row.name,
+				column: asNumber(row.column),
+				row: asNumber(row.row),
+				samples: asNumber(row.samples)
+			};
+		});
+		var maxSamples = cells.reduce(function(best, cell) {
+			return Math.max(best, cell.samples);
+		}, 0);
+		var totalSamples = cells.reduce(function(total, cell) {
+			return total + cell.samples;
+		}, 0);
+
+		return {
+			columns: 18,
+			rows: 24,
+			cells: cells.map(function(cell) {
+				return {
+					entityType: cell.entityType,
+					team: cell.team,
+					number: cell.number,
+					name: cell.name,
+					column: cell.column,
+					row: cell.row,
+					samples: cell.samples,
+					color: heatmapColor(cell, teams),
+					intensity: maxSamples > 0 ? cell.samples / maxSamples : 0
+				};
+			}),
+			maxSamples: maxSamples,
+			totalSamples: totalSamples
+		};
+	}
+
 	function buildReplayViewModel(entry,
 				      manifest,
 				      summary,
 				      passLaneRows,
 				      pressureRows,
 				      derivedRows,
-				      shotRows) {
+				      shotRows,
+				      heatmapRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
 		var latestPressure = latestPressureFrame(pressureRows || []);
 		var timeline = buildTimelineItems(derivedRows || [], shotRows || []);
@@ -152,6 +206,8 @@
 		var highPressure = latestPressure ?
 			asNumber(latestPressure.high_pressure) === 1 :
 			false;
+		var teams = [summary.teams.team01, summary.teams.team02];
+		var heatmap = buildHeatmap(heatmapRows || [], teams);
 
 		return {
 			id: entry.id,
@@ -160,7 +216,7 @@
 			runId: summary.run_id,
 			manifestPath: entry.manifest,
 			sampleStride: manifest.sample_stride,
-			teams: [summary.teams.team01, summary.teams.team02],
+			teams: teams,
 			scoreline: summary.teams.team01 + " " + summary.shots.team01 + " - " +
 				summary.shots.team02 + " " + summary.teams.team02,
 			matchTime: formatNumber(summary.last_match_time, 2) + "s",
@@ -240,7 +296,8 @@
 				opponentX: latestPressure ? asNumber(latestPressure.opponent_x) : 0,
 				opponentZ: latestPressure ? asNumber(latestPressure.opponent_z) : 0
 			},
-			timeline: timeline
+			timeline: timeline,
+			heatmap: heatmap
 		};
 	}
 
@@ -302,6 +359,43 @@
 			row.appendChild(createEl(documentRef, "span", "timeline-value", item.value));
 			timelineEl.appendChild(row);
 		});
+	}
+
+	function renderHeatmap(documentRef, svgEl, heatmap) {
+		svgEl.innerHTML = "";
+		svgEl.appendChild(svgNode(documentRef, "rect", {
+			x: "0", y: "0", width: "360", height: "240", fill: "#2f7d4d"
+		}));
+		for(var column = 0; column < heatmap.columns; column++) {
+			svgEl.appendChild(svgNode(documentRef, "line", {
+				x1: String((column / heatmap.columns) * 360), y1: "0",
+				x2: String((column / heatmap.columns) * 360), y2: "240",
+				stroke: "#f4f7ee", "stroke-width": "0.6", opacity: "0.22"
+			}));
+		}
+		for(var row = 0; row < heatmap.rows; row++) {
+			svgEl.appendChild(svgNode(documentRef, "line", {
+				x1: "0", y1: String((row / heatmap.rows) * 240),
+				x2: "360", y2: String((row / heatmap.rows) * 240),
+				stroke: "#f4f7ee", "stroke-width": "0.6", opacity: "0.22"
+			}));
+		}
+		heatmap.cells.forEach(function(cell) {
+			var width = 360 / heatmap.columns;
+			var height = 240 / heatmap.rows;
+			svgEl.appendChild(svgNode(documentRef, "rect", {
+				x: String(cell.column * width),
+				y: String(cell.row * height),
+				width: String(width),
+				height: String(height),
+				fill: cell.color,
+				opacity: String(0.28 + cell.intensity * 0.58)
+			}));
+		});
+		svgEl.appendChild(svgNode(documentRef, "rect", {
+			x: "1", y: "1", width: "358", height: "238",
+			fill: "none", stroke: "#f4f7ee", "stroke-width": "2"
+		}));
 	}
 
 	function svgNode(documentRef, tag, attrs) {
@@ -407,9 +501,12 @@
 		documentRef.getElementById("match-time").textContent = viewModel.matchTime;
 		documentRef.getElementById("pass-lane-label").textContent = viewModel.passLane.label;
 		documentRef.getElementById("timeline-count").textContent = viewModel.timeline.length + " events";
+		documentRef.getElementById("heatmap-label").textContent =
+			viewModel.heatmap.totalSamples + " samples, max " + viewModel.heatmap.maxSamples;
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderTimeline(documentRef, documentRef.getElementById("match-timeline"), viewModel.timeline);
+		renderHeatmap(documentRef, documentRef.getElementById("heatmap-view"), viewModel.heatmap);
 		renderField(documentRef, documentRef.getElementById("field-view"), viewModel);
 	}
 
@@ -448,13 +545,15 @@
 				var pressureText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pressure)));
 				var derivedText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.derived_events)));
 				var shotText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.shots)));
+				var heatmapText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.heatmap)));
 				replayData[id] = {
 					manifest: manifest,
 					summary: summary,
 					passLaneRows: parseCsv(passLaneText),
 					pressureRows: parseCsv(pressureText),
 					derivedRows: parseCsv(derivedText),
-					shotRows: parseCsv(shotText)
+					shotRows: parseCsv(shotText),
+					heatmapRows: parseCsv(heatmapText)
 				};
 			}
 			var data = replayData[id];
@@ -464,7 +563,8 @@
 				data.passLaneRows,
 				data.pressureRows,
 				data.derivedRows,
-				data.shotRows);
+				data.shotRows,
+				data.heatmapRows);
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
 			renderReplay(documentRef, viewModel);
 		}
@@ -493,6 +593,7 @@
 		fieldPoint: fieldPoint,
 		fixturePath: fixturePath,
 		formatNumber: formatNumber,
+		buildHeatmap: buildHeatmap,
 		buildTimelineItems: buildTimelineItems,
 		joinPath: joinPath,
 		latestPassLaneOptions: latestPassLaneOptions,

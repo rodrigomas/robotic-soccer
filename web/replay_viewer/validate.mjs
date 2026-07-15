@@ -46,13 +46,18 @@ const shotText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.shots)));
 const shotRows = viewer.parseCsv(shotText);
 const timeline = viewer.buildTimelineItems(derivedRows, shotRows);
+const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.heatmap)));
+const heatmapRows = viewer.parseCsv(heatmapText);
+const heatmap = viewer.buildHeatmap(heatmapRows, [summary.teams.team01, summary.teams.team02]);
 const viewModel = viewer.buildReplayViewModel(entry,
 	manifest,
 	summary,
 	passLaneRows,
 	pressureRows,
 	derivedRows,
-	shotRows);
+	shotRows,
+	heatmapRows);
 
 if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.scoreline !== "Botafogo 1 - 0 Flamengo" ||
@@ -68,7 +73,10 @@ if(viewModel.runId !== "basic_match_fixture" ||
    timeline[0].type !== "pass_completed" ||
    timeline[1].type !== "shot" ||
    timeline[2].type !== "possession_change" ||
-   viewModel.timeline[1].value !== "16.25") {
+   viewModel.timeline[1].value !== "16.25" ||
+   heatmap.cells.length !== 4 ||
+   heatmap.maxSamples !== 2 ||
+   viewModel.heatmap.totalSamples !== 6) {
 	throw new Error("replay viewer view model did not match the fixture");
 }
 

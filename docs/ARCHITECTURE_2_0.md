@@ -128,9 +128,9 @@ The web shell can be TypeScript. The engine should remain C++.
 Current bridge: `web/replay_viewer/` is the first static browser shell. It reads
 the replay catalog, manifest, summary fixture, pass-lane CSV, and pressure CSV
 directly, merges derived events and shots into a compact timeline, renders
-summary cards plus stream-backed field overlays, and validates with
-`node web/replay_viewer/validate.mjs`. It is intentionally dependency-free until
-the TypeScript/WASM boundary needs a more formal build.
+summary cards, a heatmap grid, and stream-backed field overlays, and validates
+with `node web/replay_viewer/validate.mjs`. It is intentionally dependency-free
+until the TypeScript/WASM boundary needs a more formal build.
 
 ## First Implementation Slice
 

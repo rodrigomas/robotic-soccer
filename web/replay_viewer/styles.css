@@ -187,7 +187,8 @@ h3 {
 
 .field-panel,
 .timeline-panel,
-.timeline-strip {
+.timeline-strip,
+.heatmap-strip {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -195,7 +196,8 @@ h3 {
   overflow: hidden;
 }
 
-.timeline-strip {
+.timeline-strip,
+.heatmap-strip {
   margin-top: 18px;
 }
 
@@ -221,6 +223,14 @@ h3 {
   width: 100%;
   aspect-ratio: 3 / 2;
   min-height: 280px;
+  background: var(--field);
+}
+
+.heatmap-view {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  max-height: 320px;
   background: var(--field);
 }
 
