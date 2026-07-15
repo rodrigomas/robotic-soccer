@@ -47,6 +47,8 @@ To run the lightweight 2.0 smoke checks without opening the game:
 make smoke
 ```
 
+This also runs the current `engine/core` unit-style checks.
+
 ## Built With
 
 * [GCC](https://gcc.gnu.org/) - GNU GCC
@@ -72,6 +74,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](../LICENSE
 ## Acknowledgments
 
 * None Yet
-
 
 
