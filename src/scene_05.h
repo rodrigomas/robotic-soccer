@@ -462,14 +462,25 @@ namespace soccer {
 			if( carrier && target ) {
 				double carrierX = fieldX + (carrier->pos.x / 45.0) * (fieldW / 2.0);
 				double carrierY = fieldY + (carrier->pos.z / 60.0) * (fieldH / 2.0);
-				double targetX = fieldX + (target->pos.x / 45.0) * (fieldW / 2.0);
-				double targetY = fieldY + (target->pos.z / 60.0) * (fieldH / 2.0);
-				glColor3f(1.0f,0.95f,0.15f);
-				glBegin(GL_LINES);
-					glVertex2f(carrierX, carrierY);
-					glVertex2f(targetX, targetY);
-				glEnd();
-				drawCircle2D(targetX, targetY, 8.0);
+				int lanes = suggestion.optionCount < 3 ? suggestion.optionCount : 3;
+
+				for( register int lane = lanes - 1 ; lane >= 0 ; lane-- ) {
+					CPlayer *laneTarget = suggestion.options[lane].target;
+					double targetX = fieldX + (laneTarget->pos.x / 45.0) * (fieldW / 2.0);
+					double targetY = fieldY + (laneTarget->pos.z / 60.0) * (fieldH / 2.0);
+
+					if( lane == 0 ) {
+						glColor3f(1.0f,0.95f,0.15f);
+					} else {
+						glColor3f(0.35f,0.75f,0.95f);
+					}
+
+					glBegin(GL_LINES);
+						glVertex2f(carrierX, carrierY);
+						glVertex2f(targetX, targetY);
+					glEnd();
+					drawCircle2D(targetX, targetY, lane == 0 ? 8.0 : 5.0);
+				}
 			}
 		}
 
