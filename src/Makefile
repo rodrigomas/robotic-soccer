@@ -13,6 +13,8 @@ ARCH ?=
 
 TARGET_DIR = ../output/$(shell uname -s | tr A-Z a-z)
 TARGET = $(TARGET_DIR)/soccer
+BUILD_DIR = ../build/$(shell uname -s | tr A-Z a-z)
+OBJ_DIR = $(BUILD_DIR)/obj
 
 INCPATH = -I.
 LIBPATH =
@@ -43,115 +45,118 @@ ifeq ($(USE_MUSIC),1)
 WMUSIC = -DUSE_MUSIC
 endif
 
-FILES = defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o
+OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o)
 
-$(TARGET): main.o
+$(TARGET): $(OBJ_DIR)/main.o
 	mkdir -p $(TARGET_DIR)
-	$(CXX) $(CXXFLAGS) $(ARCH) $(LEVEL) -o $(TARGET) main.o $(FILES) $(LIBPATH) $(LDFLAGS) $(LIBS) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) $(ARCH) $(LEVEL) -o $(TARGET) $(OBJ_DIR)/main.o $(OBJECTS) $(LIBPATH) $(LDFLAGS) $(LIBS) $(LDLIBS)
 
-physics.o: physics.cpp physics.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c physics.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
 
-defs.o: defs.cpp defs.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c defs.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/physics.o: physics.cpp physics.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c physics.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-libsoccer.o: libsoccer.cpp libsoccer.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c libsoccer.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/defs.o: defs.cpp defs.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c defs.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-fade.o: fade.cpp fade.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c fade.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/libsoccer.o: libsoccer.cpp libsoccer.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c libsoccer.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene_01.o: scene_01.cpp scene_01.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_01.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/fade.o: fade.cpp fade.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c fade.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene_02.o: scene_02.cpp scene_02.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_02.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene_01.o: scene_01.cpp scene_01.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_01.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene_03.o: scene_03.cpp scene_03.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_03.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene_02.o: scene_02.cpp scene_02.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_02.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene_04.o: scene_04.cpp scene_04.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_04.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene_03.o: scene_03.cpp scene_03.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_03.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene_05.o: scene_05.cpp scene_05.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_05.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene_04.o: scene_04.cpp scene_04.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_04.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene_06.o: scene_06.cpp scene_06.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_06.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene_05.o: scene_05.cpp scene_05.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_05.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-button.o: button.cpp button.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c button.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene_06.o: scene_06.cpp scene_06.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_06.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-rules.o: rules.cpp rules.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rules.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/button.o: button.cpp button.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c button.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-sky.o: sky.cpp sky.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c sky.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/rules.o: rules.cpp rules.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rules.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-placar.o: placar.cpp placar.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c placar.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/sky.o: sky.cpp sky.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c sky.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-soccerfield.o: soccerfield.cpp soccerfield.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c soccerfield.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/placar.o: placar.cpp placar.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c placar.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-flagman.o: flagman.cpp flagman.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c flagman.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/soccerfield.o: soccerfield.cpp soccerfield.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c soccerfield.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-ball.o: ball.cpp ball.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c ball.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/flagman.o: flagman.cpp flagman.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c flagman.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-player.o: player.cpp  player.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c player.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/ball.o: ball.cpp ball.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c ball.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-sound.o: sound.cpp sound.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c sound.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/player.o: player.cpp  player.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c player.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-color.o: color.cpp color.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c color.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/sound.o: sound.cpp sound.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c sound.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-wav.o: wav.cpp wav.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c wav.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/color.o: color.cpp color.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c color.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-scene.o: scene.cpp scene.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/wav.o: wav.cpp wav.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c wav.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-info.o: info.cpp info.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c info.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/scene.o: scene.cpp scene.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-vector3d.o: vector3d.cpp vector3d.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c vector3d.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/info.o: info.cpp info.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c info.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-jpeg.o: jpeg.cpp jpeg.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c jpeg.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/vector3d.o: vector3d.cpp vector3d.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c vector3d.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-tga.o: tga.cpp tga.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c tga.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/jpeg.o: jpeg.cpp jpeg.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c jpeg.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-ogg.o: ogg.cpp ogg.h 
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c ogg.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/tga.o: tga.cpp tga.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c tga.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-keyhelper.o: keyhelper.cpp keyhelper.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c keyhelper.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/ogg.o: ogg.cpp ogg.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c ogg.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-camera.o: camera.cpp camera.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c camera.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/keyhelper.o: keyhelper.cpp keyhelper.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c keyhelper.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-gamedata.o: gamedata.cpp gamedata.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c gamedata.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/camera.o: camera.cpp camera.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c camera.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-lights.o: lights.cpp lights.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c lights.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/gamedata.o: gamedata.cpp gamedata.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c gamedata.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-rigidbody.o: rigidbody.cpp rigidbody.h
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rigidbody.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/lights.o: lights.cpp lights.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c lights.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-main.o: common.h main.cpp $(FILES)
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c main.cpp -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/rigidbody.o: rigidbody.cpp rigidbody.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rigidbody.cpp -o $@ -Wall $(LEVEL) $(ARCH)
+
+$(OBJ_DIR)/main.o: common.h main.cpp $(OBJECTS) | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c main.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 all:
 	make	
 test:
 	make clean
 	make
-	./$(TARGET)
+	cd ../config && ../output/$(shell uname -s | tr A-Z a-z)/soccer
 clean:
-	rm -rf *.o *~ $(TARGET)
+	rm -rf *.o *~ $(BUILD_DIR) $(TARGET)
