@@ -474,7 +474,8 @@ namespace soccer {
 							opponentPlayers, opponentCount,
 							Ball, Team01Ball, ClockMin >= 45);
 			LuaStrategyProfile::rankTacticalOptions(Team01Ball ? lua_team1 : lua_team2,
-								&suggestion);
+								&suggestion, Ball,
+								Team01Ball, ClockMin >= 45);
 			CPlayer *carrier = suggestion.carrier;
 			CPlayer *target = suggestion.target;
 

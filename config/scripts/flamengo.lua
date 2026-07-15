@@ -6,6 +6,8 @@ strategy = {
 
 		rank_pass_option = function(option)
 			return option.score
+				+ option.target_pressure * 0.10
+				- option.target_centrality * 0.05
 		end
 	}
 }

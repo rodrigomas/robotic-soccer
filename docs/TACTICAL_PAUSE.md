@@ -36,9 +36,21 @@ strategy = {
 }
 ```
 
-`rank_pass_option` receives one engine-generated option at a time with
-`carrier_number`, `target_number`, `score`, `pass_distance`, `target_pressure`,
-and `target_goal_distance`. Returning a number replaces the engine score before
-the pass lanes are sorted.
+`rank_pass_option` receives one engine-generated option at a time. The stable
+fields are:
 
-Future 2.0 slices should expose richer context to Lua while keeping geometry queries in the engine.
+- `carrier_number`, `target_number`: shirt numbers for the current passer and candidate receiver.
+- `score`: current engine score before Lua customization.
+- `pass_distance`: world-space pass distance.
+- `target_pressure`: distance from the candidate receiver to the nearest opponent.
+- `target_goal_distance`: candidate receiver distance to the attacking goal.
+- `carrier_x`, `carrier_z`, `target_x`, `target_z`: current positions.
+- `ball_x`, `ball_z`: current ball position.
+- `attack_direction_z`: `1` or `-1`, depending on the current attacking direction.
+- `forward_progress`: how much closer the candidate receiver is to goal than the carrier.
+- `target_centrality`: absolute distance from the field center line.
+- `target_ball_distance`: candidate receiver distance to the ball.
+- `pass_lane_angle`: pass angle in degrees relative to the attacking direction.
+
+Returning a number replaces the engine score before the pass lanes are sorted.
+Lua can shape strategy, but geometry queries stay inside the engine.

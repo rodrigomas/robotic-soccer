@@ -6,6 +6,8 @@ strategy = {
 
 		rank_pass_option = function(option)
 			return option.score
+				+ option.forward_progress * 0.12
+				- option.pass_lane_angle * 0.03
 		end
 	}
 }
