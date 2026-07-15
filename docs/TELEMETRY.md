@@ -29,8 +29,9 @@ titles, manifest paths, teams, and descriptions. The catalog reader lives in
 `src/analytics/replay_catalog.*`.
 
 `web/replay_viewer/` is the first browser-facing replay shell. It loads the same
-catalog and summary fixture used by native smoke tests and renders dashboard
-cards plus a simple pass-lane field view.
+catalog and summary fixture used by native smoke tests, follows the manifest
+file paths, parses the pass-lane CSV stream, and renders dashboard cards plus a
+pass-lane field view.
 
 ## Metadata CSV Keys
 
@@ -222,5 +223,5 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should teach the browser replay viewer to read one CSV stream
-from the selected fixture, starting with pass lanes or pressure.
+The next slice should teach the browser replay viewer to read one more CSV
+stream from the selected fixture, with pressure as the best next candidate.

@@ -14,18 +14,79 @@
 		return value.toFixed(digits);
 	}
 
-	function summaryPathFromManifest(manifestPath) {
-		var lastSlash = manifestPath.lastIndexOf("/");
-		var base = lastSlash >= 0 ? manifestPath.slice(0, lastSlash + 1) : "";
-		return base + "summary" + manifestPath.slice(base.length + "replay".length);
+	function directoryName(path) {
+		var lastSlash = path.lastIndexOf("/");
+		return lastSlash >= 0 ? path.slice(0, lastSlash + 1) : "";
 	}
 
-	function buildReplayViewModel(entry, summary) {
+	function joinPath(base, leaf) {
+		return base + leaf;
+	}
+
+	function fixturePath(path) {
+		return "../../fixtures/replays/" + path;
+	}
+
+	function parseCsv(text) {
+		var lines = text.trim().split(/\r?\n/);
+		if(lines.length < 2) {
+			return [];
+		}
+
+		var headers = lines[0].split(",");
+		return lines.slice(1).filter(function(line) {
+			return line.trim() !== "";
+		}).map(function(line) {
+			var values = line.split(",");
+			var row = {};
+			headers.forEach(function(header, index) {
+				row[header] = values[index] !== undefined ? values[index] : "";
+			});
+			return row;
+		});
+	}
+
+	function asNumber(value) {
+		var parsed = Number(value);
+		return Number.isFinite(parsed) ? parsed : 0;
+	}
+
+	function latestPassLaneOptions(rows) {
+		if(rows.length === 0) {
+			return [];
+		}
+
+		var latestTick = rows.reduce(function(best, row) {
+			return Math.max(best, asNumber(row.tick));
+		}, 0);
+
+		return rows.filter(function(row) {
+			return asNumber(row.tick) === latestTick;
+		}).sort(function(a, b) {
+			return asNumber(a.rank) - asNumber(b.rank);
+		});
+	}
+
+	function buildReplayViewModel(entry, manifest, summary, passLaneRows) {
+		var latestOptions = latestPassLaneOptions(passLaneRows || []);
+		var bestPassLane = latestOptions[0] || null;
+		var bestTargetNumber = bestPassLane ?
+			asNumber(bestPassLane.target_number) :
+			summary.pass_lanes.last_best_target_number;
+		var bestScore = bestPassLane ?
+			asNumber(bestPassLane.score) :
+			summary.pass_lanes.last_best_score;
+		var bestDistance = bestPassLane ?
+			asNumber(bestPassLane.pass_distance) :
+			summary.pass_lanes.last_best_pass_distance;
+
 		return {
 			id: entry.id,
 			title: entry.title,
 			description: entry.description,
 			runId: summary.run_id,
+			manifestPath: entry.manifest,
+			sampleStride: manifest.sample_stride,
 			teams: [summary.teams.team01, summary.teams.team02],
 			scoreline: summary.teams.team01 + " " + summary.shots.team01 + " - " +
 				summary.shots.team02 + " " + summary.teams.team02,
@@ -59,17 +120,36 @@
 				["Seed", String(summary.random_seed)],
 				["Samples", String(summary.samples)],
 				["Ticks", String(summary.ticks)],
+				["Sample stride", String(manifest.sample_stride)],
 				["Longest pass", formatNumber(summary.passes.longest_distance, 2)],
 				["Pass options", String(summary.pass_lanes.options)],
-				["Best target", "#" + summary.pass_lanes.last_best_target_number],
-				["Best score", formatNumber(summary.pass_lanes.last_best_score, 2)],
-				["Pass distance", formatNumber(summary.pass_lanes.last_best_pass_distance, 2)]
+				["Latest options", String(latestOptions.length)],
+				["Best target", "#" + bestTargetNumber],
+				["Best score", formatNumber(bestScore, 2)],
+				["Pass distance", formatNumber(bestDistance, 2)]
 			],
 			passLane: {
-				label: "#" + summary.pass_lanes.last_best_target_number +
-					" score " + formatNumber(summary.pass_lanes.last_best_score, 2),
-				targetNumber: summary.pass_lanes.last_best_target_number,
-				distance: summary.pass_lanes.last_best_pass_distance
+				label: "#" + bestTargetNumber + " score " + formatNumber(bestScore, 2),
+				targetNumber: bestTargetNumber,
+				distance: bestDistance,
+				options: latestOptions.map(function(row) {
+					return {
+						rank: asNumber(row.rank),
+						carrierNumber: asNumber(row.carrier_number),
+						carrierName: row.carrier_name,
+						targetNumber: asNumber(row.target_number),
+						targetName: row.target_name,
+						score: asNumber(row.score),
+						passDistance: asNumber(row.pass_distance),
+						targetPressure: asNumber(row.target_pressure),
+						carrierX: asNumber(row.carrier_x),
+						carrierZ: asNumber(row.carrier_z),
+						targetX: asNumber(row.target_x),
+						targetZ: asNumber(row.target_z),
+						ballX: asNumber(row.ball_x),
+						ballZ: asNumber(row.ball_z)
+					};
+				})
 			}
 		};
 	}
@@ -128,6 +208,13 @@
 		return node;
 	}
 
+	function fieldPoint(x, z) {
+		return {
+			x: 22 + ((x + 45) / 90) * 496,
+			y: 338 - ((z + 60) / 120) * 316
+		};
+	}
+
 	function renderField(documentRef, svgEl, viewModel) {
 		svgEl.innerHTML = "";
 		svgEl.appendChild(svgNode(documentRef, "rect", {
@@ -151,22 +238,44 @@
 			cx: "270", cy: "180", r: "54", fill: "none",
 			stroke: "#f4f7ee", "stroke-width": "3", opacity: "0.8"
 		}));
-		svgEl.appendChild(svgNode(documentRef, "line", {
-			x1: "190", y1: "226", x2: "350", y2: "126",
-			stroke: "#f5d06d", "stroke-width": "6", "stroke-linecap": "round"
-		}));
-		svgEl.appendChild(svgNode(documentRef, "circle", {
-			cx: "190", cy: "226", r: "17", fill: "#1f5f99", stroke: "#ffffff", "stroke-width": "4"
-		}));
-		svgEl.appendChild(svgNode(documentRef, "circle", {
-			cx: "350", cy: "126", r: "20", fill: "#b53f3f", stroke: "#ffffff", "stroke-width": "4"
-		}));
-		var label = svgNode(documentRef, "text", {
-			x: "350", y: "132", fill: "#ffffff", "font-size": "15",
-			"font-weight": "800", "text-anchor": "middle"
+
+		viewModel.passLane.options.forEach(function(option) {
+			var carrier = fieldPoint(option.carrierX, option.carrierZ);
+			var target = fieldPoint(option.targetX, option.targetZ);
+			svgEl.appendChild(svgNode(documentRef, "line", {
+				x1: String(carrier.x), y1: String(carrier.y),
+				x2: String(target.x), y2: String(target.y),
+				stroke: option.rank === 1 ? "#f5d06d" : "#dce6d4",
+				"stroke-width": option.rank === 1 ? "6" : "3",
+				"stroke-linecap": "round",
+				opacity: option.rank === 1 ? "1" : "0.65"
+			}));
 		});
-		label.textContent = String(viewModel.passLane.targetNumber);
-		svgEl.appendChild(label);
+
+		if(viewModel.passLane.options.length > 0) {
+			var best = viewModel.passLane.options[0];
+			var carrierPoint = fieldPoint(best.carrierX, best.carrierZ);
+			var targetPoint = fieldPoint(best.targetX, best.targetZ);
+			var ballPoint = fieldPoint(best.ballX, best.ballZ);
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(ballPoint.x), cy: String(ballPoint.y), r: "8",
+				fill: "#ffffff", stroke: "#172019", "stroke-width": "3"
+			}));
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(carrierPoint.x), cy: String(carrierPoint.y), r: "17",
+				fill: "#1f5f99", stroke: "#ffffff", "stroke-width": "4"
+			}));
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(targetPoint.x), cy: String(targetPoint.y), r: "20",
+				fill: "#b53f3f", stroke: "#ffffff", "stroke-width": "4"
+			}));
+			var label = svgNode(documentRef, "text", {
+				x: String(targetPoint.x), y: String(targetPoint.y + 5), fill: "#ffffff",
+				"font-size": "15", "font-weight": "800", "text-anchor": "middle"
+			});
+			label.textContent = String(best.targetNumber);
+			svgEl.appendChild(label);
+		}
 	}
 
 	function renderReplay(documentRef, viewModel) {
@@ -188,22 +297,38 @@
 		return response.json();
 	}
 
+	async function loadText(path) {
+		var response = await fetch(path);
+		if(!response.ok) {
+			throw new Error("Could not load " + path);
+		}
+		return response.text();
+	}
+
 	async function init(documentRef) {
 		var catalogPath = "../../fixtures/replays/index.json";
 		var catalog = await loadJson(catalogPath);
 		var entries = catalog.replays;
-		var summaries = {};
+		var replayData = {};
 
 		async function selectReplay(id) {
 			var entry = entries.find(function(item) { return item.id === id; });
 			if(!entry) {
 				return;
 			}
-			if(!summaries[id]) {
-				var summaryPath = "../../fixtures/replays/" + summaryPathFromManifest(entry.manifest);
-				summaries[id] = await loadJson(summaryPath);
+			if(!replayData[id]) {
+				var manifest = await loadJson(fixturePath(entry.manifest));
+				var manifestBase = directoryName(entry.manifest);
+				var summary = await loadJson(fixturePath(joinPath(manifestBase, manifest.files.summary)));
+				var passLaneText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pass_lanes)));
+				replayData[id] = {
+					manifest: manifest,
+					summary: summary,
+					passLaneRows: parseCsv(passLaneText)
+				};
 			}
-			var viewModel = buildReplayViewModel(entry, summaries[id]);
+			var data = replayData[id];
+			var viewModel = buildReplayViewModel(entry, data.manifest, data.summary, data.passLaneRows);
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
 			renderReplay(documentRef, viewModel);
 		}
@@ -228,7 +353,12 @@
 
 	return {
 		buildReplayViewModel: buildReplayViewModel,
+		directoryName: directoryName,
+		fieldPoint: fieldPoint,
+		fixturePath: fixturePath,
 		formatNumber: formatNumber,
-		summaryPathFromManifest: summaryPathFromManifest
+		joinPath: joinPath,
+		latestPassLaneOptions: latestPassLaneOptions,
+		parseCsv: parseCsv
 	};
 }));

@@ -1,8 +1,9 @@
 # Replay Viewer
 
 This is the first static browser shell for Robotic Soccer 2.0 replay analysis.
-It loads `fixtures/replays/index.json`, reads the selected replay summary, and
-renders dashboard cards plus a simple field view.
+It loads `fixtures/replays/index.json`, follows the selected replay manifest,
+reads the summary and pass-lane CSV, and renders dashboard cards plus a simple
+field view.
 
 Run it from the repository root with a local static server:
 
