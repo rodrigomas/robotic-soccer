@@ -129,7 +129,8 @@ Current bridge: `web/replay_viewer/` is the first static browser shell. It reads
 the replay catalog, manifest, summary fixture, pass-lane CSV, and pressure CSV
 directly, merges derived events and shots into a compact timeline, renders
 summary cards, and lets the user switch focus between stream-backed field
-overlays, timeline, and heatmap grid views. It validates with
+overlays, timeline, and heatmap grid views. Field overlays can isolate pass
+lanes or pressure context. It validates with
 `node web/replay_viewer/validate.mjs` and is intentionally dependency-free until
 the TypeScript/WASM boundary needs a more formal build.
 

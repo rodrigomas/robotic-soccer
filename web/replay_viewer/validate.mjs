@@ -23,7 +23,8 @@ if(catalog.format !== "robotic-soccer-replay-catalog" ||
    catalog.format_version !== 1 ||
    !Array.isArray(catalog.replays) ||
    catalog.replays.length < 1 ||
-   viewer.focusViews.join(",") !== "field,timeline,heatmap") {
+   viewer.focusViews.join(",") !== "field,timeline,heatmap" ||
+   viewer.fieldLayers.join(",") !== "passLanes,pressure") {
 	throw new Error("replay catalog shape was not recognized");
 }
 

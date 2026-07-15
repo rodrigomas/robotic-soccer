@@ -32,7 +32,8 @@ titles, manifest paths, teams, and descriptions. The catalog reader lives in
 catalog and summary fixture used by native smoke tests, follows the manifest
 file paths, parses the pass-lane and pressure CSV streams, merges derived events
 and shots into a compact timeline, and lets the user switch focus between
-dashboard field overlays, timeline, and heatmap views.
+dashboard field overlays, timeline, and heatmap views. The field focus can
+toggle pass-lane and pressure layers independently.
 
 ## Metadata CSV Keys
 
@@ -224,5 +225,5 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add overlay toggles for pass lanes and pressure so the
-field focus can isolate one tactical layer at a time.
+The next slice should add a simple selected-event state so clicking a timeline
+item can highlight the corresponding field context.

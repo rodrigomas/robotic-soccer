@@ -261,6 +261,44 @@ h3 {
   text-align: right;
 }
 
+.panel-heading > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.panel-heading > div:first-child span {
+  text-align: left;
+}
+
+.layer-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.layer-toggles label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.layer-toggles input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+
 .field-view {
   display: block;
   width: 100%;
@@ -399,6 +437,10 @@ h3 {
 
   .view-switch {
     display: grid;
+  }
+
+  .layer-toggles {
+    justify-content: flex-start;
   }
 
   .timeline-item {

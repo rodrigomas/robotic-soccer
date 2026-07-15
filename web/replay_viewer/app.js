@@ -8,6 +8,7 @@
 	"use strict";
 
 	var FOCUS_VIEWS = ["field", "timeline", "heatmap"];
+	var FIELD_LAYERS = ["passLanes", "pressure"];
 
 	function formatNumber(value, digits) {
 		if(!Number.isFinite(value)) {
@@ -415,7 +416,17 @@
 		};
 	}
 
-	function renderField(documentRef, svgEl, viewModel) {
+	function fieldLayerState(documentRef) {
+		var passLanes = documentRef.getElementById("toggle-pass-lanes");
+		var pressure = documentRef.getElementById("toggle-pressure");
+		return {
+			passLanes: !passLanes || passLanes.checked,
+			pressure: !pressure || pressure.checked
+		};
+	}
+
+	function renderField(documentRef, svgEl, viewModel, layers) {
+		var activeLayers = layers || fieldLayerState(documentRef);
 		svgEl.innerHTML = "";
 		svgEl.appendChild(svgNode(documentRef, "rect", {
 			x: "0", y: "0", width: "540", height: "360", fill: "#2f7d4d"
@@ -439,7 +450,7 @@
 			stroke: "#f4f7ee", "stroke-width": "3", opacity: "0.8"
 		}));
 
-		if(viewModel.pressure.opponentNumber !== 0) {
+		if(activeLayers.pressure && viewModel.pressure.opponentNumber !== 0) {
 			var pressureCarrier = fieldPoint(viewModel.pressure.carrierX, viewModel.pressure.carrierZ);
 			var pressureOpponent = fieldPoint(viewModel.pressure.opponentX, viewModel.pressure.opponentZ);
 			svgEl.appendChild(svgNode(documentRef, "line", {
@@ -457,20 +468,22 @@
 			}));
 		}
 
-		viewModel.passLane.options.forEach(function(option) {
-			var carrier = fieldPoint(option.carrierX, option.carrierZ);
-			var target = fieldPoint(option.targetX, option.targetZ);
-			svgEl.appendChild(svgNode(documentRef, "line", {
-				x1: String(carrier.x), y1: String(carrier.y),
-				x2: String(target.x), y2: String(target.y),
-				stroke: option.rank === 1 ? "#f5d06d" : "#dce6d4",
-				"stroke-width": option.rank === 1 ? "6" : "3",
-				"stroke-linecap": "round",
-				opacity: option.rank === 1 ? "1" : "0.65"
-			}));
-		});
+		if(activeLayers.passLanes) {
+			viewModel.passLane.options.forEach(function(option) {
+				var carrier = fieldPoint(option.carrierX, option.carrierZ);
+				var target = fieldPoint(option.targetX, option.targetZ);
+				svgEl.appendChild(svgNode(documentRef, "line", {
+					x1: String(carrier.x), y1: String(carrier.y),
+					x2: String(target.x), y2: String(target.y),
+					stroke: option.rank === 1 ? "#f5d06d" : "#dce6d4",
+					"stroke-width": option.rank === 1 ? "6" : "3",
+					"stroke-linecap": "round",
+					opacity: option.rank === 1 ? "1" : "0.65"
+				}));
+			});
+		}
 
-		if(viewModel.passLane.options.length > 0) {
+		if(activeLayers.passLanes && viewModel.passLane.options.length > 0) {
 			var best = viewModel.passLane.options[0];
 			var carrierPoint = fieldPoint(best.carrierX, best.carrierZ);
 			var targetPoint = fieldPoint(best.targetX, best.targetZ);
@@ -509,7 +522,7 @@
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderTimeline(documentRef, documentRef.getElementById("match-timeline"), viewModel.timeline);
 		renderHeatmap(documentRef, documentRef.getElementById("heatmap-view"), viewModel.heatmap);
-		renderField(documentRef, documentRef.getElementById("field-view"), viewModel);
+		renderField(documentRef, documentRef.getElementById("field-view"), viewModel, fieldLayerState(documentRef));
 	}
 
 	function setFocusView(documentRef, view) {
@@ -539,6 +552,21 @@
 		setFocusView(documentRef, "field");
 	}
 
+	function initLayerControls(documentRef, getViewModel) {
+		var toggles = documentRef.querySelectorAll(".layer-toggle");
+		for(var i = 0; i < toggles.length; i++) {
+			toggles[i].addEventListener("change", function() {
+				var viewModel = getViewModel();
+				if(viewModel) {
+					renderField(documentRef,
+						documentRef.getElementById("field-view"),
+						viewModel,
+						fieldLayerState(documentRef));
+				}
+			});
+		}
+	}
+
 	async function loadJson(path) {
 		var response = await fetch(path);
 		if(!response.ok) {
@@ -562,6 +590,8 @@
 		var catalog = await loadJson(catalogPath);
 		var entries = catalog.replays;
 		var replayData = {};
+		var activeViewModel = null;
+		initLayerControls(documentRef, function() { return activeViewModel; });
 
 		async function selectReplay(id) {
 			var entry = entries.find(function(item) { return item.id === id; });
@@ -596,6 +626,7 @@
 				data.derivedRows,
 				data.shotRows,
 				data.heatmapRows);
+			activeViewModel = viewModel;
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
 			renderReplay(documentRef, viewModel);
 		}
@@ -620,9 +651,11 @@
 
 	return {
 		focusViews: FOCUS_VIEWS.slice(),
+		fieldLayers: FIELD_LAYERS.slice(),
 		buildReplayViewModel: buildReplayViewModel,
 		directoryName: directoryName,
 		fieldPoint: fieldPoint,
+		fieldLayerState: fieldLayerState,
 		fixturePath: fixturePath,
 		formatNumber: formatNumber,
 		buildHeatmap: buildHeatmap,

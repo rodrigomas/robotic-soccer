@@ -36,8 +36,14 @@
       <section class="analysis-grid focus-section field-focus">
         <div class="field-panel">
           <div class="panel-heading">
-            <h3>Pass Lane</h3>
-            <span id="pass-lane-label">-</span>
+            <div>
+              <h3>Field</h3>
+              <span id="pass-lane-label">-</span>
+            </div>
+            <div class="layer-toggles" aria-label="Field overlays">
+              <label><input id="toggle-pass-lanes" class="layer-toggle" type="checkbox" checked> Pass lanes</label>
+              <label><input id="toggle-pressure" class="layer-toggle" type="checkbox" checked> Pressure</label>
+            </div>
           </div>
           <svg id="field-view" class="field-view" viewBox="0 0 540 360" role="img" aria-label="Replay field view"></svg>
         </div>
