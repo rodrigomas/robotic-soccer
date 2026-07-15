@@ -396,6 +396,11 @@ namespace soccer {
 		return metricsPath;
 	}
 
+	int MatchTelemetry::getDerivedEventCount(void) const
+	{
+		return static_cast<int>(passDetector.getEvents().size());
+	}
+
 	int MatchTelemetry::getHeatmapColumns(void) const
 	{
 		return heatmap.getColumns();
