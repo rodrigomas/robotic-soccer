@@ -9,6 +9,7 @@ Current overlay:
 - Fouls, corners, and throw-ins.
 - Ball position and current possession team.
 - A deterministic suggested pass lane.
+- Lane score, pass distance, goal distance, and opponent pressure.
 - A top-down mini field with players, ball, and the suggested target.
 
 The pass suggestion lives in `src/analytics/tactical_advisor.*` and uses simple

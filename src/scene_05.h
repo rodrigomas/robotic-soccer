@@ -415,6 +415,15 @@ namespace soccer {
 			}
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 104, output);
 
+			if( carrier && target ) {
+				sprintf(output,"Score %.1f  pass %.1f  goal %.1f",
+					suggestion.score, suggestion.passDistance,
+					suggestion.targetGoalDistance);
+			} else {
+				sprintf(output,"Score: no open lane");
+			}
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 124, output);
+
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);
 			glColor3f(0.8f,0.8f,0.8f);
