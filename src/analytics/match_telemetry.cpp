@@ -102,7 +102,10 @@ namespace soccer {
 			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
 		heatmapPath = std::string("telemetry/heatmap_") + stamp + "_" +
 			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
+		metricsPath = std::string("telemetry/metrics_") + stamp + "_" +
+			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
+		metrics.reset();
 
 		snapshotsOut.open(snapshotsPath.c_str());
 		eventsOut.open(eventsPath.c_str());
@@ -160,6 +163,7 @@ namespace soccer {
 		double matchTime = clockMin * 60.0 + clockSec;
 
 		heatmap.record("ball", "", 0, "Ball", ball.pos);
+		metrics.record("ball", "", 0, "Ball", ball.pos, ball.vel);
 		writeEntity(matchTime, "ball", "", 0, "Ball", ball.pos, ball.vel, team01Ball);
 
 		for(register int i = 0; i < nTeam01Players; i++) {
@@ -168,6 +172,11 @@ namespace soccer {
 					       team01Players[i]->num,
 					       team01Players[i]->name,
 					       team01Players[i]->pos);
+				metrics.record("player", team01Name,
+					       team01Players[i]->num,
+					       team01Players[i]->name,
+					       team01Players[i]->pos,
+					       team01Players[i]->vel);
 				writeEntity(matchTime, "player", team01Name,
 					    team01Players[i]->num,
 					    team01Players[i]->name,
@@ -183,6 +192,11 @@ namespace soccer {
 					       team02Players[i]->num,
 					       team02Players[i]->name,
 					       team02Players[i]->pos);
+				metrics.record("player", team02Name,
+					       team02Players[i]->num,
+					       team02Players[i]->name,
+					       team02Players[i]->pos,
+					       team02Players[i]->vel);
 				writeEntity(matchTime, "player", team02Name,
 					    team02Players[i]->num,
 					    team02Players[i]->name,
@@ -228,6 +242,10 @@ namespace soccer {
 			heatmap.writeCsv(heatmapPath);
 		}
 
+		if(active && metricsPath != "") {
+			metrics.writeCsv(metricsPath);
+		}
+
 		if(snapshotsOut.is_open()) {
 			snapshotsOut.flush();
 			snapshotsOut.close();
@@ -254,6 +272,11 @@ namespace soccer {
 	const std::string &MatchTelemetry::getHeatmapPath(void) const
 	{
 		return heatmapPath;
+	}
+
+	const std::string &MatchTelemetry::getMetricsPath(void) const
+	{
+		return metricsPath;
 	}
 
 };

@@ -5,6 +5,7 @@
 #include <string>
 
 #include "analytics/match_heatmap.h"
+#include "analytics/match_metrics.h"
 #include "ball.h"
 #include "player.h"
 
@@ -21,9 +22,11 @@ namespace soccer {
 		std::string snapshotsPath;
 		std::string eventsPath;
 		std::string heatmapPath;
+		std::string metricsPath;
 		std::string team01Name;
 		std::string team02Name;
 		MatchHeatmap heatmap;
+		MatchMetrics metrics;
 
 		static std::string csv(const std::string &value);
 		static std::string fileSafe(const std::string &value);
@@ -54,6 +57,7 @@ namespace soccer {
 		const std::string &getSnapshotsPath(void) const;
 		const std::string &getEventsPath(void) const;
 		const std::string &getHeatmapPath(void) const;
+		const std::string &getMetricsPath(void) const;
 	};
 
 };

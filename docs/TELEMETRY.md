@@ -1,6 +1,6 @@
 # Match Telemetry
 
-The first 2.0 analytics slices record match snapshots, rule events, and heatmap summaries from the existing engine loop. The source lives in `src/analytics/`. When a match scene starts, the game creates CSV files in `config/telemetry/` if the game is launched from `config/`.
+The first 2.0 analytics slices record match snapshots, rule events, heatmap summaries, and movement metrics from the existing engine loop. The source lives in `src/analytics/`. When a match scene starts, the game creates CSV files in `config/telemetry/` if the game is launched from `config/`.
 
 The snapshot file is sampled every five active game ticks to keep the first version small enough for quick experiments while still being dense enough for heatmaps.
 
@@ -43,6 +43,19 @@ Heatmap files are named `heatmap_*.csv`. They aggregate sampled positions into a
 - `row`: heatmap grid row.
 - `x_min`, `x_max`, `z_min`, `z_max`: world-space bounds for the cell.
 - `samples`: number of sampled positions in the cell.
+
+## Metrics CSV Columns
+
+Metrics files are named `metrics_*.csv`. They summarize sampled movement per ball/player.
+
+- `entity_type`: `ball` or `player`.
+- `team`: team name for players; empty for the ball.
+- `number`: player shirt number; `0` for the ball.
+- `name`: player name or `Ball`.
+- `samples`: number of sampled positions used.
+- `distance`: accumulated world-space distance between samples.
+- `average_speed`: average sampled velocity magnitude.
+- `max_speed`: maximum sampled velocity magnitude.
 
 ## 2.0 Use
 
