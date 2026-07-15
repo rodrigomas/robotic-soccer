@@ -45,7 +45,7 @@ ifeq ($(USE_MUSIC),1)
 WMUSIC = -DUSE_MUSIC
 endif
 
-OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o match_heatmap.o match_metrics.o match_telemetry.o tactical_advisor.o)
+OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o lua_strategy_profile.o match_heatmap.o match_metrics.o match_telemetry.o tactical_advisor.o)
 
 $(TARGET): $(OBJ_DIR)/main.o
 	mkdir -p $(TARGET_DIR)
@@ -89,6 +89,9 @@ $(OBJ_DIR)/button.o: button.cpp button.h | $(OBJ_DIR)
 
 $(OBJ_DIR)/rules.o: rules.cpp rules.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rules.cpp -o $@ -Wall $(LEVEL) $(ARCH)
+
+$(OBJ_DIR)/lua_strategy_profile.o: ai/lua_strategy_profile.cpp ai/lua_strategy_profile.h analytics/tactical_advisor.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c ai/lua_strategy_profile.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
 $(OBJ_DIR)/match_heatmap.o: analytics/match_heatmap.cpp analytics/match_heatmap.h vector3d.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/match_heatmap.cpp -o $@ -Wall $(LEVEL) $(ARCH)

@@ -25,6 +25,7 @@
 #include "placar.h"
 #include "player.h"
 #include "keyhelper.h"
+#include "ai/lua_strategy_profile.h"
 #include "analytics/match_telemetry.h"
 #include "analytics/tactical_advisor.h"
 
@@ -373,6 +374,8 @@ namespace soccer {
 			CPlayer **opponentPlayers = Team01Ball ? Team02Players : Team01Players;
 			int teamCount = Team01Ball ? gdata->team1->nplayers : gdata->team2->nplayers;
 			int opponentCount = Team01Ball ? gdata->team2->nplayers : gdata->team1->nplayers;
+			LuaStrategyProfile::applyTacticalWeights(Team01Ball ? lua_team1 : lua_team2,
+								 &Advisor);
 			TacticalSuggestion suggestion = Advisor.suggestPass(teamPlayers, teamCount,
 							opponentPlayers, opponentCount,
 							Ball, Team01Ball, ClockMin >= 45);

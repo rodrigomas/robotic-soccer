@@ -1,3 +1,11 @@
+strategy = {
+	tactical = {
+		pressure_weight = 0.65,
+		pass_distance_weight = 0.35,
+		goal_distance_weight = 0.20
+	}
+}
+
 function think(id,team)
 	--io.write("[LUA] Flamengo:" .. id .. "\n")
 	return 1,-30,-30 + id*5,2

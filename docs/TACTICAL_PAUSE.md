@@ -18,4 +18,16 @@ geometry for now:
 - Target: teammate with a weighted score for pass distance, distance to goal, and nearby opponent pressure.
 - Output: carrier, target, score, pass distance, pressure, and goal distance.
 
-Future 2.0 slices should move the scoring weights behind a Lua strategy API while keeping geometry queries in the engine.
+Teams can customize the scoring weights from Lua with `strategy.tactical`:
+
+```lua
+strategy = {
+  tactical = {
+    pressure_weight = 0.65,
+    pass_distance_weight = 0.35,
+    goal_distance_weight = 0.20
+  }
+}
+```
+
+Future 2.0 slices should let Lua rank engine-generated options while keeping geometry queries in the engine.
