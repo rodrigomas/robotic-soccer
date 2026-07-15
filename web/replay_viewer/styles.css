@@ -480,7 +480,8 @@ h3 {
   font-weight: 800;
 }
 
-.timeline-controls select {
+.timeline-controls select,
+.timeline-controls input[type="search"] {
   min-width: 124px;
   min-height: 32px;
   border: 1px solid var(--line);
@@ -492,7 +493,12 @@ h3 {
   font-weight: 800;
 }
 
-.timeline-controls input {
+.timeline-controls input[type="search"] {
+  width: 132px;
+  padding: 0 9px;
+}
+
+.timeline-controls input[type="checkbox"] {
   width: 14px;
   height: 14px;
   margin: 0;

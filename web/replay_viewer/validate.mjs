@@ -103,6 +103,42 @@ const flamengoShotsTimeline = viewer.filterTimelineItems(timeline, {
 		possession_change: false
 	}
 });
+const strikerSearchTimeline = viewer.filterTimelineItems(timeline, {
+	team: "all",
+	query: "Striker",
+	types: {
+		pass_completed: true,
+		shot: true,
+		possession_change: true
+	}
+});
+const shirtSearchTimeline = viewer.filterTimelineItems(timeline, {
+	team: "all",
+	query: "#9",
+	types: {
+		pass_completed: true,
+		shot: true,
+		possession_change: true
+	}
+});
+const markerSearchTimeline = viewer.filterTimelineItems(timeline, {
+	team: "Flamengo",
+	query: "Marker",
+	types: {
+		pass_completed: true,
+		shot: true,
+		possession_change: true
+	}
+});
+const mismatchedSearchTimeline = viewer.filterTimelineItems(timeline, {
+	team: "Flamengo",
+	query: "Striker",
+	types: {
+		pass_completed: true,
+		shot: true,
+		possession_change: true
+	}
+});
 const allTimelineCounts = viewer.timelineTeamCounts(timeline, [summary.teams.team01, summary.teams.team02]);
 const botafogoTimelineCounts = viewer.timelineTeamCounts(botafogoTimeline, [summary.teams.team01, summary.teams.team02]);
 const flamengoTimelineCounts = viewer.timelineTeamCounts(flamengoTimeline, [summary.teams.team01, summary.teams.team02]);
@@ -199,6 +235,13 @@ if(viewModel.runId !== "basic_match_fixture" ||
    flamengoTimeline.length !== 1 ||
    flamengoTimeline[0].type !== "possession_change" ||
    flamengoShotsTimeline.length !== 0 ||
+   strikerSearchTimeline.length !== 2 ||
+   strikerSearchTimeline[0].type !== "pass_completed" ||
+   strikerSearchTimeline[1].type !== "shot" ||
+   shirtSearchTimeline.length !== 2 ||
+   markerSearchTimeline.length !== 1 ||
+   markerSearchTimeline[0].team !== "Flamengo" ||
+   mismatchedSearchTimeline.length !== 0 ||
    allTimelineCounts[0].total !== 2 ||
    allTimelineCounts[0].passCompleted !== 1 ||
    allTimelineCounts[0].shots !== 1 ||
@@ -214,6 +257,8 @@ if(viewModel.runId !== "basic_match_fixture" ||
    viewer.repairedTimelineSelection(tacticalTimeline, secondTimelineId) !== secondTimelineId ||
    viewer.repairedTimelineSelection(flamengoTimeline, secondTimelineId) !== thirdTimelineId ||
    viewer.repairedTimelineSelection(flamengoShotsTimeline, secondTimelineId) !== "" ||
+   viewer.repairedTimelineSelection(markerSearchTimeline, secondTimelineId) !== thirdTimelineId ||
+   viewer.repairedTimelineSelection(mismatchedSearchTimeline, secondTimelineId) !== "" ||
    viewer.repairedTimelineSelection(emptyTimeline, secondTimelineId) !== "" ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowLeft") !== firstTimelineId ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowRight") !== secondTimelineId ||

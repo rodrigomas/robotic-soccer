@@ -37,10 +37,10 @@ toggle pass-lane and pressure layers independently, and timeline selections
 highlight matching field context with the selected event's raw CSV values. The
 timeline supports Arrow, Home, and End keyboard navigation using the same
 selection state as the field and detail panels, with event-type filters for
-passes, shots, and possession changes plus team scope and compact per-team
-counts. The heatmap view can filter the same grid by team, entity type, and
-individual player, and it shows movement metrics plus possession-zone summaries
-beside the field grid.
+passes, shots, and possession changes plus team scope, player search, and
+compact per-team counts. The heatmap view can filter the same grid by team,
+entity type, and individual player, and it shows movement metrics plus
+possession-zone summaries beside the field grid.
 
 ## Metadata CSV Keys
 
@@ -236,4 +236,4 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, selected-event inspection, player heatmap review, movement panels, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add timeline event search by player name or number.
+The next slice should add pass-lane detail rows beside the field overlay.

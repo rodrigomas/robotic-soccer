@@ -178,10 +178,29 @@
 		].concat(item.raw || []);
 	}
 
+	function timelineSearchText(item) {
+		var parts = [
+			item.title,
+			item.team,
+			item.detail,
+			item.value,
+			"#" + item.detail.replace(/[^0-9# ]/g, " ")
+		];
+		(item.raw || []).forEach(function(row) {
+			parts.push(row[0]);
+			parts.push(row[1]);
+			if(/number$/.test(row[0])) {
+				parts.push("#" + row[1]);
+			}
+		});
+		return parts.join(" ").toLowerCase();
+	}
+
 	function filterTimelineItems(items, filters) {
 		var activeFilters = filters || {};
 		var typeState = activeFilters.types || activeFilters;
 		var team = activeFilters.team || "all";
+		var query = (activeFilters.query || "").trim().toLowerCase();
 		var hasEnabledType = Object.keys(typeState).some(function(type) {
 			return typeState[type];
 		});
@@ -191,7 +210,8 @@
 		return (items || []).filter(function(item) {
 			var typeMatch = typeState[item.type] !== false;
 			var teamMatch = team === "all" || item.team === team;
-			return typeMatch && teamMatch;
+			var searchMatch = !query || timelineSearchText(item).indexOf(query) !== -1;
+			return typeMatch && teamMatch && searchMatch;
 		});
 	}
 
@@ -963,7 +983,12 @@
 	function timelineFilterState(documentRef) {
 		var filters = documentRef.querySelectorAll(".timeline-filter");
 		var team = documentRef.getElementById("timeline-team-filter");
-		var state = { team: team && team.value ? team.value : "all", types: {} };
+		var search = documentRef.getElementById("timeline-search");
+		var state = {
+			team: team && team.value ? team.value : "all",
+			query: search && search.value ? search.value : "",
+			types: {}
+		};
 		for(var i = 0; i < filters.length; i++) {
 			state.types[filters[i].value] = filters[i].checked;
 		}
@@ -1194,6 +1219,7 @@
 	function initTimelineControls(documentRef, getViewModel, getSelectedEventId, onSelect) {
 		var filters = documentRef.querySelectorAll(".timeline-filter");
 		var teamFilter = documentRef.getElementById("timeline-team-filter");
+		var search = documentRef.getElementById("timeline-search");
 		var controls = [];
 		for(var i = 0; i < filters.length; i++) {
 			controls.push(filters[i]);
@@ -1201,8 +1227,12 @@
 		if(teamFilter) {
 			controls.push(teamFilter);
 		}
+		if(search) {
+			controls.push(search);
+		}
 		controls.forEach(function(control) {
-			control.addEventListener("change", function() {
+			var eventName = control === search ? "input" : "change";
+			control.addEventListener(eventName, function() {
 				var viewModel = getViewModel();
 				if(!viewModel) {
 					return;
