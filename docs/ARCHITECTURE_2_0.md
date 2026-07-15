@@ -125,6 +125,12 @@ Use the engine for:
 
 The web shell can be TypeScript. The engine should remain C++.
 
+Current bridge: `web/replay_viewer/` is the first static browser shell. It reads
+the replay catalog and summary fixture directly, renders summary cards and a
+field pass-lane view, and validates with `node web/replay_viewer/validate.mjs`.
+It is intentionally dependency-free until the TypeScript/WASM boundary needs a
+more formal build.
+
 ## First Implementation Slice
 
 Start small:

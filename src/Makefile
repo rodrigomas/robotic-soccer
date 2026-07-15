@@ -20,6 +20,7 @@ TOOL_DIR = $(BUILD_DIR)/tools
 REPLAY_FIXTURE = ../fixtures/replays/basic_match/replay_basic_match.json
 LUA ?= luajit
 XMLLINT ?= xmllint
+NODE ?= node
 
 INCPATH = -I.
 LIBPATH =
@@ -203,7 +204,7 @@ $(OBJ_DIR)/rigidbody.o: rigidbody.cpp rigidbody.h | $(OBJ_DIR)
 $(OBJ_DIR)/main.o: common.h main.cpp $(OBJECTS) | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c main.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-.PHONY: all test smoke core-tests analytics-tests tools tool-tests clean
+.PHONY: all test smoke core-tests analytics-tests tools tool-tests web-tests clean
 
 all: $(TARGET)
 
@@ -261,7 +262,10 @@ tool-tests: tools
 	$(TOOL_DIR)/replay_report --text $(REPLAY_FIXTURE) | grep -q "Replay basic_match_fixture"
 	$(TOOL_DIR)/replay_report --text $(REPLAY_FIXTURE) | grep -q "Pass lanes: 4 options"
 
-smoke: core-tests analytics-tests tool-tests
+web-tests:
+	cd .. && $(NODE) web/replay_viewer/validate.mjs
+
+smoke: core-tests analytics-tests tool-tests web-tests
 	cd ../config && $(XMLLINT) --noout config.xml data/*.xml
 	cd ../config && $(LUA) -e 'dofile("scripts/botafogo.lua"); dofile("scripts/flamengo.lua")'
 	cd ../config && $(LUA) scripts/smoke_strategy.lua

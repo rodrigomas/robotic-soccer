@@ -59,6 +59,8 @@ The tracked fixture at `fixtures/replays/basic_match/replay_basic_match.json`
 is used by `make smoke` to validate the report tool without opening the game.
 `fixtures/replays/index.json` catalogs tracked sample replays for the future web
 dashboard.
+The first static dashboard lives at `web/replay_viewer/` and is validated by
+`make smoke`.
 
 To force deterministic gameplay randomness for debugging:
 

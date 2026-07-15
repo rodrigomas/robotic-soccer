@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Robotic Soccer Replay Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="replay-list" aria-label="Replay catalog">
+      <div class="brand-block">
+        <span class="kicker">Robotic Soccer 2.0</span>
+        <h1>Replay Viewer</h1>
+      </div>
+      <div id="catalog" class="catalog" aria-live="polite"></div>
+    </aside>
+
+    <section class="report" aria-label="Replay report">
+      <header class="report-header">
+        <div>
+          <span id="run-id" class="kicker">No replay loaded</span>
+          <h2 id="match-title">Replay dashboard</h2>
+        </div>
+        <div id="scoreline" class="scoreline">-</div>
+      </header>
+
+      <section id="metrics" class="metrics" aria-label="Match metrics"></section>
+
+      <section class="analysis-grid">
+        <div class="field-panel">
+          <div class="panel-heading">
+            <h3>Pass Lane</h3>
+            <span id="pass-lane-label">-</span>
+          </div>
+          <svg id="field-view" class="field-view" viewBox="0 0 540 360" role="img" aria-label="Replay field view"></svg>
+        </div>
+
+        <div class="timeline-panel">
+          <div class="panel-heading">
+            <h3>Tactical Summary</h3>
+            <span id="match-time">-</span>
+          </div>
+          <dl id="tactical-summary" class="tactical-summary"></dl>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
