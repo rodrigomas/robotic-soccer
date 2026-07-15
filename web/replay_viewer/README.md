@@ -7,7 +7,7 @@ cards with switchable field, timeline, and heatmap focus views. The field view
 can toggle pass-lane and pressure overlays independently, and timeline clicks
 or keyboard navigation highlight matching field context with a raw
 selected-event detail panel. The heatmap view can filter samples by team and
-entity type.
+entity type, then drill into a single player.
 
 Run it from the repository root with a local static server:
 

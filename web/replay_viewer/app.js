@@ -266,14 +266,23 @@
 		};
 	}
 
+	function heatmapPlayerKey(cell) {
+		if(!cell || cell.entityType !== "player") {
+			return "";
+		}
+		return cell.team + "|" + cell.number + "|" + cell.name;
+	}
+
 	function filterHeatmap(heatmap, filters) {
 		var activeFilters = filters || {};
 		var team = activeFilters.team || "all";
 		var entityType = activeFilters.entityType || "all";
+		var player = activeFilters.player || "all";
 		var cells = heatmap.cells.filter(function(cell) {
 			var teamMatch = team === "all" || cell.team === team;
 			var entityMatch = entityType === "all" || cell.entityType === entityType;
-			return teamMatch && entityMatch;
+			var playerMatch = player === "all" || heatmapPlayerKey(cell) === player;
+			return teamMatch && entityMatch && playerMatch;
 		});
 		var maxSamples = cells.reduce(function(best, cell) {
 			return Math.max(best, cell.samples);
@@ -305,9 +314,11 @@
 	function heatmapFilterState(documentRef) {
 		var team = documentRef.getElementById("heatmap-team-filter");
 		var entity = documentRef.getElementById("heatmap-entity-filter");
+		var player = documentRef.getElementById("heatmap-player-filter");
 		return {
 			team: team && team.value ? team.value : "all",
-			entityType: entity && entity.value ? entity.value : "all"
+			entityType: entity && entity.value ? entity.value : "all",
+			player: player && player.value ? player.value : "all"
 		};
 	}
 
@@ -589,10 +600,16 @@
 		return entityType;
 	}
 
+	function heatmapPlayerLabel(cell, includeTeam) {
+		var label = "#" + cell.number + " " + cell.name;
+		return includeTeam ? label + " (" + cell.team + ")" : label;
+	}
+
 	function renderHeatmapFilters(documentRef, viewModel) {
 		var teamSelect = documentRef.getElementById("heatmap-team-filter");
 		var entitySelect = documentRef.getElementById("heatmap-entity-filter");
-		if(!teamSelect || !entitySelect) {
+		var playerSelect = documentRef.getElementById("heatmap-player-filter");
+		if(!teamSelect || !entitySelect || !playerSelect) {
 			return;
 		}
 
@@ -622,6 +639,27 @@
 
 		setSelectOptions(documentRef, teamSelect, teams, current.team);
 		setSelectOptions(documentRef, entitySelect, entities, current.entityType);
+
+		var updated = heatmapFilterState(documentRef);
+		var includeTeam = updated.team === "all";
+		var playerOptions = [{ value: "all", label: "All players" }];
+		var seenPlayers = {};
+		viewModel.heatmap.cells.forEach(function(cell) {
+			var key = heatmapPlayerKey(cell);
+			if(!key ||
+			   seenPlayers[key] ||
+			   (updated.team !== "all" && cell.team !== updated.team) ||
+			   (updated.entityType !== "all" && updated.entityType !== "player")) {
+				return;
+			}
+			seenPlayers[key] = true;
+			playerOptions.push({
+				value: key,
+				label: heatmapPlayerLabel(cell, includeTeam)
+			});
+		});
+		setSelectOptions(documentRef, playerSelect, playerOptions, current.player);
+		playerSelect.disabled = playerOptions.length === 1;
 	}
 
 	function renderHeatmapSection(documentRef, viewModel) {
@@ -841,7 +879,8 @@
 	function initHeatmapControls(documentRef, getViewModel) {
 		var controls = [
 			documentRef.getElementById("heatmap-team-filter"),
-			documentRef.getElementById("heatmap-entity-filter")
+			documentRef.getElementById("heatmap-entity-filter"),
+			documentRef.getElementById("heatmap-player-filter")
 		];
 		controls.forEach(function(control) {
 			if(!control) {

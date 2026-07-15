@@ -64,6 +64,26 @@ const botafogoHeatmap = viewer.filterHeatmap(heatmap, { team: "Botafogo", entity
 const flamengoHeatmap = viewer.filterHeatmap(heatmap, { team: "Flamengo", entityType: "player" });
 const ballHeatmap = viewer.filterHeatmap(heatmap, { team: "all", entityType: "ball" });
 const emptyHeatmap = viewer.filterHeatmap(heatmap, { team: "Botafogo", entityType: "ball" });
+const strikerHeatmap = viewer.filterHeatmap(heatmap, {
+	team: "Botafogo",
+	entityType: "player",
+	player: "Botafogo|9|Striker"
+});
+const wingerHeatmap = viewer.filterHeatmap(heatmap, {
+	team: "Botafogo",
+	entityType: "player",
+	player: "Botafogo|11|Winger"
+});
+const markerHeatmap = viewer.filterHeatmap(heatmap, {
+	team: "all",
+	entityType: "player",
+	player: "Flamengo|5|Marker"
+});
+const mismatchedPlayerHeatmap = viewer.filterHeatmap(heatmap, {
+	team: "Flamengo",
+	entityType: "player",
+	player: "Botafogo|9|Striker"
+});
 const viewModel = viewer.buildReplayViewModel(entry,
 	manifest,
 	summary,
@@ -113,6 +133,14 @@ if(viewModel.runId !== "basic_match_fixture" ||
    ballHeatmap.totalSamples !== 2 ||
    emptyHeatmap.cells.length !== 0 ||
    emptyHeatmap.totalSamples !== 0 ||
+   strikerHeatmap.cells.length !== 1 ||
+   strikerHeatmap.totalSamples !== 1 ||
+   wingerHeatmap.cells.length !== 1 ||
+   wingerHeatmap.totalSamples !== 1 ||
+   markerHeatmap.cells.length !== 1 ||
+   markerHeatmap.totalSamples !== 2 ||
+   mismatchedPlayerHeatmap.cells.length !== 0 ||
+   mismatchedPlayerHeatmap.totalSamples !== 0 ||
    viewModel.heatmap.totalSamples !== 6) {
 	throw new Error("replay viewer view model did not match the fixture");
 }
