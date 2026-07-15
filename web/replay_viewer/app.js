@@ -178,6 +178,31 @@
 		].concat(item.raw || []);
 	}
 
+	function filterTimelineItems(items, activeTypes) {
+		var typeState = activeTypes || {};
+		var hasEnabledType = Object.keys(typeState).some(function(type) {
+			return typeState[type];
+		});
+		if(!hasEnabledType) {
+			return [];
+		}
+		return (items || []).filter(function(item) {
+			return typeState[item.type] !== false;
+		});
+	}
+
+	function repairedTimelineSelection(items, selectedId) {
+		if(!items || items.length === 0) {
+			return "";
+		}
+		for(var i = 0; i < items.length; i++) {
+			if(items[i].id === selectedId) {
+				return selectedId;
+			}
+		}
+		return items[0].id;
+	}
+
 	function timelineNavigationTarget(items, selectedId, key) {
 		if(!items || items.length === 0) {
 			return "";
@@ -670,6 +695,11 @@
 
 	function renderTimeline(documentRef, timelineEl, items, selectedId, onSelect) {
 		timelineEl.innerHTML = "";
+		if(items.length === 0) {
+			var empty = createEl(documentRef, "li", "timeline-empty", "No events match the current filters.");
+			timelineEl.appendChild(empty);
+			return;
+		}
 		items.forEach(function(item) {
 			var row = createEl(documentRef, "li", "timeline-item " + item.type, "");
 			var button = createEl(documentRef, "button", "timeline-button", "");
@@ -875,6 +905,15 @@
 		};
 	}
 
+	function timelineFilterState(documentRef) {
+		var filters = documentRef.querySelectorAll(".timeline-filter");
+		var state = {};
+		for(var i = 0; i < filters.length; i++) {
+			state[filters[i].value] = filters[i].checked;
+		}
+		return state;
+	}
+
 	function renderField(documentRef, svgEl, viewModel, layers, selectedEvent) {
 		var activeLayers = layers || fieldLayerState(documentRef);
 		svgEl.innerHTML = "";
@@ -988,7 +1027,9 @@
 	}
 
 	function renderReplay(documentRef, viewModel, selectedEventId, onTimelineSelect) {
-		var selectedEvent = selectedTimelineItem(viewModel.timeline, selectedEventId);
+		var visibleTimeline = filterTimelineItems(viewModel.timeline, timelineFilterState(documentRef));
+		var repairedEventId = repairedTimelineSelection(visibleTimeline, selectedEventId);
+		var selectedEvent = selectedTimelineItem(visibleTimeline, repairedEventId);
 		documentRef.getElementById("run-id").textContent = viewModel.runId;
 		documentRef.getElementById("match-title").textContent = viewModel.title;
 		documentRef.getElementById("scoreline").textContent = viewModel.scoreline;
@@ -997,13 +1038,14 @@
 		documentRef.getElementById("event-detail-time").textContent = selectedEvent ?
 			formatNumber(selectedEvent.time, 2) + "s" :
 			"-";
-		documentRef.getElementById("timeline-count").textContent = viewModel.timeline.length + " events";
+		documentRef.getElementById("timeline-count").textContent =
+			visibleTimeline.length + "/" + viewModel.timeline.length + " events";
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
 		renderTimeline(documentRef,
 			documentRef.getElementById("match-timeline"),
-			viewModel.timeline,
+			visibleTimeline,
 			selectedEvent ? selectedEvent.id : "",
 			onTimelineSelect);
 		renderHeatmapSection(documentRef, viewModel);
@@ -1076,6 +1118,21 @@
 		});
 	}
 
+	function initTimelineControls(documentRef, getViewModel, getSelectedEventId, onSelect) {
+		var filters = documentRef.querySelectorAll(".timeline-filter");
+		for(var i = 0; i < filters.length; i++) {
+			filters[i].addEventListener("change", function() {
+				var viewModel = getViewModel();
+				if(!viewModel) {
+					return;
+				}
+				var visibleTimeline = filterTimelineItems(viewModel.timeline, timelineFilterState(documentRef));
+				var nextId = repairedTimelineSelection(visibleTimeline, getSelectedEventId());
+				onSelect(nextId, { stayInView: true });
+			});
+		}
+	}
+
 	function focusTimelineButton(documentRef, selectedId) {
 		var buttons = documentRef.querySelectorAll(".timeline-button");
 		for(var i = 0; i < buttons.length; i++) {
@@ -1114,11 +1171,20 @@
 		initLayerControls(documentRef,
 			function() { return activeViewModel; },
 			function() {
-				return activeViewModel ?
-					selectedTimelineItem(activeViewModel.timeline, selectedEventId) :
+				if(!activeViewModel) {
+					return null;
+				}
+				var visibleTimeline = filterTimelineItems(activeViewModel.timeline, timelineFilterState(documentRef));
+				var repairedEventId = repairedTimelineSelection(visibleTimeline, selectedEventId);
+				return repairedEventId ?
+					selectedTimelineItem(visibleTimeline, repairedEventId) :
 					null;
 			});
 		initHeatmapControls(documentRef, function() { return activeViewModel; });
+		initTimelineControls(documentRef,
+			function() { return activeViewModel; },
+			function() { return selectedEventId; },
+			selectTimelineEvent);
 
 		function selectTimelineEvent(id, options) {
 			if(!activeViewModel) {
@@ -1175,9 +1241,9 @@
 				data.metricsRows,
 				data.heatmapRows);
 			activeViewModel = viewModel;
-			if(!selectedEventId && viewModel.timeline.length > 0) {
-				selectedEventId = viewModel.timeline[0].id;
-			}
+			selectedEventId = repairedTimelineSelection(
+				filterTimelineItems(viewModel.timeline, timelineFilterState(documentRef)),
+				selectedEventId);
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
 			renderReplay(documentRef, viewModel, selectedEventId, selectTimelineEvent);
 		}
@@ -1216,6 +1282,8 @@
 		buildPossessionZones: buildPossessionZones,
 		possessionZoneRows: possessionZoneRows,
 		buildTimelineItems: buildTimelineItems,
+		filterTimelineItems: filterTimelineItems,
+		repairedTimelineSelection: repairedTimelineSelection,
 		selectedEventDetails: selectedEventDetails,
 		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,

@@ -70,7 +70,12 @@
       <section class="timeline-strip focus-section" aria-label="Replay timeline">
         <div class="panel-heading">
           <h3>Timeline</h3>
-          <span id="timeline-count">-</span>
+          <div class="timeline-controls" aria-label="Timeline event filters">
+            <label><input class="timeline-filter" type="checkbox" value="pass_completed" checked> Passes</label>
+            <label><input class="timeline-filter" type="checkbox" value="shot" checked> Shots</label>
+            <label><input class="timeline-filter" type="checkbox" value="possession_change" checked> Changes</label>
+            <span id="timeline-count">-</span>
+          </div>
         </div>
         <ol id="match-timeline" class="match-timeline"></ol>
       </section>

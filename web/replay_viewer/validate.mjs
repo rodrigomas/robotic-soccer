@@ -59,6 +59,26 @@ const shotForwardSpeed = selectedShotDetails.find(([key]) => key === "forward_sp
 const firstTimelineId = timeline[0].id;
 const secondTimelineId = timeline[1].id;
 const thirdTimelineId = timeline[2].id;
+const passTimeline = viewer.filterTimelineItems(timeline, {
+	pass_completed: true,
+	shot: false,
+	possession_change: false
+});
+const shotTimeline = viewer.filterTimelineItems(timeline, {
+	pass_completed: false,
+	shot: true,
+	possession_change: false
+});
+const tacticalTimeline = viewer.filterTimelineItems(timeline, {
+	pass_completed: true,
+	shot: true,
+	possession_change: false
+});
+const emptyTimeline = viewer.filterTimelineItems(timeline, {
+	pass_completed: false,
+	shot: false,
+	possession_change: false
+});
 const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
@@ -138,6 +158,16 @@ if(viewModel.runId !== "basic_match_fixture" ||
    timeline[0].type !== "pass_completed" ||
    timeline[1].type !== "shot" ||
    timeline[2].type !== "possession_change" ||
+   passTimeline.length !== 1 ||
+   passTimeline[0].type !== "pass_completed" ||
+   shotTimeline.length !== 1 ||
+   shotTimeline[0].id !== secondTimelineId ||
+   tacticalTimeline.length !== 2 ||
+   tacticalTimeline[1].type !== "shot" ||
+   emptyTimeline.length !== 0 ||
+   viewer.repairedTimelineSelection(passTimeline, secondTimelineId) !== firstTimelineId ||
+   viewer.repairedTimelineSelection(tacticalTimeline, secondTimelineId) !== secondTimelineId ||
+   viewer.repairedTimelineSelection(emptyTimeline, secondTimelineId) !== "" ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowLeft") !== firstTimelineId ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowRight") !== secondTimelineId ||
    viewer.timelineNavigationTarget(timeline, secondTimelineId, "ArrowUp") !== firstTimelineId ||

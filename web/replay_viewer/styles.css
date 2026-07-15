@@ -457,6 +457,40 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+.timeline-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.timeline-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.timeline-controls input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+
+.timeline-controls span {
+  min-width: 78px;
+}
+
 .match-timeline {
   display: grid;
   grid-template-columns: repeat(3, minmax(190px, 1fr));
@@ -495,6 +529,12 @@ h3 {
 
 .timeline-item:last-child {
   border-right: 0;
+}
+
+.timeline-empty {
+  padding: 22px 16px;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .timeline-time {
@@ -582,6 +622,10 @@ h3 {
   }
 
   .heatmap-controls {
+    justify-content: flex-start;
+  }
+
+  .timeline-controls {
     justify-content: flex-start;
   }
 
