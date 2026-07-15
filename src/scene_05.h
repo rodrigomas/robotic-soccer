@@ -116,7 +116,7 @@ namespace soccer {
 
 		bool motionblur;
 
-		CMatchTelemetry Telemetry;
+		MatchTelemetry Telemetry;
 
 	public:
 
@@ -1152,6 +1152,10 @@ namespace soccer {
 								nearestPlayer(Team01Players,gdata->team1->nplayers,playerPos);
 							CurrPlayer01->pos.x = playerPos.x;
 							CurrPlayer01->pos.z = playerPos.z;
+							Telemetry.recordEvent(ClockMin, ClockSec, "throw_in",
+								gdata->team1->name, CurrPlayer01->num,
+								CurrPlayer01->name, playerPos, Team01Ball,
+								"restart_to_team1");
 
 						} else {
 							CurrPlayer02 =
@@ -1159,6 +1163,10 @@ namespace soccer {
 							CurrPlayer02->pos.x = playerPos.x;
 							CurrPlayer02->pos.z = playerPos.z;
 							Team02->nLaterais++;
+							Telemetry.recordEvent(ClockMin, ClockSec, "throw_in",
+								gdata->team2->name, CurrPlayer02->num,
+								CurrPlayer02->name, playerPos, Team01Ball,
+								"restart_to_team2");
 						}
 
 						stopPlayers();
@@ -1176,6 +1184,10 @@ namespace soccer {
 							CurrPlayer01 = nearestPlayer(Team01Players,gdata->team1->nplayers,playerPos);
 							CurrPlayer01->pos.x = playerPos.x;
 							CurrPlayer01->pos.z = playerPos.z;
+							Telemetry.recordEvent(ClockMin, ClockSec, "corner",
+								gdata->team1->name, CurrPlayer01->num,
+								CurrPlayer01->name, playerPos, Team01Ball,
+								"restart_to_team1");
 
 							Team01Ball = true;
 
@@ -1185,6 +1197,10 @@ namespace soccer {
 							CurrPlayer02->pos.z = playerPos.z;
 
 							Team02->nEscanteios++;
+							Telemetry.recordEvent(ClockMin, ClockSec, "corner",
+								gdata->team2->name, CurrPlayer02->num,
+								CurrPlayer02->name, playerPos, Team01Ball,
+								"restart_to_team2");
 
 							Team01Ball = false;
 						}
@@ -1210,6 +1226,19 @@ namespace soccer {
 
 							Team01->nGols++;
 							placar->gols1++;
+							if ( Team01Ball ) {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team1->name,
+									Team01Players[LastCollisionIndex]->num,
+									Team01Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "goal");
+							} else {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team1->name,
+									Team02Players[LastCollisionIndex]->num,
+									Team02Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "own_goal");
+							}
 
 							Team01Ball = false;
 						} else {
@@ -1229,6 +1258,19 @@ namespace soccer {
 
 							Team02->nGols++;
 							placar->gols2++;
+							if ( Team01Ball ) {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team2->name,
+									Team01Players[LastCollisionIndex]->num,
+									Team01Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "own_goal");
+							} else {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team2->name,
+									Team02Players[LastCollisionIndex]->num,
+									Team02Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "goal");
+							}
 
 							Team01Ball = true;
 
@@ -1258,6 +1300,19 @@ namespace soccer {
 
 							Team01->nGols++;
 							placar->gols1++;
+							if ( Team01Ball ) {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team1->name,
+									Team01Players[LastCollisionIndex]->num,
+									Team01Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "goal");
+							} else {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team1->name,
+									Team02Players[LastCollisionIndex]->num,
+									Team02Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "own_goal");
+							}
 							Team01Ball = false;
 						} else {
 		 					Team02->Gols[Team02->nGols] = new char[150];
@@ -1276,6 +1331,19 @@ namespace soccer {
 
 							Team02->nGols++;
 							placar->gols2++;
+							if ( Team01Ball ) {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team2->name,
+									Team01Players[LastCollisionIndex]->num,
+									Team01Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "own_goal");
+							} else {
+								Telemetry.recordEvent(ClockMin, ClockSec, "goal",
+									gdata->team2->name,
+									Team02Players[LastCollisionIndex]->num,
+									Team02Players[LastCollisionIndex]->name,
+									Ball.pos, Team01Ball, "goal");
+							}
 							Team01Ball = true;
 						}
 						stopPlayers();
@@ -1291,6 +1359,10 @@ namespace soccer {
 							CurrPlayer01->pos.z = playerPos.z;
 
 							Team02->nFaltas++;
+							Telemetry.recordEvent(ClockMin, ClockSec, "foul",
+								gdata->team2->name, Team02Players[fPlayer1]->num,
+								Team02Players[fPlayer1]->name, playerPos,
+								Team01Ball, "free_kick_to_team1");
 
 						} else {
 
@@ -1298,6 +1370,10 @@ namespace soccer {
 
 							CurrPlayer02->pos.x = playerPos.x;
 							CurrPlayer02->pos.z = playerPos.z;
+							Telemetry.recordEvent(ClockMin, ClockSec, "foul",
+								gdata->team1->name, Team01Players[fPlayer0]->num,
+								Team01Players[fPlayer0]->name, playerPos,
+								Team01Ball, "free_kick_to_team2");
 						}
 
 						stopPlayers();
@@ -1313,6 +1389,10 @@ namespace soccer {
 							CurrPlayer01->pos.z = playerPos.z;
 
 							Team02->nFaltas++;
+							Telemetry.recordEvent(ClockMin, ClockSec, "penalty",
+								gdata->team2->name, Team02Players[fPlayer1]->num,
+								Team02Players[fPlayer1]->name, playerPos,
+								Team01Ball, "penalty_to_team1");
 
 						} else {
 
@@ -1320,6 +1400,10 @@ namespace soccer {
 
 							CurrPlayer02->pos.x = playerPos.x;
 							CurrPlayer02->pos.z = playerPos.z;
+							Telemetry.recordEvent(ClockMin, ClockSec, "penalty",
+								gdata->team1->name, Team01Players[fPlayer0]->num,
+								Team01Players[fPlayer0]->name, playerPos,
+								Team01Ball, "penalty_to_team2");
 						}
 
 						stopPlayers();
@@ -1343,6 +1427,8 @@ namespace soccer {
 
 				if( ClockMin == 45 && ClockSec == 0)
 				{
+					Telemetry.recordEvent(ClockMin, ClockSec, "halftime",
+						"", 0, "", Ball.pos, Team01Ball);
 					Paused = true;
 					resetPlayers(!Team01Ball);
 					stopPlayers();
@@ -1351,6 +1437,8 @@ namespace soccer {
 
 				if( ClockMin == 90 && ClockSec == 0 )
 				{
+					Telemetry.recordEvent(ClockMin, ClockSec, "full_time",
+						"", 0, "", Ball.pos, Team01Ball);
 					End = true;
 					ClockSec++;
 				}
@@ -1693,6 +1781,8 @@ namespace soccer {
 			Team02 = createInfo();
 
 			Telemetry.begin(gdata->team1->name, gdata->team2->name);
+			Telemetry.recordEvent(ClockMin, ClockSec, "match_start",
+					"", 0, "", Ball.pos, Team01Ball);
 			Telemetry.sample(ClockMin, ClockSec, Ball,
 					Team01Players, gdata->team1->nplayers,
 					Team02Players, gdata->team2->nplayers,

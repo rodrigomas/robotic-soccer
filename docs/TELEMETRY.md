@@ -1,10 +1,10 @@
 # Match Telemetry
 
-The first 2.0 slice records match snapshots from the existing engine loop. The source lives in `src/analytics/`. When a match scene starts, the game creates a CSV file in `config/telemetry/` if the game is launched from `config/`.
+The first 2.0 analytics slice records match snapshots and rule events from the existing engine loop. The source lives in `src/analytics/`. When a match scene starts, the game creates CSV files in `config/telemetry/` if the game is launched from `config/`.
 
-The file is sampled every five active game ticks to keep the first version small enough for quick experiments while still being dense enough for heatmaps.
+The snapshot file is sampled every five active game ticks to keep the first version small enough for quick experiments while still being dense enough for heatmaps.
 
-## CSV Columns
+## Snapshot CSV Columns
 
 - `sample`: sequential telemetry sample index.
 - `tick`: scene update tick seen by the telemetry recorder.
@@ -17,8 +17,22 @@ The file is sampled every five active game ticks to keep the first version small
 - `vx`, `vy`, `vz`: world velocity.
 - `team_in_possession`: team name currently considered to have possession.
 
+## Event CSV Columns
+
+Event files are named `events_*.csv` and record discrete match events:
+
+- `tick`: scene update tick seen by the telemetry recorder.
+- `match_time`: in-game seconds from kickoff.
+- `event_type`: `match_start`, `throw_in`, `corner`, `goal`, `foul`, `penalty`, `halftime`, or `full_time`.
+- `team`: team associated with the event, if any.
+- `number`: player shirt number, if any.
+- `name`: player name, if any.
+- `x`, `y`, `z`: event world position.
+- `team_in_possession`: team name currently considered to have possession.
+- `detail`: extra context such as `own_goal`, `restart_to_team1`, or `free_kick_to_team2`.
+
 ## 2.0 Use
 
-This CSV is intentionally simple. It can drive the first heatmap, possession-zone, distance, and average-speed prototypes without changing Lua strategy scripts yet.
+These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add event telemetry for goals, shots, passes, collisions, fouls, and restarts.
+The next slice should infer shots, passes, pressure, collisions, and pass-lane candidates from snapshots plus events.

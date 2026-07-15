@@ -15,7 +15,7 @@
 
 namespace soccer {
 
-	CMatchTelemetry::CMatchTelemetry() :
+	MatchTelemetry::MatchTelemetry() :
 		active(false),
 		tick(0),
 		sampleIndex(0),
@@ -23,12 +23,12 @@ namespace soccer {
 	{
 	}
 
-	CMatchTelemetry::~CMatchTelemetry()
+	MatchTelemetry::~MatchTelemetry()
 	{
 		finish();
 	}
 
-	std::string CMatchTelemetry::csv(const std::string &value)
+	std::string MatchTelemetry::csv(const std::string &value)
 	{
 		std::string result = "\"";
 
@@ -44,7 +44,7 @@ namespace soccer {
 		return result;
 	}
 
-	std::string CMatchTelemetry::fileSafe(const std::string &value)
+	std::string MatchTelemetry::fileSafe(const std::string &value)
 	{
 		std::string result;
 
@@ -68,9 +68,9 @@ namespace soccer {
 		return result;
 	}
 
-	bool CMatchTelemetry::begin(const std::string &team01,
-				    const std::string &team02,
-				    int stride)
+	bool MatchTelemetry::begin(const std::string &team01,
+				   const std::string &team02,
+				   int stride)
 	{
 		finish();
 
@@ -96,30 +96,35 @@ namespace soccer {
 			std::snprintf(stamp, sizeof(stamp), "unknown_time");
 		}
 
-		outputPath = std::string("telemetry/match_") + stamp + "_" +
+		snapshotsPath = std::string("telemetry/match_") + stamp + "_" +
+			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
+		eventsPath = std::string("telemetry/events_") + stamp + "_" +
 			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
 
-		out.open(outputPath.c_str());
-		active = out.is_open();
+		snapshotsOut.open(snapshotsPath.c_str());
+		eventsOut.open(eventsPath.c_str());
+		active = snapshotsOut.is_open() && eventsOut.is_open();
 
 		if(active) {
-			out << "sample,tick,match_time,entity_type,team,number,name,"
+			snapshotsOut << "sample,tick,match_time,entity_type,team,number,name,"
 				<< "x,y,z,vx,vy,vz,team_in_possession\n";
+			eventsOut << "tick,match_time,event_type,team,number,name,"
+				<< "x,y,z,team_in_possession,detail\n";
 		}
 
 		return active;
 	}
 
-	void CMatchTelemetry::writeEntity(double matchTime,
-					  const std::string &entityType,
-					  const std::string &teamName,
-					  int number,
-					  const std::string &name,
-					  const CVector3D &pos,
-					  const CVector3D &vel,
-					  bool team01Ball)
+	void MatchTelemetry::writeEntity(double matchTime,
+					 const std::string &entityType,
+					 const std::string &teamName,
+					 int number,
+					 const std::string &name,
+					 const CVector3D &pos,
+					 const CVector3D &vel,
+					 bool team01Ball)
 	{
-		out << sampleIndex << ","
+		snapshotsOut << sampleIndex << ","
 			<< tick << ","
 			<< std::fixed << std::setprecision(3) << matchTime << ","
 			<< csv(entityType) << ","
@@ -132,13 +137,13 @@ namespace soccer {
 			<< csv(team01Ball ? team01Name : team02Name) << "\n";
 	}
 
-	void CMatchTelemetry::sample(double clockMin, double clockSec,
-				     const CBall &ball,
-				     CPlayer **team01Players,
-				     int nTeam01Players,
-				     CPlayer **team02Players,
-				     int nTeam02Players,
-				     bool team01Ball)
+	void MatchTelemetry::sample(double clockMin, double clockSec,
+				    const CBall &ball,
+				    CPlayer **team01Players,
+				    int nTeam01Players,
+				    CPlayer **team02Players,
+				    int nTeam02Players,
+				    bool team01Ball)
 	{
 		if(!active) {
 			return;
@@ -178,19 +183,56 @@ namespace soccer {
 		sampleIndex++;
 	}
 
-	void CMatchTelemetry::finish(void)
+	void MatchTelemetry::recordEvent(double clockMin, double clockSec,
+					 const std::string &eventType,
+					 const std::string &teamName,
+					 int number,
+					 const std::string &name,
+					 const CVector3D &pos,
+					 bool team01Ball,
+					 const std::string &detail)
 	{
-		if(out.is_open()) {
-			out.flush();
-			out.close();
+		if(!active) {
+			return;
+		}
+
+		double matchTime = clockMin * 60.0 + clockSec;
+
+		eventsOut << tick << ","
+			<< std::fixed << std::setprecision(3) << matchTime << ","
+			<< csv(eventType) << ","
+			<< csv(teamName) << ","
+			<< number << ","
+			<< csv(name) << ","
+			<< std::fixed << std::setprecision(5)
+			<< pos.x << "," << pos.y << "," << pos.z << ","
+			<< csv(team01Ball ? team01Name : team02Name) << ","
+			<< csv(detail) << "\n";
+	}
+
+	void MatchTelemetry::finish(void)
+	{
+		if(snapshotsOut.is_open()) {
+			snapshotsOut.flush();
+			snapshotsOut.close();
+		}
+
+		if(eventsOut.is_open()) {
+			eventsOut.flush();
+			eventsOut.close();
 		}
 
 		active = false;
 	}
 
-	const std::string &CMatchTelemetry::getOutputPath(void) const
+	const std::string &MatchTelemetry::getSnapshotsPath(void) const
 	{
-		return outputPath;
+		return snapshotsPath;
+	}
+
+	const std::string &MatchTelemetry::getEventsPath(void) const
+	{
+		return eventsPath;
 	}
 
 };

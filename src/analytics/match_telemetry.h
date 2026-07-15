@@ -9,14 +9,16 @@
 
 namespace soccer {
 
-	class CMatchTelemetry {
+	class MatchTelemetry {
 
 		bool active;
 		int tick;
 		int sampleIndex;
 		int sampleStride;
-		std::ofstream out;
-		std::string outputPath;
+		std::ofstream snapshotsOut;
+		std::ofstream eventsOut;
+		std::string snapshotsPath;
+		std::string eventsPath;
 		std::string team01Name;
 		std::string team02Name;
 
@@ -28,8 +30,8 @@ namespace soccer {
 				 const CVector3D &vel, bool team01Ball);
 
 	public:
-		CMatchTelemetry();
-		~CMatchTelemetry();
+		MatchTelemetry();
+		~MatchTelemetry();
 
 		bool begin(const std::string &team01, const std::string &team02,
 			   int stride = 5);
@@ -37,8 +39,17 @@ namespace soccer {
 			    CPlayer **team01Players, int nTeam01Players,
 			    CPlayer **team02Players, int nTeam02Players,
 			    bool team01Ball);
+		void recordEvent(double clockMin, double clockSec,
+				 const std::string &eventType,
+				 const std::string &teamName,
+				 int number,
+				 const std::string &name,
+				 const CVector3D &pos,
+				 bool team01Ball,
+				 const std::string &detail = "");
 		void finish(void);
-		const std::string &getOutputPath(void) const;
+		const std::string &getSnapshotsPath(void) const;
+		const std::string &getEventsPath(void) const;
 	};
 
 };
