@@ -379,6 +379,8 @@ namespace soccer {
 			TacticalSuggestion suggestion = Advisor.suggestPass(teamPlayers, teamCount,
 							opponentPlayers, opponentCount,
 							Ball, Team01Ball, ClockMin >= 45);
+			LuaStrategyProfile::rankTacticalOptions(Team01Ball ? lua_team1 : lua_team2,
+								&suggestion);
 			CPlayer *carrier = suggestion.carrier;
 			CPlayer *target = suggestion.target;
 

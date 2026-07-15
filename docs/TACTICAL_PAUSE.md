@@ -26,9 +26,18 @@ strategy = {
   tactical = {
     pressure_weight = 0.65,
     pass_distance_weight = 0.35,
-    goal_distance_weight = 0.20
+    goal_distance_weight = 0.20,
+
+    rank_pass_option = function(option)
+      return option.score
+    end
   }
 }
 ```
 
-Future 2.0 slices should let Lua rank engine-generated options while keeping geometry queries in the engine.
+`rank_pass_option` receives one engine-generated option at a time with
+`carrier_number`, `target_number`, `score`, `pass_distance`, `target_pressure`,
+and `target_goal_distance`. Returning a number replaces the engine score before
+the pass lanes are sorted.
+
+Future 2.0 slices should expose richer context to Lua while keeping geometry queries in the engine.

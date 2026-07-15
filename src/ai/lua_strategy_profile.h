@@ -13,6 +13,7 @@ namespace soccer {
 
 	public:
 		static void applyTacticalWeights(lua_State *L, TacticalAdvisor *advisor);
+		static void rankTacticalOptions(lua_State *L, TacticalSuggestion *suggestion);
 	};
 
 };

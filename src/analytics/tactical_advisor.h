@@ -44,6 +44,7 @@ namespace soccer {
 	public:
 		TacticalAdvisor();
 
+		static void refreshSuggestion(TacticalSuggestion *suggestion);
 		void setWeights(double pressure, double passDistance, double goalDistance);
 		TacticalSuggestion suggestPass(CPlayer **teamPlayers, int teamCount,
 					       CPlayer **opponentPlayers, int opponentCount,

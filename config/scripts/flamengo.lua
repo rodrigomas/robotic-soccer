@@ -2,7 +2,11 @@ strategy = {
 	tactical = {
 		pressure_weight = 0.65,
 		pass_distance_weight = 0.35,
-		goal_distance_weight = 0.20
+		goal_distance_weight = 0.20,
+
+		rank_pass_option = function(option)
+			return option.score
+		end
 	}
 }
 

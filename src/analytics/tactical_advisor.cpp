@@ -92,6 +92,32 @@ namespace soccer {
 		suggestion->options[index] = option;
 	}
 
+	void TacticalAdvisor::refreshSuggestion(TacticalSuggestion *suggestion)
+	{
+		if(!suggestion || suggestion->optionCount <= 0) {
+			return;
+		}
+
+		for(register int i = 1; i < suggestion->optionCount; i++) {
+			TacticalPassOption option = suggestion->options[i];
+			int index = i;
+
+			while(index > 0 && suggestion->options[index - 1].score < option.score) {
+				suggestion->options[index] = suggestion->options[index - 1];
+				index--;
+			}
+
+			suggestion->options[index] = option;
+		}
+
+		TacticalPassOption best = suggestion->options[0];
+		suggestion->target = best.target;
+		suggestion->score = best.score;
+		suggestion->passDistance = best.passDistance;
+		suggestion->targetPressure = best.targetPressure;
+		suggestion->targetGoalDistance = best.targetGoalDistance;
+	}
+
 	TacticalSuggestion TacticalAdvisor::suggestPass(CPlayer **teamPlayers,
 							int teamCount,
 							CPlayer **opponentPlayers,
@@ -138,15 +164,9 @@ namespace soccer {
 			option.targetGoalDistance = goalDistance;
 
 			insertRankedOption(&suggestion, option);
-
-			if(score > suggestion.score) {
-				suggestion.target = candidate;
-				suggestion.score = score;
-				suggestion.passDistance = passDistance;
-				suggestion.targetPressure = pressure;
-				suggestion.targetGoalDistance = goalDistance;
-			}
 		}
+
+		refreshSuggestion(&suggestion);
 
 		return suggestion;
 	}
