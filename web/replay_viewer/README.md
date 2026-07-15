@@ -7,9 +7,10 @@ cards with switchable field, timeline, and heatmap focus views. The field view
 can toggle pass-lane, pressure, and selected-shot path overlays independently,
 with ranked pass-lane and pressure detail rows below the field plus
 selected-shot detail rows beside the field. Shot selections project the recorded
-ball velocity to the target goal line. Timeline clicks or keyboard navigation
-highlight matching field context with raw selected-event and shot-specific
-detail panels.
+ball velocity to the target goal line and show a first explainable quality hint
+from distance, angle, forward speed, and pressure. Timeline clicks or keyboard
+navigation highlight matching field context with raw selected-event and
+shot-specific detail panels.
 Timeline event-type filters can narrow passes, shots, possession changes, and
 collisions by team or player search, with compact per-team counts. The heatmap
 view can filter samples by team and entity type, then drill into a single player

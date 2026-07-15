@@ -53,7 +53,7 @@ const shotRows = viewer.parseCsv(shotText);
 const collisionText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.collisions)));
 const collisionRows = viewer.parseCsv(collisionText);
-const timeline = viewer.buildTimelineItems(derivedRows, shotRows, collisionRows);
+const timeline = viewer.buildTimelineItems(derivedRows, shotRows, collisionRows, pressureRows);
 const selectedShot = viewer.selectedTimelineItem(timeline, "shot-20-0");
 const passCompleted = viewer.selectedTimelineItem(timeline, "pass_completed-10-0");
 const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
@@ -333,7 +333,7 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShot.field.x !== -1 ||
    selectedShot.field.fromZ !== 18 ||
    selectedShotDetails.length < 18 ||
-   selectedShotSummary.length !== 9 ||
+   selectedShotSummary.length !== 14 ||
    selectedShotSummary[0][1] !== "#9 Striker" ||
    selectedShotSummary[2][1] !== "16.25" ||
    selectedShotSummary[3][1] !== "15.75" ||
@@ -342,6 +342,15 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShotSummary[6][1] !== "-3.00, 18.00" ||
    selectedShotSummary[7][1] !== "-1.00, 18.00" ||
    selectedShotSummary[8][1] !== "2.00, 0.00, 16.00" ||
+   selectedShotSummary[9][1] !== "Promising 68" ||
+   selectedShotSummary[10][1] !== "42.00 units, score 47.50" ||
+   selectedShotSummary[11][1] !== "5.78 deg, score 71.11" ||
+   selectedShotSummary[12][1] !== "15.75 fwd, score 87.50" ||
+   selectedShotSummary[13][1] !== "#11 Winger 12.00 stable, score 75.00" ||
+   selectedShot.shotPressure.carrierName !== "Winger" ||
+   selectedShot.shotPressure.distance !== 12 ||
+   selectedShot.shotQuality.score !== 68 ||
+   selectedShot.shotQuality.label !== "Promising" ||
    selectedShotOverlay.targetX !== 4.25 ||
    selectedShotOverlay.projectedTargetX !== 4.25 ||
    selectedShotOverlay.targetZ !== 60 ||

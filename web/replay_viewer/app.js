@@ -111,7 +111,78 @@
 		});
 	}
 
-	function buildTimelineItems(derivedRows, shotRows, collisionRows) {
+	function latestPressureForShot(pressureRows, item) {
+		var latest = null;
+		(pressureRows || []).forEach(function(row) {
+			var tick = asNumber(row.tick);
+			if(row.possession_team !== item.team || tick > item.tick) {
+				return;
+			}
+			if(!latest || tick > latest.tick) {
+				latest = {
+					tick: tick,
+					time: asNumber(row.match_time),
+					team: row.possession_team,
+					carrierNumber: asNumber(row.carrier_number),
+					carrierName: row.carrier_name,
+					opponentTeam: row.opponent_team,
+					opponentNumber: asNumber(row.opponent_number),
+					opponentName: row.opponent_name,
+					distance: asNumber(row.pressure_distance),
+					high: asNumber(row.high_pressure) === 1
+				};
+			}
+		});
+		return latest;
+	}
+
+	function shotQualityLabel(score) {
+		if(score >= 80) {
+			return "Excellent";
+		}
+		if(score >= 60) {
+			return "Promising";
+		}
+		if(score >= 40) {
+			return "Difficult";
+		}
+		return "Low";
+	}
+
+	function buildShotQuality(item) {
+		if(!item || item.type !== "shot" || !item.shot) {
+			return null;
+		}
+		var overlay = selectedShotOverlay(item);
+		var distanceScore = clampNumber(100 - (item.shot.goalDistance * 1.25), 0, 100);
+		var angleDegrees = overlay ?
+			Math.atan2(Math.abs(overlay.targetX), Math.max(1, Math.abs(item.shot.goalDistance))) * (180 / Math.PI) :
+			90;
+		var angleScore = clampNumber(100 - (angleDegrees * 5), 0, 100);
+		var speedScore = clampNumber((item.shot.forwardSpeed / 18) * 100, 0, 100);
+		var pressureScore = item.shotPressure ?
+			clampNumber((item.shotPressure.distance / 16) * 100, 0, 100) :
+			50;
+		if(item.shotPressure && item.shotPressure.high) {
+			pressureScore = clampNumber(pressureScore - 18, 0, 100);
+		}
+		var score = Math.round(
+			(distanceScore * 0.30) +
+			(angleScore * 0.25) +
+			(speedScore * 0.20) +
+			(pressureScore * 0.25));
+		return {
+			score: score,
+			label: shotQualityLabel(score),
+			distanceScore: distanceScore,
+			angleDegrees: angleDegrees,
+			angleScore: angleScore,
+			speedScore: speedScore,
+			pressureScore: pressureScore
+		};
+	}
+
+	function buildTimelineItems(derivedRows, shotRows, collisionRows, pressureRows) {
 		var items = [];
 		(derivedRows || []).forEach(function(row, index) {
 			var type = row.event_type;
@@ -160,7 +231,7 @@
 				ballVy: asNumber(row.ball_vy),
 				ballVz: asNumber(row.ball_vz)
 			};
-			items.push({
+			var item = {
 				id: "shot-" + row.tick + "-" + index,
 				type: "shot",
 				tick: asNumber(row.tick),
@@ -184,7 +255,10 @@
 					fromZ: shot.shooterZ,
 					label: "shot"
 				}
-			});
+			};
+			item.shotPressure = latestPressureForShot(pressureRows || [], item);
+			item.shotQuality = buildShotQuality(item);
+			items.push(item);
 		});
 		(collisionRows || []).forEach(function(row, index) {
 			var type = row.event_type;
@@ -252,7 +326,7 @@
 		if(!item || item.type !== "shot" || !item.shot) {
 			return [];
 		}
-		return [
+		var rows = [
 			["Shooter", "#" + item.shot.shooterNumber + " " + item.shot.shooterName],
 			["Team", item.shot.team],
 			["Shot speed", formatNumber(item.shot.shotSpeed, 2)],
@@ -263,6 +337,34 @@
 			["Ball pos", fieldPosition(item.shot.ballX, item.shot.ballZ)],
 			["Ball velocity", fieldVelocity(item.shot.ballVx, item.shot.ballVy, item.shot.ballVz)]
 		];
+		if(item.shotQuality) {
+			rows.push(["Quality", item.shotQuality.label + " " + item.shotQuality.score]);
+			rows.push([
+				"Distance hint",
+				formatNumber(item.shot.goalDistance, 2) + " units, score " +
+					formatNumber(item.shotQuality.distanceScore, 2)
+			]);
+			rows.push([
+				"Angle hint",
+				formatNumber(item.shotQuality.angleDegrees, 2) + " deg, score " +
+					formatNumber(item.shotQuality.angleScore, 2)
+			]);
+			rows.push([
+				"Speed hint",
+				formatNumber(item.shot.forwardSpeed, 2) + " fwd, score " +
+					formatNumber(item.shotQuality.speedScore, 2)
+			]);
+			rows.push([
+				"Pressure hint",
+				item.shotPressure ?
+					"#" + item.shotPressure.carrierNumber + " " + item.shotPressure.carrierName +
+						" " + formatNumber(item.shotPressure.distance, 2) +
+						(item.shotPressure.high ? " high" : " stable") +
+						", score " + formatNumber(item.shotQuality.pressureScore, 2) :
+					"No pressure sample, score " + formatNumber(item.shotQuality.pressureScore, 2)
+			]);
+		}
+		return rows;
 	}
 
 	function clampNumber(value, minimum, maximum) {
@@ -718,7 +820,8 @@
 				      heatmapRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
 		var latestPressure = latestPressureFrame(pressureRows || []);
-		var timeline = buildTimelineItems(derivedRows || [], shotRows || [], collisionRows || []);
+		var timeline = buildTimelineItems(derivedRows || [], shotRows || [],
+			collisionRows || [], pressureRows || []);
 		var bestPassLane = latestOptions[0] || null;
 		var bestTargetNumber = bestPassLane ?
 			asNumber(bestPassLane.target_number) :
@@ -1650,6 +1753,8 @@
 		selectedEventDetails: selectedEventDetails,
 		selectedShotDetails: selectedShotDetails,
 		selectedShotOverlay: selectedShotOverlay,
+		buildShotQuality: buildShotQuality,
+		latestPressureForShot: latestPressureForShot,
 		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,

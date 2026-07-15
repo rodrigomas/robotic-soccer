@@ -133,7 +133,9 @@ summary cards, and lets the user switch focus between stream-backed field
 overlays, timeline, and heatmap grid views. Field overlays can isolate pass
 lanes or pressure context, with ranked pass-lane and pressure details beside the
 field plus selected-shot geometry details and projected shot paths to the target
-goal line for shot timeline entries.
+goal line for shot timeline entries. Shot detail rows include the first
+explainable quality hint from distance, projected angle, forward speed, and
+pressure.
 Timeline selection highlights matching field context while exposing raw
 selected-event values. Timeline buttons support
 keyboard navigation, event-type filters, team filters, player search, and
