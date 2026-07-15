@@ -1,6 +1,6 @@
 # Match Telemetry
 
-The first 2.0 slice records match snapshots from the existing engine loop. When a match scene starts, the game creates a CSV file in `config/telemetry/` if the game is launched from `config/`.
+The first 2.0 slice records match snapshots from the existing engine loop. The source lives in `src/analytics/`. When a match scene starts, the game creates a CSV file in `config/telemetry/` if the game is launched from `config/`.
 
 The file is sampled every five active game ticks to keep the first version small enough for quick experiments while still being dense enough for heatmaps.
 

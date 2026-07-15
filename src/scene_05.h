@@ -25,7 +25,7 @@
 #include "placar.h"
 #include "player.h"
 #include "keyhelper.h"
-#include "match_telemetry.h"
+#include "analytics/match_telemetry.h"
 
 using std::string;
 using std::ostringstream;

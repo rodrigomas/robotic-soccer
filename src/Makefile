@@ -90,8 +90,8 @@ $(OBJ_DIR)/button.o: button.cpp button.h | $(OBJ_DIR)
 $(OBJ_DIR)/rules.o: rules.cpp rules.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rules.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-$(OBJ_DIR)/match_telemetry.o: match_telemetry.cpp match_telemetry.h ball.h player.h | $(OBJ_DIR)
-	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c match_telemetry.cpp -o $@ -Wall $(LEVEL) $(ARCH)
+$(OBJ_DIR)/match_telemetry.o: analytics/match_telemetry.cpp analytics/match_telemetry.h ball.h player.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/match_telemetry.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
 $(OBJ_DIR)/sky.o: sky.cpp sky.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c sky.cpp -o $@ -Wall $(LEVEL) $(ARCH)
