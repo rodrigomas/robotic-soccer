@@ -100,6 +100,9 @@ namespace soccer {
 			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
 		eventsPath = std::string("telemetry/events_") + stamp + "_" +
 			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
+		heatmapPath = std::string("telemetry/heatmap_") + stamp + "_" +
+			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
+		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 
 		snapshotsOut.open(snapshotsPath.c_str());
 		eventsOut.open(eventsPath.c_str());
@@ -156,10 +159,15 @@ namespace soccer {
 
 		double matchTime = clockMin * 60.0 + clockSec;
 
+		heatmap.record("ball", "", 0, "Ball", ball.pos);
 		writeEntity(matchTime, "ball", "", 0, "Ball", ball.pos, ball.vel, team01Ball);
 
 		for(register int i = 0; i < nTeam01Players; i++) {
 			if(team01Players[i] != NULL) {
+				heatmap.record("player", team01Name,
+					       team01Players[i]->num,
+					       team01Players[i]->name,
+					       team01Players[i]->pos);
 				writeEntity(matchTime, "player", team01Name,
 					    team01Players[i]->num,
 					    team01Players[i]->name,
@@ -171,6 +179,10 @@ namespace soccer {
 
 		for(register int i = 0; i < nTeam02Players; i++) {
 			if(team02Players[i] != NULL) {
+				heatmap.record("player", team02Name,
+					       team02Players[i]->num,
+					       team02Players[i]->name,
+					       team02Players[i]->pos);
 				writeEntity(matchTime, "player", team02Name,
 					    team02Players[i]->num,
 					    team02Players[i]->name,
@@ -212,6 +224,10 @@ namespace soccer {
 
 	void MatchTelemetry::finish(void)
 	{
+		if(active && heatmapPath != "") {
+			heatmap.writeCsv(heatmapPath);
+		}
+
 		if(snapshotsOut.is_open()) {
 			snapshotsOut.flush();
 			snapshotsOut.close();
@@ -233,6 +249,11 @@ namespace soccer {
 	const std::string &MatchTelemetry::getEventsPath(void) const
 	{
 		return eventsPath;
+	}
+
+	const std::string &MatchTelemetry::getHeatmapPath(void) const
+	{
+		return heatmapPath;
 	}
 
 };

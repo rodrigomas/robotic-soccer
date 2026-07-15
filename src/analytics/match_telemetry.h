@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 
+#include "analytics/match_heatmap.h"
 #include "ball.h"
 #include "player.h"
 
@@ -19,8 +20,10 @@ namespace soccer {
 		std::ofstream eventsOut;
 		std::string snapshotsPath;
 		std::string eventsPath;
+		std::string heatmapPath;
 		std::string team01Name;
 		std::string team02Name;
+		MatchHeatmap heatmap;
 
 		static std::string csv(const std::string &value);
 		static std::string fileSafe(const std::string &value);
@@ -50,6 +53,7 @@ namespace soccer {
 		void finish(void);
 		const std::string &getSnapshotsPath(void) const;
 		const std::string &getEventsPath(void) const;
+		const std::string &getHeatmapPath(void) const;
 	};
 
 };
