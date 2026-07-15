@@ -4,6 +4,17 @@ The first 2.0 analytics slices record match snapshots, rule events, heatmap summ
 
 The snapshot file is sampled every five active game ticks to keep the first version small enough for quick experiments while still being dense enough for heatmaps.
 
+Each match also writes a `metadata_*.csv` key/value file. It records the telemetry format version, creation stamp, deterministic random seed, team names, sample stride, and the related snapshot/event/heatmap/metrics file paths. This is the first replay scaffold: a captured match can now be tied back to the random sequence that produced it.
+
+## Metadata CSV Keys
+
+- `format_version`: metadata schema version.
+- `created_at`: local timestamp used in telemetry filenames.
+- `random_seed`: deterministic gameplay seed. Use `ROBOTIC_SOCCER_SEED=<number>` to replay the same random sequence.
+- `team01`, `team02`: configured team names.
+- `sample_stride`: active game ticks between snapshot samples.
+- `snapshots_path`, `events_path`, `heatmap_path`, `metrics_path`: related files for the same match capture.
+
 ## Snapshot CSV Columns
 
 - `sample`: sequential telemetry sample index.

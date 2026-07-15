@@ -1,5 +1,7 @@
 #include "match_telemetry.h"
 
+#include "engine/core/deterministic_random.h"
+
 #include <cctype>
 #include <cstdio>
 #include <ctime>
@@ -68,6 +70,29 @@ namespace soccer {
 		return result;
 	}
 
+	bool MatchTelemetry::writeMetadata(const std::string &stamp)
+	{
+		std::ofstream metadataOut(metadataPath.c_str());
+
+		if(!metadataOut.is_open()) {
+			return false;
+		}
+
+		metadataOut << "key,value\n";
+		metadataOut << "format_version,1\n";
+		metadataOut << "created_at," << csv(stamp) << "\n";
+		metadataOut << "random_seed," << getDeterministicRandomSeed() << "\n";
+		metadataOut << "team01," << csv(team01Name) << "\n";
+		metadataOut << "team02," << csv(team02Name) << "\n";
+		metadataOut << "sample_stride," << sampleStride << "\n";
+		metadataOut << "snapshots_path," << csv(snapshotsPath) << "\n";
+		metadataOut << "events_path," << csv(eventsPath) << "\n";
+		metadataOut << "heatmap_path," << csv(heatmapPath) << "\n";
+		metadataOut << "metrics_path," << csv(metricsPath) << "\n";
+
+		return true;
+	}
+
 	bool MatchTelemetry::begin(const std::string &team01,
 				   const std::string &team02,
 				   int stride)
@@ -96,6 +121,8 @@ namespace soccer {
 			std::snprintf(stamp, sizeof(stamp), "unknown_time");
 		}
 
+		metadataPath = std::string("telemetry/metadata_") + stamp + "_" +
+			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
 		snapshotsPath = std::string("telemetry/match_") + stamp + "_" +
 			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
 		eventsPath = std::string("telemetry/events_") + stamp + "_" +
@@ -112,6 +139,7 @@ namespace soccer {
 		active = snapshotsOut.is_open() && eventsOut.is_open();
 
 		if(active) {
+			writeMetadata(stamp);
 			snapshotsOut << "sample,tick,match_time,entity_type,team,number,name,"
 				<< "x,y,z,vx,vy,vz,team_in_possession\n";
 			eventsOut << "tick,match_time,event_type,team,number,name,"
@@ -257,6 +285,11 @@ namespace soccer {
 		}
 
 		active = false;
+	}
+
+	const std::string &MatchTelemetry::getMetadataPath(void) const
+	{
+		return metadataPath;
 	}
 
 	const std::string &MatchTelemetry::getSnapshotsPath(void) const

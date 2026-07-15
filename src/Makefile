@@ -111,7 +111,7 @@ $(OBJ_DIR)/match_heatmap.o: analytics/match_heatmap.cpp analytics/match_heatmap.
 $(OBJ_DIR)/match_metrics.o: analytics/match_metrics.cpp analytics/match_metrics.h vector3d.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/match_metrics.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-$(OBJ_DIR)/match_telemetry.o: analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/match_heatmap.h analytics/match_metrics.h ball.h player.h | $(OBJ_DIR)
+$(OBJ_DIR)/match_telemetry.o: analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/match_heatmap.h analytics/match_metrics.h engine/core/deterministic_random.h ball.h player.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/match_telemetry.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
 $(OBJ_DIR)/tactical_advisor.o: analytics/tactical_advisor.cpp analytics/tactical_advisor.h ball.h player.h | $(OBJ_DIR)
