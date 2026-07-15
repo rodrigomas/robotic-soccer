@@ -35,7 +35,15 @@ const passLaneText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.pass_lanes)));
 const passLaneRows = viewer.parseCsv(passLaneText);
 const latestPassLanes = viewer.latestPassLaneOptions(passLaneRows);
-const viewModel = viewer.buildReplayViewModel(entry, manifest, summary, passLaneRows);
+const pressureText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.pressure)));
+const pressureRows = viewer.parseCsv(pressureText);
+const latestPressure = viewer.latestPressureFrame(pressureRows);
+const viewModel = viewer.buildReplayViewModel(entry,
+	manifest,
+	summary,
+	passLaneRows,
+	pressureRows);
 
 if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.scoreline !== "Botafogo 1 - 0 Flamengo" ||
@@ -43,7 +51,10 @@ if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.tactical.length < 8 ||
    viewModel.passLane.targetNumber !== 9 ||
    viewModel.passLane.options.length !== 2 ||
-   latestPassLanes[0].target_number !== "9") {
+   latestPassLanes[0].target_number !== "9" ||
+   latestPressure.carrier_number !== "11" ||
+   viewModel.pressure.opponentNumber !== 5 ||
+   viewModel.pressure.distance !== 12) {
 	throw new Error("replay viewer view model did not match the fixture");
 }
 

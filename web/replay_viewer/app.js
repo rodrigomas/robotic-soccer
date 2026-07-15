@@ -67,8 +67,19 @@
 		});
 	}
 
-	function buildReplayViewModel(entry, manifest, summary, passLaneRows) {
+	function latestPressureFrame(rows) {
+		if(rows.length === 0) {
+			return null;
+		}
+
+		return rows.reduce(function(best, row) {
+			return asNumber(row.tick) >= asNumber(best.tick) ? row : best;
+		}, rows[0]);
+	}
+
+	function buildReplayViewModel(entry, manifest, summary, passLaneRows, pressureRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
+		var latestPressure = latestPressureFrame(pressureRows || []);
 		var bestPassLane = latestOptions[0] || null;
 		var bestTargetNumber = bestPassLane ?
 			asNumber(bestPassLane.target_number) :
@@ -79,6 +90,12 @@
 		var bestDistance = bestPassLane ?
 			asNumber(bestPassLane.pass_distance) :
 			summary.pass_lanes.last_best_pass_distance;
+		var pressureDistance = latestPressure ?
+			asNumber(latestPressure.pressure_distance) :
+			summary.pressure.last_distance;
+		var highPressure = latestPressure ?
+			asNumber(latestPressure.high_pressure) === 1 :
+			false;
 
 		return {
 			id: entry.id,
@@ -100,8 +117,8 @@
 				{
 					label: "Pressure",
 					value: summary.pressure.high_pressure_samples + "/" + summary.pressure.samples,
-					detail: "avg " + formatNumber(summary.pressure.average_distance, 2) +
-						", min " + formatNumber(summary.pressure.min_distance, 2)
+					detail: "latest " + formatNumber(pressureDistance, 2) +
+						(highPressure ? ", high" : ", stable")
 				},
 				{
 					label: "Shots",
@@ -122,6 +139,7 @@
 				["Ticks", String(summary.ticks)],
 				["Sample stride", String(manifest.sample_stride)],
 				["Longest pass", formatNumber(summary.passes.longest_distance, 2)],
+				["Latest pressure", formatNumber(pressureDistance, 2)],
 				["Pass options", String(summary.pass_lanes.options)],
 				["Latest options", String(latestOptions.length)],
 				["Best target", "#" + bestTargetNumber],
@@ -150,6 +168,21 @@
 						ballZ: asNumber(row.ball_z)
 					};
 				})
+			},
+			pressure: {
+				label: latestPressure ?
+					latestPressure.carrier_name + " vs " + latestPressure.opponent_name :
+					"No pressure stream",
+				distance: pressureDistance,
+				high: highPressure,
+				carrierNumber: latestPressure ? asNumber(latestPressure.carrier_number) : 0,
+				carrierName: latestPressure ? latestPressure.carrier_name : "",
+				opponentNumber: latestPressure ? asNumber(latestPressure.opponent_number) : 0,
+				opponentName: latestPressure ? latestPressure.opponent_name : "",
+				carrierX: latestPressure ? asNumber(latestPressure.carrier_x) : 0,
+				carrierZ: latestPressure ? asNumber(latestPressure.carrier_z) : 0,
+				opponentX: latestPressure ? asNumber(latestPressure.opponent_x) : 0,
+				opponentZ: latestPressure ? asNumber(latestPressure.opponent_z) : 0
 			}
 		};
 	}
@@ -239,6 +272,24 @@
 			stroke: "#f4f7ee", "stroke-width": "3", opacity: "0.8"
 		}));
 
+		if(viewModel.pressure.opponentNumber !== 0) {
+			var pressureCarrier = fieldPoint(viewModel.pressure.carrierX, viewModel.pressure.carrierZ);
+			var pressureOpponent = fieldPoint(viewModel.pressure.opponentX, viewModel.pressure.opponentZ);
+			svgEl.appendChild(svgNode(documentRef, "line", {
+				x1: String(pressureCarrier.x), y1: String(pressureCarrier.y),
+				x2: String(pressureOpponent.x), y2: String(pressureOpponent.y),
+				stroke: viewModel.pressure.high ? "#d9483b" : "#f08a3e",
+				"stroke-width": viewModel.pressure.high ? "5" : "4",
+				"stroke-dasharray": "8 7",
+				"stroke-linecap": "round",
+				opacity: "0.85"
+			}));
+			svgEl.appendChild(svgNode(documentRef, "circle", {
+				cx: String(pressureOpponent.x), cy: String(pressureOpponent.y), r: "14",
+				fill: "#b53f3f", stroke: "#f08a3e", "stroke-width": "4"
+			}));
+		}
+
 		viewModel.passLane.options.forEach(function(option) {
 			var carrier = fieldPoint(option.carrierX, option.carrierZ);
 			var target = fieldPoint(option.targetX, option.targetZ);
@@ -321,14 +372,20 @@
 				var manifestBase = directoryName(entry.manifest);
 				var summary = await loadJson(fixturePath(joinPath(manifestBase, manifest.files.summary)));
 				var passLaneText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pass_lanes)));
+				var pressureText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pressure)));
 				replayData[id] = {
 					manifest: manifest,
 					summary: summary,
-					passLaneRows: parseCsv(passLaneText)
+					passLaneRows: parseCsv(passLaneText),
+					pressureRows: parseCsv(pressureText)
 				};
 			}
 			var data = replayData[id];
-			var viewModel = buildReplayViewModel(entry, data.manifest, data.summary, data.passLaneRows);
+			var viewModel = buildReplayViewModel(entry,
+				data.manifest,
+				data.summary,
+				data.passLaneRows,
+				data.pressureRows);
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
 			renderReplay(documentRef, viewModel);
 		}
@@ -359,6 +416,7 @@
 		formatNumber: formatNumber,
 		joinPath: joinPath,
 		latestPassLaneOptions: latestPassLaneOptions,
+		latestPressureFrame: latestPressureFrame,
 		parseCsv: parseCsv
 	};
 }));
