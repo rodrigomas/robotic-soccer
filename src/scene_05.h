@@ -314,6 +314,226 @@ namespace soccer {
 
 		}
 
+		double distanceXZ(const CVector3D &a, const CVector3D &b)
+		{
+			double dx = a.x - b.x;
+			double dz = a.z - b.z;
+			return sqrt(dx * dx + dz * dz);
+		}
+
+		void drawText2D(double x, double y, const char *text)
+		{
+			glRasterPos2f(x, y);
+			puts2DBitmap(text, GLUT_BITMAP_9_BY_15);
+		}
+
+		void drawRect2D(double x, double y, double w, double h)
+		{
+			glPushMatrix();
+				glTranslatef(x, y, 0);
+				glScalef(w / 2.0, h / 2.0, 1.0);
+				glutRect();
+			glPopMatrix();
+		}
+
+		void drawCircle2D(double x, double y, double r)
+		{
+			glBegin(GL_LINE_LOOP);
+				for( int i = 0 ; i < 24 ; i++ ) {
+					double a = 2.0 * M_PI * i / 24.0;
+					glVertex2f(x + r * cos(a), y + r * sin(a));
+				}
+			glEnd();
+		}
+
+		CPlayer *nearestPlayerToBall(CPlayer **players, int nplayers)
+		{
+			CPlayer *best = NULL;
+			double bestDistance = 1000000.0;
+
+			for( register int i = 0 ; i < nplayers ; i++ ) {
+				if( players[i]->ncards >= 2 ) {
+					continue;
+				}
+
+				double d = distanceXZ(players[i]->pos, Ball.pos);
+				if( d < bestDistance ) {
+					best = players[i];
+					bestDistance = d;
+				}
+			}
+
+			return best;
+		}
+
+		double nearestOpponentDistance(CPlayer **players, int nplayers, const CVector3D &pos)
+		{
+			double bestDistance = 1000000.0;
+
+			for( register int i = 0 ; i < nplayers ; i++ ) {
+				if( players[i]->ncards >= 2 ) {
+					continue;
+				}
+
+				double d = distanceXZ(players[i]->pos, pos);
+				if( d < bestDistance ) {
+					bestDistance = d;
+				}
+			}
+
+			return bestDistance;
+		}
+
+		CPlayer *suggestPassTarget(CPlayer **teamPlayers, int teamCount,
+					   CPlayer **opponentPlayers, int opponentCount,
+					   CPlayer *carrier, bool team01)
+		{
+			if( !carrier ) {
+				return NULL;
+			}
+
+			double goalZ = team01 ? ((ClockMin >= 45) ? 60.0 : -60.0)
+					      : ((ClockMin >= 45) ? -60.0 : 60.0);
+			CVector3D goal(0, 0, goalZ);
+			CPlayer *best = NULL;
+			double bestScore = -1000000.0;
+
+			for( register int i = 0 ; i < teamCount ; i++ ) {
+				CPlayer *candidate = teamPlayers[i];
+
+				if( candidate == carrier || candidate->ncards >= 2 ) {
+					continue;
+				}
+
+				double passDistance = distanceXZ(carrier->pos, candidate->pos);
+				double goalDistance = distanceXZ(candidate->pos, goal);
+				double pressure = nearestOpponentDistance(opponentPlayers, opponentCount, candidate->pos);
+				double score = pressure * 0.65 - passDistance * 0.35 - goalDistance * 0.20;
+
+				if( score > bestScore ) {
+					best = candidate;
+					bestScore = score;
+				}
+			}
+
+			return best;
+		}
+
+		void drawPlayerOnTacticalField(CPlayer *player, double centerX, double centerY,
+					       double fieldW, double fieldH, bool team01, bool selected)
+		{
+			double x = centerX + (player->pos.x / 45.0) * (fieldW / 2.0);
+			double y = centerY + (player->pos.z / 60.0) * (fieldH / 2.0);
+
+			if( team01 ) {
+				glColor3f(selected ? 1.0f : 0.85f, selected ? 0.85f : 0.05f, selected ? 0.85f : 0.05f);
+			} else {
+				glColor3f(selected ? 0.85f : 0.05f, selected ? 0.85f : 0.05f, selected ? 0.85f : 0.85f);
+			}
+
+			drawCircle2D(x, y, selected ? 4.5 : 3.0);
+		}
+
+		void drawTacticalPauseOverlay(int w2, int h2)
+		{
+			double panelX = -w2 + 270;
+			double panelY = h2 - 150;
+			double panelW = 520;
+			double panelH = 230;
+			double fieldX = panelX + 165;
+			double fieldY = panelY - 26;
+			double fieldW = 150;
+			double fieldH = 190;
+			double totalPossession = Team01->Posse + Team02->Posse;
+			double team01Possession = totalPossession > 0.0 ? 100.0 * Team01->Posse / totalPossession : 50.0;
+			double team02Possession = 100.0 - team01Possession;
+			CPlayer **teamPlayers = Team01Ball ? Team01Players : Team02Players;
+			CPlayer **opponentPlayers = Team01Ball ? Team02Players : Team01Players;
+			int teamCount = Team01Ball ? gdata->team1->nplayers : gdata->team2->nplayers;
+			int opponentCount = Team01Ball ? gdata->team2->nplayers : gdata->team1->nplayers;
+			CPlayer *carrier = nearestPlayerToBall(teamPlayers, teamCount);
+			CPlayer *target = suggestPassTarget(teamPlayers, teamCount, opponentPlayers, opponentCount, carrier, Team01Ball);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glColor4f(0.02f,0.02f,0.02f,0.78f);
+			drawRect2D(panelX, panelY, panelW, panelH);
+			glDisable(GL_BLEND);
+
+			glColor3f(1.0f,1.0f,1.0f);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 22, "TACTICAL PAUSE");
+
+			sprintf(output,"Possession %s %.0f%% | %s %.0f%%",
+				gdata->team1->sigla.c_str(), team01Possession,
+				gdata->team2->sigla.c_str(), team02Possession);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 44, output);
+
+			sprintf(output,"Fouls %d-%d  Corners %d-%d  Throw-ins %d-%d",
+				Team01->nFaltas, Team02->nFaltas,
+				Team01->nEscanteios, Team02->nEscanteios,
+				Team01->nLaterais, Team02->nLaterais);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 64, output);
+
+			sprintf(output,"Ball %.1f, %.1f  Possession: %s",
+				Ball.pos.x, Ball.pos.z,
+				Team01Ball ? gdata->team1->sigla.c_str() : gdata->team2->sigla.c_str());
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 84, output);
+
+			if( carrier && target ) {
+				sprintf(output,"Suggested pass: %d -> %d", carrier->num, target->num);
+			} else {
+				sprintf(output,"Suggested pass: hold shape");
+			}
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 104, output);
+
+			glColor3f(0.18f,0.36f,0.18f);
+			drawRect2D(fieldX, fieldY, fieldW, fieldH);
+			glColor3f(0.8f,0.8f,0.8f);
+			glBegin(GL_LINE_LOOP);
+				glVertex2f(fieldX - fieldW / 2.0, fieldY - fieldH / 2.0);
+				glVertex2f(fieldX + fieldW / 2.0, fieldY - fieldH / 2.0);
+				glVertex2f(fieldX + fieldW / 2.0, fieldY + fieldH / 2.0);
+				glVertex2f(fieldX - fieldW / 2.0, fieldY + fieldH / 2.0);
+			glEnd();
+			glBegin(GL_LINES);
+				glVertex2f(fieldX - fieldW / 2.0, fieldY);
+				glVertex2f(fieldX + fieldW / 2.0, fieldY);
+			glEnd();
+			drawCircle2D(fieldX, fieldY, 18);
+
+			for( register int i = 0 ; i < gdata->team1->nplayers ; i++ ) {
+				if( Team01Players[i]->ncards < 2 ) {
+					drawPlayerOnTacticalField(Team01Players[i], fieldX, fieldY, fieldW, fieldH,
+								  true, Team01Players[i] == carrier || Team01Players[i] == target);
+				}
+			}
+
+			for( register int i = 0 ; i < gdata->team2->nplayers ; i++ ) {
+				if( Team02Players[i]->ncards < 2 ) {
+					drawPlayerOnTacticalField(Team02Players[i], fieldX, fieldY, fieldW, fieldH,
+								  false, Team02Players[i] == carrier || Team02Players[i] == target);
+				}
+			}
+
+			double ballX = fieldX + (Ball.pos.x / 45.0) * (fieldW / 2.0);
+			double ballY = fieldY + (Ball.pos.z / 60.0) * (fieldH / 2.0);
+			glColor3f(1.0f,1.0f,0.1f);
+			drawCircle2D(ballX, ballY, 3.5);
+
+			if( carrier && target ) {
+				double carrierX = fieldX + (carrier->pos.x / 45.0) * (fieldW / 2.0);
+				double carrierY = fieldY + (carrier->pos.z / 60.0) * (fieldH / 2.0);
+				double targetX = fieldX + (target->pos.x / 45.0) * (fieldW / 2.0);
+				double targetY = fieldY + (target->pos.z / 60.0) * (fieldH / 2.0);
+				glColor3f(1.0f,0.95f,0.15f);
+				glBegin(GL_LINES);
+					glVertex2f(carrierX, carrierY);
+					glVertex2f(targetX, targetY);
+				glEnd();
+				drawCircle2D(targetX, targetY, 8.0);
+			}
+		}
+
 		inline void DrawInterface(void)
 		{
 			double x = 0, y = 0;
@@ -469,6 +689,8 @@ namespace soccer {
 			}
 
 			if ( Paused ) {
+				drawTacticalPauseOverlay(w2, h2);
+
 				glColor4f(1.0f,1.0f,1.0f,0.5f);
 				glPushMatrix();
 					glScalef(60,15,1.0f);
