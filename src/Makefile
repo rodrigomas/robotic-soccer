@@ -84,7 +84,7 @@ $(OBJ_DIR)/scene_03.o: scene_03.cpp scene_03.h | $(OBJ_DIR)
 $(OBJ_DIR)/scene_04.o: scene_04.cpp scene_04.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_04.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-$(OBJ_DIR)/scene_05.o: scene_05.cpp scene_05.h | $(OBJ_DIR)
+$(OBJ_DIR)/scene_05.o: scene_05.cpp scene_05.h engine/core/deterministic_random.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c scene_05.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
 $(OBJ_DIR)/scene_06.o: scene_06.cpp scene_06.h | $(OBJ_DIR)

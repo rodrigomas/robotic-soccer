@@ -28,6 +28,7 @@
 #include "ai/lua_strategy_profile.h"
 #include "analytics/match_telemetry.h"
 #include "analytics/tactical_advisor.h"
+#include "engine/core/deterministic_random.h"
 #include "engine/core/fixed_timestep.h"
 
 using std::string;
@@ -344,6 +345,16 @@ namespace soccer {
 			glEnd();
 		}
 
+		string telemetryDisplayName(const string &path)
+		{
+			string::size_type slash = path.find_last_of("/\\");
+			if(slash == string::npos) {
+				return path;
+			}
+
+			return path.substr(slash + 1);
+		}
+
 		void drawPlayerOnTacticalField(CPlayer *player, double centerX, double centerY,
 					       double fieldW, double fieldH, bool team01, bool selected)
 		{
@@ -515,6 +526,14 @@ namespace soccer {
 				SimulationStep.getAccumulator() * 1000.0,
 				SimulationStep.getAlpha());
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 144, output);
+
+			string metadataFile = telemetryDisplayName(Telemetry.getMetadataPath());
+			if(metadataFile.length() > 44) {
+				metadataFile = metadataFile.substr(0, 41) + "...";
+			}
+			sprintf(output,"Seed %u  Meta %s",
+				getDeterministicRandomSeed(), metadataFile.c_str());
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 164, output);
 
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);
