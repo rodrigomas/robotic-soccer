@@ -48,7 +48,7 @@ ifeq ($(USE_MUSIC),1)
 WMUSIC = -DUSE_MUSIC
 endif
 
-OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o fixed_timestep.o lua_strategy_profile.o match_heatmap.o match_metrics.o match_telemetry.o tactical_advisor.o)
+OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o deterministic_random.o fixed_timestep.o lua_strategy_profile.o match_heatmap.o match_metrics.o match_telemetry.o tactical_advisor.o)
 
 $(TARGET): $(OBJ_DIR)/main.o
 	mkdir -p $(TARGET_DIR)
@@ -95,6 +95,9 @@ $(OBJ_DIR)/button.o: button.cpp button.h | $(OBJ_DIR)
 
 $(OBJ_DIR)/rules.o: rules.cpp rules.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c rules.cpp -o $@ -Wall $(LEVEL) $(ARCH)
+
+$(OBJ_DIR)/deterministic_random.o: engine/core/deterministic_random.cpp engine/core/deterministic_random.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c engine/core/deterministic_random.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
 $(OBJ_DIR)/fixed_timestep.o: engine/core/fixed_timestep.cpp engine/core/fixed_timestep.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c engine/core/fixed_timestep.cpp -o $@ -Wall $(LEVEL) $(ARCH)
@@ -184,8 +187,12 @@ all: $(TARGET)
 $(TEST_DIR)/fixed_timestep_test: engine/core/fixed_timestep_test.cpp engine/core/fixed_timestep.cpp engine/core/fixed_timestep.h | $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ engine/core/fixed_timestep_test.cpp engine/core/fixed_timestep.cpp -Wall $(LEVEL) $(ARCH)
 
-core-tests: $(TEST_DIR)/fixed_timestep_test
+$(TEST_DIR)/deterministic_random_test: engine/core/deterministic_random_test.cpp engine/core/deterministic_random.cpp engine/core/deterministic_random.h | $(TEST_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ engine/core/deterministic_random_test.cpp engine/core/deterministic_random.cpp -Wall $(LEVEL) $(ARCH)
+
+core-tests: $(TEST_DIR)/fixed_timestep_test $(TEST_DIR)/deterministic_random_test
 	$(TEST_DIR)/fixed_timestep_test
+	$(TEST_DIR)/deterministic_random_test
 
 smoke: core-tests
 	cd ../config && $(XMLLINT) --noout config.xml data/*.xml

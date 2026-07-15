@@ -1,4 +1,5 @@
 #include "physics.h"
+#include "engine/core/deterministic_random.h"
 
 extern int LastCollisionIndex;
 
@@ -58,7 +59,7 @@ void initPhysics( SGameData* gdata )
 void updatePhysicsWind( void )
 {
 	if( rand_wind )
-		wind = wind * 0.1  + CVector3D( ((rand() - rand())%100)/2000.0 , 0.0, ((rand() - rand())%100)/2000.0) * 0.01;
+		wind = wind * 0.1  + CVector3D( randomSignedModulo(100)/2000.0 , 0.0, randomSignedModulo(100)/2000.0) * 0.01;
 }
 
 void applyForceBall( CBall *b, double fx, double fy, double fz, double px, double py, double pz )
@@ -371,7 +372,7 @@ int testPhysicsCollision4Player( CPlayer *p1, CPlayer *p2, CSoccerField *f, doub
 		}
 
 
-		int pfalta = (int)(( 2 * vrel.abs() / ( VMAX ) ) * (double)((rand() % 100)));
+		int pfalta = (int)(( 2 * vrel.abs() / ( VMAX ) ) * (double)(randomInt(100)));
 
 		if ( pfalta > 60 ) {
 

@@ -49,6 +49,12 @@ make smoke
 
 This also runs the current `engine/core` unit-style checks.
 
+To force deterministic gameplay randomness for debugging:
+
+```
+ROBOTIC_SOCCER_SEED=12345 ../output/darwin/soccer
+```
+
 ## Built With
 
 * [GCC](https://gcc.gnu.org/) - GNU GCC
@@ -74,5 +80,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](../LICENSE
 ## Acknowledgments
 
 * None Yet
-
 

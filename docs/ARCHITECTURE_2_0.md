@@ -58,6 +58,10 @@ engine-owned fixed timestep accumulator, and the revived match scene consumes
 one deterministic simulation step from it when GLUT idle has accumulated enough
 real time.
 
+`src/engine/core/deterministic_random.*` owns gameplay randomness. Native runs
+default to a time-based seed, but `ROBOTIC_SOCCER_SEED=<number>` can force a
+repeatable random sequence for replay and test work.
+
 ## Lua Strategy API
 
 Lua remains a first-class customization layer. The engine should expose stable, versioned APIs:

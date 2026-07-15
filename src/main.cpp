@@ -38,8 +38,12 @@ bool ogg_play;
 #include "scene_06.h"
 #include "keyhelper.h"
 #include "gamedata.h"
+#include "engine/core/deterministic_random.h"
 
 #include "translator.h"
+
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 using namespace soccer;
@@ -517,7 +521,11 @@ int main( int argc, char *argv[] )
 	aluMain(&argc,argv);
 	#endif
 
- 	srand(time(NULL));
+	const char *seedEnv = std::getenv("ROBOTIC_SOCCER_SEED");
+	uint32_t seed = seedEnv ? static_cast<uint32_t>(std::strtoul(seedEnv, NULL, 10))
+				: static_cast<uint32_t>(std::time(NULL));
+	seedDeterministicRandom(seed);
+	fprintf(stderr, "[INFO]: random seed %u\n", getDeterministicRandomSeed());
 
 	RenderParameters();
 	initPhysics(gdata);

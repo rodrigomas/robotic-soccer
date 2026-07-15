@@ -7,6 +7,7 @@
 #include "rigidbody.h"
 #include "common.h"
 #include "physics.h"
+#include "engine/core/deterministic_random.h"
 //#include "LuaCall.h"
 #include <string>
 
@@ -350,7 +351,7 @@ namespace soccer {
 
 			this->L = L;
 			team = Team;
-			if( rand() % 2 == 1 )  {
+			if( randomInt(2) == 1 )  {
 				texture = LoadTexture("textures/face01.jpg",true);
 			} else {
 				texture = LoadTexture("textures/face02.jpg",true);
