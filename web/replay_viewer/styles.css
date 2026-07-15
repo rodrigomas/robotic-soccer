@@ -317,6 +317,45 @@ h3 {
   background: var(--surface);
 }
 
+.pressure-details {
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.pressure-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(118px, 1fr)) repeat(4, minmax(74px, auto));
+  gap: 10px;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.pressure-row span:nth-child(n+3) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 800;
+  text-align: right;
+}
+
+.pressure-head {
+  min-height: 36px;
+  background: var(--surface-strong);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.pressure-head span:nth-child(n+3) {
+  font-family: inherit;
+}
+
+.pressure-empty {
+  padding: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .pass-lane-row {
   display: grid;
   grid-template-columns: 54px minmax(120px, 1fr) repeat(5, minmax(64px, auto));
@@ -712,6 +751,13 @@ h3 {
 
   .pass-lane-row {
     grid-template-columns: 48px minmax(104px, 1fr) repeat(5, minmax(50px, auto));
+    gap: 7px;
+    padding: 9px 10px;
+    font-size: 11px;
+  }
+
+  .pressure-row {
+    grid-template-columns: repeat(2, minmax(104px, 1fr)) repeat(4, minmax(56px, auto));
     gap: 7px;
     padding: 9px 10px;
     font-size: 11px;

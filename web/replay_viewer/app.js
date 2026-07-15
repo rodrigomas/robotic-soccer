@@ -830,6 +830,26 @@
 		});
 	}
 
+	function pressurePosition(x, z) {
+		return formatNumber(x, 2) + ", " + formatNumber(z, 2);
+	}
+
+	function renderPressureDetails(documentRef, detailsEl, pressure) {
+		detailsEl.innerHTML = "";
+		if(!pressure || pressure.opponentNumber === 0) {
+			detailsEl.appendChild(createEl(documentRef, "div", "pressure-empty", "No pressure sample available."));
+			return;
+		}
+		var row = createEl(documentRef, "div", "pressure-row", "");
+		row.appendChild(createEl(documentRef, "span", "", "#" + pressure.carrierNumber + " " + pressure.carrierName));
+		row.appendChild(createEl(documentRef, "span", "", "#" + pressure.opponentNumber + " " + pressure.opponentName));
+		row.appendChild(createEl(documentRef, "span", "", formatNumber(pressure.distance, 2)));
+		row.appendChild(createEl(documentRef, "span", "", pressure.high ? "High" : "Stable"));
+		row.appendChild(createEl(documentRef, "span", "", pressurePosition(pressure.carrierX, pressure.carrierZ)));
+		row.appendChild(createEl(documentRef, "span", "", pressurePosition(pressure.opponentX, pressure.opponentZ)));
+		detailsEl.appendChild(row);
+	}
+
 	function renderHeatmap(documentRef, svgEl, heatmap) {
 		svgEl.innerHTML = "";
 		svgEl.appendChild(svgNode(documentRef, "rect", {
@@ -1159,6 +1179,9 @@
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
+		renderPressureDetails(documentRef,
+			documentRef.getElementById("pressure-details"),
+			viewModel.pressure);
 		renderPassLaneDetails(documentRef,
 			documentRef.getElementById("pass-lane-details"),
 			viewModel.passLane);

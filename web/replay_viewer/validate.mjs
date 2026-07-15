@@ -224,8 +224,16 @@ if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.passLane.options[1].forwardProgress !== 4 ||
    latestPassLanes[0].target_number !== "9" ||
    latestPressure.carrier_number !== "11" ||
+   viewModel.pressure.carrierNumber !== 11 ||
+   viewModel.pressure.carrierName !== "Winger" ||
    viewModel.pressure.opponentNumber !== 5 ||
+   viewModel.pressure.opponentName !== "Marker" ||
    viewModel.pressure.distance !== 12 ||
+   viewModel.pressure.high !== false ||
+   viewModel.pressure.carrierX !== 12 ||
+   viewModel.pressure.carrierZ !== 1 ||
+   viewModel.pressure.opponentX !== 18 ||
+   viewModel.pressure.opponentZ !== 4 ||
    timeline.length !== 3 ||
    timeline[0].type !== "pass_completed" ||
    timeline[1].type !== "shot" ||
