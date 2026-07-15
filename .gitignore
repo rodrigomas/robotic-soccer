@@ -34,3 +34,6 @@ output/
 
 # Windows
 Thumbs.db
+
+# Runtime logs
+log.log

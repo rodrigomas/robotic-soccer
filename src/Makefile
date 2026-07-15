@@ -20,11 +20,12 @@ LIBS = -lm -lpthread
 
 ifeq ($(UNAME_S),Darwin)
 BREW_PREFIX ?= /opt/homebrew
-INCPATH += $(shell $(PKG_CONFIG) --cflags glew luajit gl glu libxml-2.0 libjpeg vorbisfile ogg 2>/dev/null)
-INCPATH += -I$(BREW_PREFIX)/include -I$(BREW_PREFIX)/opt/freeglut/include -I$(BREW_PREFIX)/opt/openal-soft/include
-LIBPATH += -L$(BREW_PREFIX)/lib -L$(BREW_PREFIX)/opt/freeglut/lib -L$(BREW_PREFIX)/opt/openal-soft/lib
-LIBS += $(shell $(PKG_CONFIG) --libs glew luajit gl glu libxml-2.0 libjpeg vorbisfile ogg 2>/dev/null)
-LIBS += -lglut -lopenal
+INCPATH += -Iplatform/darwin
+INCPATH += $(shell $(PKG_CONFIG) --cflags glew luajit libxml-2.0 libjpeg vorbisfile ogg 2>/dev/null)
+INCPATH += -I$(BREW_PREFIX)/include -I$(BREW_PREFIX)/opt/openal-soft/include
+LIBPATH += -L$(BREW_PREFIX)/lib -L$(BREW_PREFIX)/opt/openal-soft/lib
+LIBS += $(shell $(PKG_CONFIG) --libs glew luajit libxml-2.0 libjpeg vorbisfile ogg 2>/dev/null)
+LIBS += -framework OpenGL -framework GLUT -lopenal
 else
 INCPATH += -I/usr/X11R6/include/ -I/usr/include -I/usr/include/libxml2 -I/usr/local/include
 INCPATH += -Iinclude

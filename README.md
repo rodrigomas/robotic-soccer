@@ -21,13 +21,19 @@ A english article will be provided soon.
 The current Makefile can build on Apple Silicon/macOS with Homebrew libraries:
 
 ```
-brew install glew luajit mesa mesa-glu freeglut openal-soft libogg libvorbis jpeg-turbo pkg-config
+brew install glew luajit openal-soft libogg libvorbis jpeg-turbo pkg-config
 cd src
 make clean
 make
 ```
 
 The binary is written to `output/darwin/soccer`.
+Run it from the restored runtime config directory:
+
+```
+cd config
+../output/darwin/soccer
+```
 
 #### Libraries
 
@@ -79,6 +85,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * None Yet
-
 
 

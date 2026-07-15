@@ -461,7 +461,7 @@ void initControls(void)
 int main( int argc, char *argv[] )
 {
  	glutInit(&argc, argv);
-	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ACCUM );
+	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH );
 
 	int X = glutGet(GLUT_SCREEN_WIDTH);
 	int Y = glutGet(GLUT_SCREEN_HEIGHT);
@@ -477,7 +477,9 @@ int main( int argc, char *argv[] )
 		return -1;
 	}
 
-	glutGameModeString(gdata->graphics.gamemode.c_str());
+	if( !gdata->graphics.gamemode.empty() ) {
+		glutGameModeString(gdata->graphics.gamemode.c_str());
+	}
 
     if ( gdata->graphics.usegamemode && glutGameModeGet(GLUT_GAME_MODE_POSSIBLE) ) {
         glutEnterGameMode();
