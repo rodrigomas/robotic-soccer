@@ -510,6 +510,12 @@ namespace soccer {
 			}
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 124, output);
 
+			sprintf(output,"Sim %.2fms  acc %.2fms  alpha %.2f",
+				SimulationStep.getStepSeconds() * 1000.0,
+				SimulationStep.getAccumulator() * 1000.0,
+				SimulationStep.getAlpha());
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 144, output);
+
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);
 			drawTeamHeatmapOnTacticalField(Team01Ball ? gdata->team1->name : gdata->team2->name,

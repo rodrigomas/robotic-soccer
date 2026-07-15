@@ -8,6 +8,7 @@ Current overlay:
 - Team possession percentage.
 - Fouls, corners, and throw-ins.
 - Ball position and current possession team.
+- Fixed timestep step, accumulator, and interpolation alpha.
 - A deterministic suggested pass lane.
 - Lane score, pass distance, goal distance, and opponent pressure.
 - A top-down mini field with the possession team's live heatmap, the carrier player's live heatmap, players, ball, and up to three ranked pass lanes.
