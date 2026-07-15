@@ -75,6 +75,10 @@ int main(void)
 		return fail("metadata did not include manifest path");
 	}
 
+	if(!fileContains(telemetry.getMetadataPath(), "derived_events_path,")) {
+		return fail("metadata did not include derived events path");
+	}
+
 	ReplayManifest manifest;
 	if(!ReplayManifest::load(telemetry.getManifestPath(), &manifest)) {
 		return fail("manifest loader could not read generated manifest");
@@ -97,12 +101,17 @@ int main(void)
 		return fail("manifest loader did not read sample stride");
 	}
 
+	if(manifest.derivedEventsPath != telemetry.getDerivedEventsPath()) {
+		return fail("manifest loader did not read derived events path");
+	}
+
 	telemetry.finish();
 
 	removeFile(telemetry.getManifestPath());
 	removeFile(telemetry.getMetadataPath());
 	removeFile(telemetry.getSnapshotsPath());
 	removeFile(telemetry.getEventsPath());
+	removeFile(telemetry.getDerivedEventsPath());
 	removeFile(telemetry.getHeatmapPath());
 	removeFile(telemetry.getMetricsPath());
 

@@ -4,6 +4,7 @@
 #include "engine/core/deterministic_random.h"
 
 #include <cctype>
+#include <cmath>
 #include <cstdio>
 #include <ctime>
 #include <iomanip>
@@ -90,6 +91,7 @@ namespace soccer {
 		metadataOut << "manifest_path," << csv(manifestPath) << "\n";
 		metadataOut << "snapshots_path," << csv(snapshotsPath) << "\n";
 		metadataOut << "events_path," << csv(eventsPath) << "\n";
+		metadataOut << "derived_events_path," << csv(derivedEventsPath) << "\n";
 		metadataOut << "heatmap_path," << csv(heatmapPath) << "\n";
 		metadataOut << "metrics_path," << csv(metricsPath) << "\n";
 
@@ -108,10 +110,35 @@ namespace soccer {
 		manifest.metadataPath = metadataPath;
 		manifest.snapshotsPath = snapshotsPath;
 		manifest.eventsPath = eventsPath;
+		manifest.derivedEventsPath = derivedEventsPath;
 		manifest.heatmapPath = heatmapPath;
 		manifest.metricsPath = metricsPath;
 
 		return manifest.write(manifestPath);
+	}
+
+	CPlayer *MatchTelemetry::nearestCarrier(CPlayer **players,
+						int nplayers,
+						const CVector3D &ballPos) const
+	{
+		CPlayer *best = NULL;
+		double bestDistance = 1000000.0;
+
+		for(register int i = 0; i < nplayers; i++) {
+			if(players[i] == NULL || players[i]->ncards >= 2) {
+				continue;
+			}
+
+			double dx = players[i]->pos.x - ballPos.x;
+			double dz = players[i]->pos.z - ballPos.z;
+			double distance = std::sqrt(dx * dx + dz * dz);
+			if(distance < bestDistance) {
+				best = players[i];
+				bestDistance = distance;
+			}
+		}
+
+		return best;
 	}
 
 	bool MatchTelemetry::begin(const std::string &team01,
@@ -148,10 +175,12 @@ namespace soccer {
 		metadataPath = std::string("telemetry/metadata_") + runId + ".csv";
 		snapshotsPath = std::string("telemetry/match_") + runId + ".csv";
 		eventsPath = std::string("telemetry/events_") + runId + ".csv";
+		derivedEventsPath = std::string("telemetry/derived_events_") + runId + ".csv";
 		heatmapPath = std::string("telemetry/heatmap_") + runId + ".csv";
 		metricsPath = std::string("telemetry/metrics_") + runId + ".csv";
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 		metrics.reset();
+		passDetector.reset();
 
 		snapshotsOut.open(snapshotsPath.c_str());
 		eventsOut.open(eventsPath.c_str());
@@ -213,6 +242,22 @@ namespace soccer {
 		heatmap.record("ball", "", 0, "Ball", ball.pos);
 		metrics.record("ball", "", 0, "Ball", ball.pos, ball.vel);
 		writeEntity(matchTime, "ball", "", 0, "Ball", ball.pos, ball.vel, team01Ball);
+
+		CPlayer **possessionPlayers = team01Ball ? team01Players : team02Players;
+		int possessionPlayerCount = team01Ball ? nTeam01Players : nTeam02Players;
+		CPlayer *carrier = nearestCarrier(possessionPlayers, possessionPlayerCount,
+						  ball.pos);
+		if(carrier != NULL) {
+			PassDetectorSample passSample;
+			passSample.tick = tick;
+			passSample.matchTime = matchTime;
+			passSample.possessionTeam = team01Ball ? team01Name : team02Name;
+			passSample.carrierNumber = carrier->num;
+			passSample.carrierName = carrier->name;
+			passSample.carrierPos = carrier->pos;
+			passSample.ballPos = ball.pos;
+			passDetector.record(passSample);
+		}
 
 		for(register int i = 0; i < nTeam01Players; i++) {
 			if(team01Players[i] != NULL) {
@@ -294,6 +339,10 @@ namespace soccer {
 			metrics.writeCsv(metricsPath);
 		}
 
+		if(active && derivedEventsPath != "") {
+			passDetector.writeCsv(derivedEventsPath);
+		}
+
 		if(snapshotsOut.is_open()) {
 			snapshotsOut.flush();
 			snapshotsOut.close();
@@ -330,6 +379,11 @@ namespace soccer {
 	const std::string &MatchTelemetry::getEventsPath(void) const
 	{
 		return eventsPath;
+	}
+
+	const std::string &MatchTelemetry::getDerivedEventsPath(void) const
+	{
+		return derivedEventsPath;
 	}
 
 	const std::string &MatchTelemetry::getHeatmapPath(void) const

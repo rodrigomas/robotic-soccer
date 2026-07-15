@@ -38,6 +38,7 @@ namespace soccer {
 		std::string metadataPath;
 		std::string snapshotsPath;
 		std::string eventsPath;
+		std::string derivedEventsPath;
 		std::string heatmapPath;
 		std::string metricsPath;
 
