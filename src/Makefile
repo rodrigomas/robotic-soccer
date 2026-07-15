@@ -15,6 +15,8 @@ TARGET_DIR = ../output/$(shell uname -s | tr A-Z a-z)
 TARGET = $(TARGET_DIR)/soccer
 BUILD_DIR = ../build/$(shell uname -s | tr A-Z a-z)
 OBJ_DIR = $(BUILD_DIR)/obj
+LUA ?= luajit
+XMLLINT ?= xmllint
 
 INCPATH = -I.
 LIBPATH =
@@ -167,8 +169,15 @@ $(OBJ_DIR)/rigidbody.o: rigidbody.cpp rigidbody.h | $(OBJ_DIR)
 
 $(OBJ_DIR)/main.o: common.h main.cpp $(OBJECTS) | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c main.cpp -o $@ -Wall $(LEVEL) $(ARCH)
-all:
-	make	
+
+.PHONY: all test smoke clean
+
+all: $(TARGET)
+
+smoke:
+	cd ../config && $(XMLLINT) --noout config.xml data/*.xml
+	cd ../config && $(LUA) -e 'dofile("scripts/botafogo.lua"); dofile("scripts/flamengo.lua")'
+
 test:
 	make clean
 	make
