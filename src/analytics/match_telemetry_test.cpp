@@ -79,6 +79,10 @@ int main(void)
 		return fail("metadata did not include derived events path");
 	}
 
+	if(!fileContains(telemetry.getMetadataPath(), "pressure_path,")) {
+		return fail("metadata did not include pressure path");
+	}
+
 	ReplayManifest manifest;
 	if(!ReplayManifest::load(telemetry.getManifestPath(), &manifest)) {
 		return fail("manifest loader could not read generated manifest");
@@ -105,6 +109,10 @@ int main(void)
 		return fail("manifest loader did not read derived events path");
 	}
 
+	if(manifest.pressurePath != telemetry.getPressurePath()) {
+		return fail("manifest loader did not read pressure path");
+	}
+
 	telemetry.finish();
 
 	removeFile(telemetry.getManifestPath());
@@ -114,6 +122,7 @@ int main(void)
 	removeFile(telemetry.getDerivedEventsPath());
 	removeFile(telemetry.getHeatmapPath());
 	removeFile(telemetry.getMetricsPath());
+	removeFile(telemetry.getPressurePath());
 
 	return 0;
 }

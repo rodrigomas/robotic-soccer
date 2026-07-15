@@ -535,6 +535,14 @@ namespace soccer {
 				eventSummary.longestPassDistance);
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 164, output);
 
+			PressureSummary pressureSummary = Telemetry.getPressureSummary();
+			sprintf(output,"Pressure now %.1f  avg %.1f  high %d/%d",
+				pressureSummary.lastPressureDistance,
+				pressureSummary.averagePressureDistance,
+				pressureSummary.highPressureSamples,
+				pressureSummary.samples);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 184, output);
+
 			string replayFile = telemetryDisplayName(Telemetry.getManifestPath());
 			if(replayFile.length() > 26) {
 				replayFile = replayFile.substr(0, 23) + "...";
@@ -543,7 +551,7 @@ namespace soccer {
 				getDeterministicRandomSeed(),
 				eventSummary.totalEvents,
 				replayFile.c_str());
-			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 184, output);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 204, output);
 
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);

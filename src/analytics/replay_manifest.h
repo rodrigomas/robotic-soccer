@@ -41,6 +41,7 @@ namespace soccer {
 		std::string derivedEventsPath;
 		std::string heatmapPath;
 		std::string metricsPath;
+		std::string pressurePath;
 
 		ReplayManifest();
 

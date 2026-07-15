@@ -7,7 +7,7 @@ The snapshot file is sampled every five active game ticks to keep the first vers
 Each match also writes a `metadata_*.csv` key/value file and a `replay_*.json`
 manifest. They record the telemetry format version, run id, creation stamp,
 deterministic random seed, team names, sample stride, and the related
-snapshot/event/derived-event/heatmap/metrics file paths. This is the first replay scaffold: a
+snapshot/event/derived-event/heatmap/metrics/pressure file paths. This is the first replay scaffold: a
 captured match can now be tied back to the random sequence and files that
 produced it.
 
@@ -24,7 +24,7 @@ The engine reader/writer for this file lives in `src/analytics/replay_manifest.*
 - `team01`, `team02`: configured team names.
 - `sample_stride`: active game ticks between snapshot samples.
 - `manifest_path`: JSON replay manifest for this match capture.
-- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`: related files for the same match capture.
+- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`: related files for the same match capture.
 
 ## Replay Manifest JSON
 
@@ -37,7 +37,7 @@ Manifest files are named `replay_*.json` and include:
 - `random_seed`: deterministic gameplay seed.
 - `teams`: `team01` and `team02` names.
 - `sample_stride`: active game ticks between snapshot samples.
-- `files`: related metadata, snapshot, event, derived event, heatmap, and metrics paths.
+- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, and pressure paths.
 
 ## Snapshot CSV Columns
 
@@ -111,8 +111,24 @@ Metrics files are named `metrics_*.csv`. They summarize sampled movement per bal
 - `average_speed`: average sampled velocity magnitude.
 - `max_speed`: maximum sampled velocity magnitude.
 
+## Pressure CSV Columns
+
+Pressure files are named `pressure_*.csv`. They summarize the distance from the
+current inferred ball carrier to the nearest active opponent on each telemetry
+sample. Smaller distances mean more pressure; the first high-pressure threshold
+is 8 world units.
+
+- `tick`: scene update tick seen by the telemetry recorder.
+- `match_time`: in-game seconds from kickoff.
+- `possession_team`: team currently considered to have possession.
+- `carrier_number`, `carrier_name`: inferred ball carrier.
+- `opponent_team`, `opponent_number`, `opponent_name`: nearest active opponent.
+- `pressure_distance`: X/Z distance between carrier and nearest opponent.
+- `high_pressure`: `1` when `pressure_distance` is inside the high-pressure threshold.
+- `carrier_x`, `carrier_z`, `opponent_x`, `opponent_z`: world positions used for the calculation.
+
 ## 2.0 Use
 
-These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, match timeline, and restart prototypes without changing Lua strategy scripts yet.
+These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
 The next slice should infer shots, passes, pressure, collisions, and pass-lane candidates from snapshots plus events.
