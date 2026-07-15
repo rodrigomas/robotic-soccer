@@ -7,6 +7,8 @@
 }(typeof self !== "undefined" ? self : this, function() {
 	"use strict";
 
+	var FOCUS_VIEWS = ["field", "timeline", "heatmap"];
+
 	function formatNumber(value, digits) {
 		if(!Number.isFinite(value)) {
 			return "-";
@@ -510,6 +512,33 @@
 		renderField(documentRef, documentRef.getElementById("field-view"), viewModel);
 	}
 
+	function setFocusView(documentRef, view) {
+		if(FOCUS_VIEWS.indexOf(view) === -1) {
+			return;
+		}
+
+		var report = documentRef.getElementById("report");
+		if(report) {
+			report.setAttribute("data-view", view);
+		}
+		var buttons = documentRef.querySelectorAll(".view-button");
+		for(var i = 0; i < buttons.length; i++) {
+			var active = buttons[i].getAttribute("data-view") === view;
+			buttons[i].classList.toggle("active", active);
+			buttons[i].setAttribute("aria-pressed", active ? "true" : "false");
+		}
+	}
+
+	function initFocusControls(documentRef) {
+		var buttons = documentRef.querySelectorAll(".view-button");
+		for(var i = 0; i < buttons.length; i++) {
+			buttons[i].addEventListener("click", function(event) {
+				setFocusView(documentRef, event.currentTarget.getAttribute("data-view"));
+			});
+		}
+		setFocusView(documentRef, "field");
+	}
+
 	async function loadJson(path) {
 		var response = await fetch(path);
 		if(!response.ok) {
@@ -527,6 +556,8 @@
 	}
 
 	async function init(documentRef) {
+		initFocusControls(documentRef);
+
 		var catalogPath = "../../fixtures/replays/index.json";
 		var catalog = await loadJson(catalogPath);
 		var entries = catalog.replays;
@@ -588,6 +619,7 @@
 	}
 
 	return {
+		focusViews: FOCUS_VIEWS.slice(),
 		buildReplayViewModel: buildReplayViewModel,
 		directoryName: directoryName,
 		fieldPoint: fieldPoint,
@@ -595,6 +627,7 @@
 		formatNumber: formatNumber,
 		buildHeatmap: buildHeatmap,
 		buildTimelineItems: buildTimelineItems,
+		setFocusView: setFocusView,
 		joinPath: joinPath,
 		latestPassLaneOptions: latestPassLaneOptions,
 		latestPressureFrame: latestPressureFrame,

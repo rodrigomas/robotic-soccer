@@ -16,7 +16,7 @@
       <div id="catalog" class="catalog" aria-live="polite"></div>
     </aside>
 
-    <section class="report" aria-label="Replay report">
+    <section id="report" class="report" data-view="field" aria-label="Replay report">
       <header class="report-header">
         <div>
           <span id="run-id" class="kicker">No replay loaded</span>
@@ -27,7 +27,13 @@
 
       <section id="metrics" class="metrics" aria-label="Match metrics"></section>
 
-      <section class="analysis-grid">
+      <nav class="view-switch" aria-label="Replay focus">
+        <button type="button" class="view-button active" data-view="field" aria-pressed="true">Field</button>
+        <button type="button" class="view-button" data-view="timeline" aria-pressed="false">Timeline</button>
+        <button type="button" class="view-button" data-view="heatmap" aria-pressed="false">Heatmap</button>
+      </nav>
+
+      <section class="analysis-grid focus-section field-focus">
         <div class="field-panel">
           <div class="panel-heading">
             <h3>Pass Lane</h3>
@@ -45,7 +51,7 @@
         </div>
       </section>
 
-      <section class="timeline-strip" aria-label="Replay timeline">
+      <section class="timeline-strip focus-section" aria-label="Replay timeline">
         <div class="panel-heading">
           <h3>Timeline</h3>
           <span id="timeline-count">-</span>
@@ -53,7 +59,7 @@
         <ol id="match-timeline" class="match-timeline"></ol>
       </section>
 
-      <section class="heatmap-strip" aria-label="Replay heatmap">
+      <section class="heatmap-strip focus-section" aria-label="Replay heatmap">
         <div class="panel-heading">
           <h3>Heatmap</h3>
           <span id="heatmap-label">-</span>

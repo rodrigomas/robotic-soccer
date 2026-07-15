@@ -22,7 +22,8 @@ const catalog = await readJson(join(repoRoot, "fixtures", "replays", "index.json
 if(catalog.format !== "robotic-soccer-replay-catalog" ||
    catalog.format_version !== 1 ||
    !Array.isArray(catalog.replays) ||
-   catalog.replays.length < 1) {
+   catalog.replays.length < 1 ||
+   viewer.focusViews.join(",") !== "field,timeline,heatmap") {
 	throw new Error("replay catalog shape was not recognized");
 }
 

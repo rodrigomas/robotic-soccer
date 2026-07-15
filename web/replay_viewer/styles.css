@@ -150,6 +150,41 @@ h3 {
   margin-bottom: 18px;
 }
 
+.view-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(92px, 1fr));
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.view-button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.view-button:hover,
+.view-button:focus-visible {
+  background: var(--surface-strong);
+  color: var(--ink);
+  outline: none;
+}
+
+.view-button.active {
+  background: var(--gold);
+  color: #ffffff;
+}
+
 .metric {
   min-height: 104px;
   padding: 14px;
@@ -185,6 +220,19 @@ h3 {
   gap: 18px;
 }
 
+.focus-section {
+  display: none;
+}
+
+.report[data-view="field"] .field-focus {
+  display: grid;
+}
+
+.report[data-view="timeline"] .timeline-strip,
+.report[data-view="heatmap"] .heatmap-strip {
+  display: block;
+}
+
 .field-panel,
 .timeline-panel,
 .timeline-strip,
@@ -194,11 +242,6 @@ h3 {
   background: var(--surface);
   box-shadow: var(--shadow);
   overflow: hidden;
-}
-
-.timeline-strip,
-.heatmap-strip {
-  margin-top: 18px;
 }
 
 .panel-heading {
@@ -230,7 +273,7 @@ h3 {
   display: block;
   width: 100%;
   aspect-ratio: 3 / 2;
-  max-height: 320px;
+  min-height: 360px;
   background: var(--field);
 }
 
@@ -352,6 +395,10 @@ h3 {
   .analysis-grid,
   .match-timeline {
     grid-template-columns: 1fr;
+  }
+
+  .view-switch {
+    display: grid;
   }
 
   .timeline-item {

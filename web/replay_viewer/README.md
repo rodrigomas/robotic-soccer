@@ -3,7 +3,7 @@
 This is the first static browser shell for Robotic Soccer 2.0 replay analysis.
 It loads `fixtures/replays/index.json`, follows the selected replay manifest,
 reads the summary plus pass-lane and pressure CSV streams, and renders dashboard
-cards, a simple field view, a compact timeline, and a heatmap grid.
+cards with switchable field, timeline, and heatmap focus views.
 
 Run it from the repository root with a local static server:
 
