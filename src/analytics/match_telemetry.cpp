@@ -70,6 +70,43 @@ namespace soccer {
 		return result;
 	}
 
+	std::string MatchTelemetry::json(const std::string &value)
+	{
+		std::string result = "\"";
+
+		for(std::string::const_iterator it = value.begin(); it != value.end(); ++it) {
+			switch(*it) {
+				case '"':
+					result += "\\\"";
+					break;
+				case '\\':
+					result += "\\\\";
+					break;
+				case '\b':
+					result += "\\b";
+					break;
+				case '\f':
+					result += "\\f";
+					break;
+				case '\n':
+					result += "\\n";
+					break;
+				case '\r':
+					result += "\\r";
+					break;
+				case '\t':
+					result += "\\t";
+					break;
+				default:
+					result += *it;
+					break;
+			}
+		}
+
+		result += "\"";
+		return result;
+	}
+
 	bool MatchTelemetry::writeMetadata(const std::string &stamp)
 	{
 		std::ofstream metadataOut(metadataPath.c_str());
@@ -80,15 +117,48 @@ namespace soccer {
 
 		metadataOut << "key,value\n";
 		metadataOut << "format_version,1\n";
+		metadataOut << "run_id," << csv(runId) << "\n";
 		metadataOut << "created_at," << csv(stamp) << "\n";
 		metadataOut << "random_seed," << getDeterministicRandomSeed() << "\n";
 		metadataOut << "team01," << csv(team01Name) << "\n";
 		metadataOut << "team02," << csv(team02Name) << "\n";
 		metadataOut << "sample_stride," << sampleStride << "\n";
+		metadataOut << "manifest_path," << csv(manifestPath) << "\n";
 		metadataOut << "snapshots_path," << csv(snapshotsPath) << "\n";
 		metadataOut << "events_path," << csv(eventsPath) << "\n";
 		metadataOut << "heatmap_path," << csv(heatmapPath) << "\n";
 		metadataOut << "metrics_path," << csv(metricsPath) << "\n";
+
+		return true;
+	}
+
+	bool MatchTelemetry::writeReplayManifest(const std::string &stamp)
+	{
+		std::ofstream manifestOut(manifestPath.c_str());
+
+		if(!manifestOut.is_open()) {
+			return false;
+		}
+
+		manifestOut << "{\n";
+		manifestOut << "  \"format\": \"robotic-soccer-replay-manifest\",\n";
+		manifestOut << "  \"format_version\": 1,\n";
+		manifestOut << "  \"run_id\": " << json(runId) << ",\n";
+		manifestOut << "  \"created_at\": " << json(stamp) << ",\n";
+		manifestOut << "  \"random_seed\": " << getDeterministicRandomSeed() << ",\n";
+		manifestOut << "  \"teams\": [\n";
+		manifestOut << "    {\"slot\": \"team01\", \"name\": " << json(team01Name) << "},\n";
+		manifestOut << "    {\"slot\": \"team02\", \"name\": " << json(team02Name) << "}\n";
+		manifestOut << "  ],\n";
+		manifestOut << "  \"sample_stride\": " << sampleStride << ",\n";
+		manifestOut << "  \"files\": {\n";
+		manifestOut << "    \"metadata\": " << json(metadataPath) << ",\n";
+		manifestOut << "    \"snapshots\": " << json(snapshotsPath) << ",\n";
+		manifestOut << "    \"events\": " << json(eventsPath) << ",\n";
+		manifestOut << "    \"heatmap\": " << json(heatmapPath) << ",\n";
+		manifestOut << "    \"metrics\": " << json(metricsPath) << "\n";
+		manifestOut << "  }\n";
+		manifestOut << "}\n";
 
 		return true;
 	}
@@ -121,16 +191,14 @@ namespace soccer {
 			std::snprintf(stamp, sizeof(stamp), "unknown_time");
 		}
 
-		metadataPath = std::string("telemetry/metadata_") + stamp + "_" +
-			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
-		snapshotsPath = std::string("telemetry/match_") + stamp + "_" +
-			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
-		eventsPath = std::string("telemetry/events_") + stamp + "_" +
-			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
-		heatmapPath = std::string("telemetry/heatmap_") + stamp + "_" +
-			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
-		metricsPath = std::string("telemetry/metrics_") + stamp + "_" +
-			fileSafe(team01Name) + "_vs_" + fileSafe(team02Name) + ".csv";
+		runId = std::string(stamp) + "_" + fileSafe(team01Name) +
+			"_vs_" + fileSafe(team02Name);
+		manifestPath = std::string("telemetry/replay_") + runId + ".json";
+		metadataPath = std::string("telemetry/metadata_") + runId + ".csv";
+		snapshotsPath = std::string("telemetry/match_") + runId + ".csv";
+		eventsPath = std::string("telemetry/events_") + runId + ".csv";
+		heatmapPath = std::string("telemetry/heatmap_") + runId + ".csv";
+		metricsPath = std::string("telemetry/metrics_") + runId + ".csv";
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 		metrics.reset();
 
@@ -139,6 +207,7 @@ namespace soccer {
 		active = snapshotsOut.is_open() && eventsOut.is_open();
 
 		if(active) {
+			writeReplayManifest(stamp);
 			writeMetadata(stamp);
 			snapshotsOut << "sample,tick,match_time,entity_type,team,number,name,"
 				<< "x,y,z,vx,vy,vz,team_in_possession\n";
@@ -285,6 +354,16 @@ namespace soccer {
 		}
 
 		active = false;
+	}
+
+	const std::string &MatchTelemetry::getRunId(void) const
+	{
+		return runId;
+	}
+
+	const std::string &MatchTelemetry::getManifestPath(void) const
+	{
+		return manifestPath;
 	}
 
 	const std::string &MatchTelemetry::getMetadataPath(void) const

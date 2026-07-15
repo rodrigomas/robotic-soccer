@@ -528,12 +528,12 @@ namespace soccer {
 				SimulationStep.getAlpha());
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 144, output);
 
-			string metadataFile = telemetryDisplayName(Telemetry.getMetadataPath());
-			if(metadataFile.length() > 44) {
-				metadataFile = metadataFile.substr(0, 41) + "...";
+			string replayFile = telemetryDisplayName(Telemetry.getManifestPath());
+			if(replayFile.length() > 44) {
+				replayFile = replayFile.substr(0, 41) + "...";
 			}
-			sprintf(output,"Seed %u  Meta %s",
-				getDeterministicRandomSeed(), metadataFile.c_str());
+			sprintf(output,"Seed %u  Replay %s",
+				getDeterministicRandomSeed(), replayFile.c_str());
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 164, output);
 
 			glColor3f(0.18f,0.36f,0.18f);

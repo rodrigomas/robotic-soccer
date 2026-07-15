@@ -4,16 +4,39 @@ The first 2.0 analytics slices record match snapshots, rule events, heatmap summ
 
 The snapshot file is sampled every five active game ticks to keep the first version small enough for quick experiments while still being dense enough for heatmaps.
 
-Each match also writes a `metadata_*.csv` key/value file. It records the telemetry format version, creation stamp, deterministic random seed, team names, sample stride, and the related snapshot/event/heatmap/metrics file paths. This is the first replay scaffold: a captured match can now be tied back to the random sequence that produced it.
+Each match also writes a `metadata_*.csv` key/value file and a `replay_*.json`
+manifest. They record the telemetry format version, run id, creation stamp,
+deterministic random seed, team names, sample stride, and the related
+snapshot/event/heatmap/metrics file paths. This is the first replay scaffold: a
+captured match can now be tied back to the random sequence and files that
+produced it.
+
+The JSON manifest is the preferred replay entry point for future tooling because
+it keeps the run metadata and file bundle in one structured document.
 
 ## Metadata CSV Keys
 
 - `format_version`: metadata schema version.
+- `run_id`: stable id shared by the generated files for this match capture.
 - `created_at`: local timestamp used in telemetry filenames.
 - `random_seed`: deterministic gameplay seed. Use `ROBOTIC_SOCCER_SEED=<number>` to replay the same random sequence.
 - `team01`, `team02`: configured team names.
 - `sample_stride`: active game ticks between snapshot samples.
+- `manifest_path`: JSON replay manifest for this match capture.
 - `snapshots_path`, `events_path`, `heatmap_path`, `metrics_path`: related files for the same match capture.
+
+## Replay Manifest JSON
+
+Manifest files are named `replay_*.json` and include:
+
+- `format`: `robotic-soccer-replay-manifest`.
+- `format_version`: manifest schema version.
+- `run_id`: stable id shared by the generated files for this match capture.
+- `created_at`: local timestamp used in telemetry filenames.
+- `random_seed`: deterministic gameplay seed.
+- `teams`: `team01` and `team02` names.
+- `sample_stride`: active game ticks between snapshot samples.
+- `files`: related metadata, snapshot, event, heatmap, and metrics paths.
 
 ## Snapshot CSV Columns
 
