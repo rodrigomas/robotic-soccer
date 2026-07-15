@@ -8,7 +8,7 @@ can toggle pass-lane and pressure overlays independently, and timeline clicks
 or keyboard navigation highlight matching field context with a raw
 selected-event detail panel. The heatmap view can filter samples by team and
 entity type, then drill into a single player with movement metrics beside the
-grid.
+grid. It also summarizes possession zones from ball snapshots.
 
 Run it from the repository root with a local static server:
 

@@ -38,7 +38,7 @@ highlight matching field context with the selected event's raw CSV values. The
 timeline supports Arrow, Home, and End keyboard navigation using the same
 selection state as the field and detail panels. The heatmap view can filter the
 same grid by team, entity type, and individual player, and it shows movement
-metrics for the current filter beside the field grid.
+metrics plus possession-zone summaries beside the field grid.
 
 ## Metadata CSV Keys
 
@@ -93,6 +93,10 @@ without parsing every stream.
 - `x`, `y`, `z`: world position.
 - `vx`, `vy`, `vz`: world velocity.
 - `team_in_possession`: team name currently considered to have possession.
+
+The replay viewer derives possession-zone summaries from ball snapshot rows.
+Field length is split into defensive, middle, and attacking thirds, mirrored for
+the second team.
 
 ## Event CSV Columns
 
@@ -230,4 +234,4 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, selected-event inspection, player heatmap review, movement panels, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add a possession-zone summary to the replay viewer.
+The next slice should add event-type filters to the replay timeline.

@@ -395,6 +395,97 @@
 		};
 	}
 
+	function possessionZoneFor(team, z, teams) {
+		var orientedZ = team === teams[1] ? -z : z;
+		if(orientedZ < -20) {
+			return "Defensive";
+		}
+		if(orientedZ > 20) {
+			return "Attacking";
+		}
+		return "Middle";
+	}
+
+	function buildPossessionZones(rows, teams) {
+		var summaries = {};
+		(teams || []).forEach(function(team) {
+			summaries[team] = {
+				team: team,
+				total: 0,
+				zones: {
+					Defensive: 0,
+					Middle: 0,
+					Attacking: 0
+				},
+				latestZone: "-"
+			};
+		});
+		(rows || []).forEach(function(row) {
+			if(row.entity_type !== "ball" || !row.team_in_possession) {
+				return;
+			}
+			var team = row.team_in_possession;
+			if(!summaries[team]) {
+				summaries[team] = {
+					team: team,
+					total: 0,
+					zones: {
+						Defensive: 0,
+						Middle: 0,
+						Attacking: 0
+					},
+					latestZone: "-"
+				};
+			}
+			var zone = possessionZoneFor(team, asNumber(row.z), teams || []);
+			summaries[team].total += 1;
+			summaries[team].zones[zone] += 1;
+			summaries[team].latestZone = zone;
+		});
+		var teamSummaries = Object.keys(summaries).map(function(team) {
+			var summary = summaries[team];
+			var dominantZone = "No samples";
+			var dominantSamples = 0;
+			["Defensive", "Middle", "Attacking"].forEach(function(zone) {
+				if(summary.zones[zone] > dominantSamples) {
+					dominantZone = zone;
+					dominantSamples = summary.zones[zone];
+				}
+			});
+			summary.dominantZone = dominantZone;
+			summary.dominantSamples = dominantSamples;
+			summary.dominantPercent = summary.total > 0 ?
+				Math.round((dominantSamples / summary.total) * 100) :
+				0;
+			return summary;
+		});
+		return {
+			totalSamples: teamSummaries.reduce(function(total, summary) {
+				return total + summary.total;
+			}, 0),
+			teams: teamSummaries
+		};
+	}
+
+	function possessionZoneRows(possessionZones) {
+		var rows = [
+			["Ball samples", String(possessionZones.totalSamples)]
+		];
+		possessionZones.teams.forEach(function(summary) {
+			rows.push([
+				summary.team,
+				summary.total > 0 ?
+					summary.dominantZone + " " + summary.dominantPercent + "%" :
+					"No samples"
+			]);
+			rows.push([
+				summary.team + " latest",
+				summary.latestZone
+			]);
+		});
+		return rows;
+	}
+
 	function buildReplayViewModel(entry,
 				      manifest,
 				      summary,
@@ -402,6 +493,7 @@
 				      pressureRows,
 				      derivedRows,
 				      shotRows,
+				      snapshotRows,
 				      metricsRows,
 				      heatmapRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
@@ -426,6 +518,7 @@
 		var teams = [summary.teams.team01, summary.teams.team02];
 		var heatmap = buildHeatmap(heatmapRows || [], teams);
 		var movementMetrics = buildMovementMetrics(metricsRows || []);
+		var possessionZones = buildPossessionZones(snapshotRows || [], teams);
 
 		return {
 			id: entry.id,
@@ -516,6 +609,7 @@
 			},
 			timeline: timeline,
 			movementMetrics: movementMetrics,
+			possessionZones: possessionZones,
 			heatmap: heatmap
 		};
 	}
@@ -750,6 +844,11 @@
 		renderTacticalSummary(documentRef,
 			documentRef.getElementById("movement-metrics"),
 			movement.rows);
+		documentRef.getElementById("possession-zone-label").textContent =
+			viewModel.possessionZones.totalSamples + " ball samples";
+		renderTacticalSummary(documentRef,
+			documentRef.getElementById("possession-zones"),
+			possessionZoneRows(viewModel.possessionZones));
 	}
 
 	function svgNode(documentRef, tag, attrs) {
@@ -1045,6 +1144,7 @@
 				var manifest = await loadJson(fixturePath(entry.manifest));
 				var manifestBase = directoryName(entry.manifest);
 				var summary = await loadJson(fixturePath(joinPath(manifestBase, manifest.files.summary)));
+				var snapshotText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.snapshots)));
 				var passLaneText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pass_lanes)));
 				var pressureText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pressure)));
 				var derivedText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.derived_events)));
@@ -1054,6 +1154,7 @@
 				replayData[id] = {
 					manifest: manifest,
 					summary: summary,
+					snapshotRows: parseCsv(snapshotText),
 					passLaneRows: parseCsv(passLaneText),
 					pressureRows: parseCsv(pressureText),
 					derivedRows: parseCsv(derivedText),
@@ -1070,6 +1171,7 @@
 				data.pressureRows,
 				data.derivedRows,
 				data.shotRows,
+				data.snapshotRows,
 				data.metricsRows,
 				data.heatmapRows);
 			activeViewModel = viewModel;
@@ -1111,6 +1213,8 @@
 		filterHeatmap: filterHeatmap,
 		buildMovementMetrics: buildMovementMetrics,
 		summarizeMovementMetrics: summarizeMovementMetrics,
+		buildPossessionZones: buildPossessionZones,
+		possessionZoneRows: possessionZoneRows,
 		buildTimelineItems: buildTimelineItems,
 		selectedEventDetails: selectedEventDetails,
 		timelineNavigationTarget: timelineNavigationTarget,

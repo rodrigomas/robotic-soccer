@@ -33,6 +33,9 @@ const manifest = await readJson(join(repoRoot, "fixtures", "replays", entry.mani
 const manifestBase = viewer.directoryName(entry.manifest);
 const summary = await readJson(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.summary)));
+const snapshotText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.snapshots)));
+const snapshotRows = viewer.parseCsv(snapshotText);
 const passLaneText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.pass_lanes)));
 const passLaneRows = viewer.parseCsv(passLaneText);
@@ -108,6 +111,8 @@ const ballMovement = viewer.summarizeMovementMetrics(movementMetrics, {
 	entityType: "ball",
 	player: "all"
 });
+const possessionZones = viewer.buildPossessionZones(snapshotRows, [summary.teams.team01, summary.teams.team02]);
+const possessionRows = viewer.possessionZoneRows(possessionZones);
 const viewModel = viewer.buildReplayViewModel(entry,
 	manifest,
 	summary,
@@ -115,6 +120,7 @@ const viewModel = viewer.buildReplayViewModel(entry,
 	pressureRows,
 	derivedRows,
 	shotRows,
+	snapshotRows,
 	metricsRows,
 	heatmapRows);
 
@@ -181,6 +187,17 @@ if(viewModel.runId !== "basic_match_fixture" ||
    ballMovement.label !== "Ball" ||
    ballMovement.rows[4][1] !== "18.97" ||
    viewModel.movementMetrics.length !== 4 ||
+   possessionZones.totalSamples !== 2 ||
+   possessionZones.teams[0].team !== "Botafogo" ||
+   possessionZones.teams[0].dominantZone !== "Middle" ||
+   possessionZones.teams[0].dominantPercent !== 100 ||
+   possessionZones.teams[0].latestZone !== "Middle" ||
+   possessionZones.teams[1].team !== "Flamengo" ||
+   possessionZones.teams[1].total !== 0 ||
+   possessionRows[0][1] !== "2" ||
+   possessionRows[1][1] !== "Middle 100%" ||
+   possessionRows[3][1] !== "No samples" ||
+   viewModel.possessionZones.totalSamples !== 2 ||
    viewModel.heatmap.totalSamples !== 6) {
 	throw new Error("replay viewer view model did not match the fixture");
 }

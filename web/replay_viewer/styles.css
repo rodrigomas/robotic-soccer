@@ -345,6 +345,10 @@ h3 {
   font-size: 13px;
 }
 
+.possession-heading {
+  border-top: 1px solid var(--line);
+}
+
 .movement-metrics {
   display: grid;
   grid-template-columns: 1fr auto;
