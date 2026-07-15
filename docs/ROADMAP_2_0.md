@@ -25,9 +25,9 @@ See [`ARCHITECTURE_2_0.md`](ARCHITECTURE_2_0.md) for the first technical shape.
 
 ## First Slice In Progress
 
-- Match snapshot telemetry now writes CSV files for ball and player positions from the existing match loop.
+- Match telemetry now writes CSV/manifest files for positions, rules events, passes, pressure, shots, heatmaps, and movement metrics.
 - See [`TELEMETRY.md`](TELEMETRY.md) for the first CSV format.
-- A first tactical pause overlay is available in-match with possession, restart stats, and a suggested pass lane. See [`TACTICAL_PAUSE.md`](TACTICAL_PAUSE.md).
+- A first tactical pause overlay is available in-match with possession, restart stats, derived analytics, and suggested pass lanes. See [`TACTICAL_PAUSE.md`](TACTICAL_PAUSE.md).
 
 ## Phase 0 - Preservation
 

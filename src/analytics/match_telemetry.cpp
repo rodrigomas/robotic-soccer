@@ -95,6 +95,7 @@ namespace soccer {
 		metadataOut << "heatmap_path," << csv(heatmapPath) << "\n";
 		metadataOut << "metrics_path," << csv(metricsPath) << "\n";
 		metadataOut << "pressure_path," << csv(pressurePath) << "\n";
+		metadataOut << "shots_path," << csv(shotsPath) << "\n";
 
 		return true;
 	}
@@ -115,6 +116,7 @@ namespace soccer {
 		manifest.heatmapPath = heatmapPath;
 		manifest.metricsPath = metricsPath;
 		manifest.pressurePath = pressurePath;
+		manifest.shotsPath = shotsPath;
 
 		return manifest.write(manifestPath);
 	}
@@ -181,10 +183,12 @@ namespace soccer {
 		heatmapPath = std::string("telemetry/heatmap_") + runId + ".csv";
 		metricsPath = std::string("telemetry/metrics_") + runId + ".csv";
 		pressurePath = std::string("telemetry/pressure_") + runId + ".csv";
+		shotsPath = std::string("telemetry/shots_") + runId + ".csv";
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 		metrics.reset();
 		passDetector.reset();
 		pressureTracker.reset();
+		shotDetector.reset();
 
 		snapshotsOut.open(snapshotsPath.c_str());
 		eventsOut.open(eventsPath.c_str());
@@ -284,6 +288,21 @@ namespace soccer {
 				pressureSample.opponents.push_back(opponent);
 			}
 			pressureTracker.record(pressureSample);
+
+			bool secondHalf = clockMin >= 45.0;
+			ShotDetectorSample shotSample;
+			shotSample.tick = tick;
+			shotSample.matchTime = matchTime;
+			shotSample.team = team01Ball ? team01Name : team02Name;
+			shotSample.shooterNumber = carrier->num;
+			shotSample.shooterName = carrier->name;
+			shotSample.shooterPos = carrier->pos;
+			shotSample.ballPos = ball.pos;
+			shotSample.ballVel = ball.vel;
+			shotSample.targetGoalZ = team01Ball ?
+				(secondHalf ? 60.0 : -60.0) :
+				(secondHalf ? -60.0 : 60.0);
+			shotDetector.record(shotSample);
 		}
 
 		for(register int i = 0; i < nTeam01Players; i++) {
@@ -374,6 +393,10 @@ namespace soccer {
 			pressureTracker.writeCsv(pressurePath);
 		}
 
+		if(active && shotsPath != "") {
+			shotDetector.writeCsv(shotsPath);
+		}
+
 		if(snapshotsOut.is_open()) {
 			snapshotsOut.flush();
 			snapshotsOut.close();
@@ -432,6 +455,11 @@ namespace soccer {
 		return pressurePath;
 	}
 
+	const std::string &MatchTelemetry::getShotsPath(void) const
+	{
+		return shotsPath;
+	}
+
 	int MatchTelemetry::getDerivedEventCount(void) const
 	{
 		return static_cast<int>(passDetector.getEvents().size());
@@ -445,6 +473,16 @@ namespace soccer {
 	PressureSummary MatchTelemetry::getPressureSummary(void) const
 	{
 		return pressureTracker.getSummary();
+	}
+
+	ShotSummary MatchTelemetry::getShotSummary(void) const
+	{
+		return shotDetector.getSummary();
+	}
+
+	int MatchTelemetry::getTeamShotCount(const std::string &teamName) const
+	{
+		return shotDetector.getTeamShotCount(teamName);
 	}
 
 	int MatchTelemetry::getHeatmapColumns(void) const

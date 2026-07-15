@@ -11,6 +11,7 @@ Current overlay:
 - Fixed timestep step, accumulator, and interpolation alpha.
 - Completed passes, possession turns, longest inferred pass, replay seed, derived event count, and manifest filename.
 - Current carrier pressure, average pressure, and high-pressure sample count.
+- Inferred shot count by team and latest shot speed.
 - A deterministic suggested pass lane.
 - Lane score, pass distance, goal distance, and opponent pressure.
 - A top-down mini field with the possession team's live heatmap, the carrier player's live heatmap, players, ball, and up to three ranked pass lanes.

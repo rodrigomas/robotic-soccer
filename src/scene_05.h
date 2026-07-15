@@ -456,7 +456,7 @@ namespace soccer {
 			double panelX = -w2 + 270;
 			double panelY = h2 - 150;
 			double panelW = 520;
-			double panelH = 230;
+			double panelH = 250;
 			double fieldX = panelX + 165;
 			double fieldY = panelY - 26;
 			double fieldW = 150;
@@ -543,6 +543,16 @@ namespace soccer {
 				pressureSummary.samples);
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 184, output);
 
+			ShotSummary shotSummary = Telemetry.getShotSummary();
+			sprintf(output,"Shots %s %d - %s %d  Last #%d %.1f",
+				gdata->team1->sigla.c_str(),
+				Telemetry.getTeamShotCount(gdata->team1->name),
+				gdata->team2->sigla.c_str(),
+				Telemetry.getTeamShotCount(gdata->team2->name),
+				shotSummary.lastShooterNumber,
+				shotSummary.lastShotSpeed);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 204, output);
+
 			string replayFile = telemetryDisplayName(Telemetry.getManifestPath());
 			if(replayFile.length() > 26) {
 				replayFile = replayFile.substr(0, 23) + "...";
@@ -551,7 +561,7 @@ namespace soccer {
 				getDeterministicRandomSeed(),
 				eventSummary.totalEvents,
 				replayFile.c_str());
-			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 204, output);
+			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 224, output);
 
 			glColor3f(0.18f,0.36f,0.18f);
 			drawRect2D(fieldX, fieldY, fieldW, fieldH);

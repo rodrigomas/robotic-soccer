@@ -7,7 +7,7 @@ The snapshot file is sampled every five active game ticks to keep the first vers
 Each match also writes a `metadata_*.csv` key/value file and a `replay_*.json`
 manifest. They record the telemetry format version, run id, creation stamp,
 deterministic random seed, team names, sample stride, and the related
-snapshot/event/derived-event/heatmap/metrics/pressure file paths. This is the first replay scaffold: a
+snapshot/event/derived-event/heatmap/metrics/pressure/shot file paths. This is the first replay scaffold: a
 captured match can now be tied back to the random sequence and files that
 produced it.
 
@@ -24,7 +24,7 @@ The engine reader/writer for this file lives in `src/analytics/replay_manifest.*
 - `team01`, `team02`: configured team names.
 - `sample_stride`: active game ticks between snapshot samples.
 - `manifest_path`: JSON replay manifest for this match capture.
-- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`: related files for the same match capture.
+- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`, `shots_path`: related files for the same match capture.
 
 ## Replay Manifest JSON
 
@@ -37,7 +37,7 @@ Manifest files are named `replay_*.json` and include:
 - `random_seed`: deterministic gameplay seed.
 - `teams`: `team01` and `team02` names.
 - `sample_stride`: active game ticks between snapshot samples.
-- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, and pressure paths.
+- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, pressure, and shot paths.
 
 ## Snapshot CSV Columns
 
@@ -127,8 +127,28 @@ is 8 world units.
 - `high_pressure`: `1` when `pressure_distance` is inside the high-pressure threshold.
 - `carrier_x`, `carrier_z`, `opponent_x`, `opponent_z`: world positions used for the calculation.
 
+## Shots CSV Columns
+
+Shot files are named `shots_*.csv`. They are inferred from sampled ball velocity
+and current possession. The first detector records a shot when the ball moves
+fast enough toward the possession team's attacking goal inside a broad shooting
+lane, then debounces that movement until the ball slows down or possession
+changes.
+
+- `tick`: scene update tick seen by the telemetry recorder.
+- `match_time`: in-game seconds from kickoff.
+- `team`: team credited with the inferred shot.
+- `shooter_number`, `shooter_name`: inferred carrier nearest the ball.
+- `shot_speed`: X/Z ball speed when the shot was inferred.
+- `forward_speed`: ball speed toward the attacking goal.
+- `goal_distance`: remaining Z distance to the target goal line.
+- `target_goal_z`: target goal line used for the inference.
+- `shooter_x`, `shooter_z`: inferred shooter position.
+- `ball_x`, `ball_y`, `ball_z`: ball position.
+- `ball_vx`, `ball_vy`, `ball_vz`: ball velocity.
+
 ## 2.0 Use
 
-These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, match timeline, and restart prototypes without changing Lua strategy scripts yet.
+These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should infer shots, passes, pressure, collisions, and pass-lane candidates from snapshots plus events.
+The next slice should infer collisions and pass-lane candidates from snapshots plus events.
