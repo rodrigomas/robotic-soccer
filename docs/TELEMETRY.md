@@ -15,7 +15,8 @@ The JSON manifest is the preferred replay entry point for future tooling because
 it keeps the run metadata and file bundle in one structured document.
 The engine reader/writer for this file lives in `src/analytics/replay_manifest.*`.
 The first report helper is `build/<platform>/tools/replay_report`; pass it a
-`replay_*.json` manifest and it prints the compact summary JSON.
+`replay_*.json` manifest and it prints the compact summary JSON. Use
+`--text` for a human-readable match overview.
 
 ## Metadata CSV Keys
 
@@ -207,4 +208,5 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add richer replay report formatting and start separating native tools from smoke-test binaries.
+The next slice should start separating native tools from smoke-test binaries and
+add a replay fixture that can be used by the future browser dashboard.

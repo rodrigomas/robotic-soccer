@@ -53,6 +53,9 @@ It builds the first replay report helper in `build/<platform>/tools/`.
 It also validates that the sample Lua strategy files can rank a tactical pass
 option with the current Strategy API fields.
 
+After a telemetry capture, `build/<platform>/tools/replay_report --text
+config/telemetry/replay_<run>.json` prints a compact command-line match report.
+
 To force deterministic gameplay randomness for debugging:
 
 ```
