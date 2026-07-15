@@ -207,6 +207,43 @@
 		return items[0].id;
 	}
 
+	function timelineTeamCounts(items, teams) {
+		var counts = {};
+		(teams || []).forEach(function(team) {
+			counts[team] = {
+				team: team,
+				total: 0,
+				passCompleted: 0,
+				shots: 0,
+				possessionChanges: 0
+			};
+		});
+		(items || []).forEach(function(item) {
+			if(!counts[item.team]) {
+				counts[item.team] = {
+					team: item.team,
+					total: 0,
+					passCompleted: 0,
+					shots: 0,
+					possessionChanges: 0
+				};
+			}
+			counts[item.team].total += 1;
+			if(item.type === "pass_completed") {
+				counts[item.team].passCompleted += 1;
+			}
+			if(item.type === "shot") {
+				counts[item.team].shots += 1;
+			}
+			if(item.type === "possession_change") {
+				counts[item.team].possessionChanges += 1;
+			}
+		});
+		return Object.keys(counts).map(function(team) {
+			return counts[team];
+		});
+	}
+
 	function timelineNavigationTarget(items, selectedId, key) {
 		if(!items || items.length === 0) {
 			return "";
@@ -738,6 +775,20 @@
 		});
 	}
 
+	function renderTimelineSummary(documentRef, summaryEl, counts) {
+		summaryEl.innerHTML = "";
+		counts.forEach(function(count) {
+			var item = createEl(documentRef, "article", "timeline-summary-item", "");
+			item.appendChild(createEl(documentRef, "strong", "", count.team));
+			item.appendChild(createEl(documentRef, "span", "", count.total + " events"));
+			item.appendChild(createEl(documentRef, "small", "",
+				count.passCompleted + " passes, " +
+				count.shots + " shots, " +
+				count.possessionChanges + " changes"));
+			summaryEl.appendChild(item);
+		});
+	}
+
 	function renderHeatmap(documentRef, svgEl, heatmap) {
 		svgEl.innerHTML = "";
 		svgEl.appendChild(svgNode(documentRef, "rect", {
@@ -1062,6 +1113,9 @@
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
+		renderTimelineSummary(documentRef,
+			documentRef.getElementById("timeline-summary"),
+			timelineTeamCounts(visibleTimeline, viewModel.teams));
 		renderTimeline(documentRef,
 			documentRef.getElementById("match-timeline"),
 			visibleTimeline,
@@ -1311,6 +1365,7 @@
 		buildTimelineItems: buildTimelineItems,
 		filterTimelineItems: filterTimelineItems,
 		repairedTimelineSelection: repairedTimelineSelection,
+		timelineTeamCounts: timelineTeamCounts,
 		selectedEventDetails: selectedEventDetails,
 		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,

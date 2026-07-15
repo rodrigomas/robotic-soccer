@@ -7,9 +7,10 @@ cards with switchable field, timeline, and heatmap focus views. The field view
 can toggle pass-lane and pressure overlays independently, and timeline clicks
 or keyboard navigation highlight matching field context with a raw
 selected-event detail panel. Timeline event-type filters can narrow passes,
-shots, and possession changes by team. The heatmap view can filter samples by
-team and entity type, then drill into a single player with movement metrics
-beside the grid. It also summarizes possession zones from ball snapshots.
+shots, and possession changes by team, with compact per-team counts. The heatmap
+view can filter samples by team and entity type, then drill into a single player
+with movement metrics beside the grid. It also summarizes possession zones from
+ball snapshots.
 
 Run it from the repository root with a local static server:
 

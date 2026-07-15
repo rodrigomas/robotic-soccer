@@ -132,8 +132,8 @@ summary cards, and lets the user switch focus between stream-backed field
 overlays, timeline, and heatmap grid views. Field overlays can isolate pass
 lanes or pressure context, and timeline selection highlights matching field
 context while exposing raw selected-event values. Timeline buttons support
-keyboard navigation, event-type filters, and team filters over the same
-selected-event model.
+keyboard navigation, event-type filters, team filters, and per-team counts over
+the same selected-event model.
 Heatmap controls can filter the replay grid by team, entity type, and player,
 with movement metrics and possession-zone summaries shown beside the grid. It validates with
 `node web/replay_viewer/validate.mjs` and is intentionally dependency-free until

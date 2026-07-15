@@ -103,6 +103,10 @@ const flamengoShotsTimeline = viewer.filterTimelineItems(timeline, {
 		possession_change: false
 	}
 });
+const allTimelineCounts = viewer.timelineTeamCounts(timeline, [summary.teams.team01, summary.teams.team02]);
+const botafogoTimelineCounts = viewer.timelineTeamCounts(botafogoTimeline, [summary.teams.team01, summary.teams.team02]);
+const flamengoTimelineCounts = viewer.timelineTeamCounts(flamengoTimeline, [summary.teams.team01, summary.teams.team02]);
+const shotTimelineCounts = viewer.timelineTeamCounts(shotTimeline, [summary.teams.team01, summary.teams.team02]);
 const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
@@ -195,6 +199,17 @@ if(viewModel.runId !== "basic_match_fixture" ||
    flamengoTimeline.length !== 1 ||
    flamengoTimeline[0].type !== "possession_change" ||
    flamengoShotsTimeline.length !== 0 ||
+   allTimelineCounts[0].total !== 2 ||
+   allTimelineCounts[0].passCompleted !== 1 ||
+   allTimelineCounts[0].shots !== 1 ||
+   allTimelineCounts[1].total !== 1 ||
+   allTimelineCounts[1].possessionChanges !== 1 ||
+   botafogoTimelineCounts[0].total !== 2 ||
+   botafogoTimelineCounts[1].total !== 0 ||
+   flamengoTimelineCounts[0].total !== 0 ||
+   flamengoTimelineCounts[1].total !== 1 ||
+   shotTimelineCounts[0].shots !== 1 ||
+   shotTimelineCounts[1].shots !== 0 ||
    viewer.repairedTimelineSelection(passTimeline, secondTimelineId) !== firstTimelineId ||
    viewer.repairedTimelineSelection(tacticalTimeline, secondTimelineId) !== secondTimelineId ||
    viewer.repairedTimelineSelection(flamengoTimeline, secondTimelineId) !== thirdTimelineId ||
