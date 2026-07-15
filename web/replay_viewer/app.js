@@ -266,6 +266,51 @@
 		};
 	}
 
+	function filterHeatmap(heatmap, filters) {
+		var activeFilters = filters || {};
+		var team = activeFilters.team || "all";
+		var entityType = activeFilters.entityType || "all";
+		var cells = heatmap.cells.filter(function(cell) {
+			var teamMatch = team === "all" || cell.team === team;
+			var entityMatch = entityType === "all" || cell.entityType === entityType;
+			return teamMatch && entityMatch;
+		});
+		var maxSamples = cells.reduce(function(best, cell) {
+			return Math.max(best, cell.samples);
+		}, 0);
+		var totalSamples = cells.reduce(function(total, cell) {
+			return total + cell.samples;
+		}, 0);
+		return {
+			columns: heatmap.columns,
+			rows: heatmap.rows,
+			cells: cells.map(function(cell) {
+				return {
+					entityType: cell.entityType,
+					team: cell.team,
+					number: cell.number,
+					name: cell.name,
+					column: cell.column,
+					row: cell.row,
+					samples: cell.samples,
+					color: cell.color,
+					intensity: maxSamples > 0 ? cell.samples / maxSamples : 0
+				};
+			}),
+			maxSamples: maxSamples,
+			totalSamples: totalSamples
+		};
+	}
+
+	function heatmapFilterState(documentRef) {
+		var team = documentRef.getElementById("heatmap-team-filter");
+		var entity = documentRef.getElementById("heatmap-entity-filter");
+		return {
+			team: team && team.value ? team.value : "all",
+			entityType: entity && entity.value ? entity.value : "all"
+		};
+	}
+
 	function buildReplayViewModel(entry,
 				      manifest,
 				      summary,
@@ -515,6 +560,78 @@
 		}));
 	}
 
+	function selectHasValue(selectEl, value) {
+		for(var i = 0; i < selectEl.options.length; i++) {
+			if(selectEl.options[i].value === value) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function setSelectOptions(documentRef, selectEl, options, selectedValue) {
+		selectEl.innerHTML = "";
+		options.forEach(function(option) {
+			var item = createEl(documentRef, "option", "", option.label);
+			item.value = option.value;
+			selectEl.appendChild(item);
+		});
+		selectEl.value = selectHasValue(selectEl, selectedValue) ? selectedValue : "all";
+	}
+
+	function heatmapEntityLabel(entityType) {
+		if(entityType === "player") {
+			return "Players";
+		}
+		if(entityType === "ball") {
+			return "Ball";
+		}
+		return entityType;
+	}
+
+	function renderHeatmapFilters(documentRef, viewModel) {
+		var teamSelect = documentRef.getElementById("heatmap-team-filter");
+		var entitySelect = documentRef.getElementById("heatmap-entity-filter");
+		if(!teamSelect || !entitySelect) {
+			return;
+		}
+
+		var current = heatmapFilterState(documentRef);
+		var teams = [{ value: "all", label: "All teams" }];
+		viewModel.teams.forEach(function(team) {
+			teams.push({ value: team, label: team });
+		});
+
+		var seenEntities = {};
+		viewModel.heatmap.cells.forEach(function(cell) {
+			if(cell.entityType) {
+				seenEntities[cell.entityType] = true;
+			}
+		});
+		var entityOrder = ["player", "ball"];
+		var entities = [{ value: "all", label: "All entities" }];
+		entityOrder.forEach(function(entityType) {
+			if(seenEntities[entityType]) {
+				entities.push({ value: entityType, label: heatmapEntityLabel(entityType) });
+				delete seenEntities[entityType];
+			}
+		});
+		Object.keys(seenEntities).sort().forEach(function(entityType) {
+			entities.push({ value: entityType, label: heatmapEntityLabel(entityType) });
+		});
+
+		setSelectOptions(documentRef, teamSelect, teams, current.team);
+		setSelectOptions(documentRef, entitySelect, entities, current.entityType);
+	}
+
+	function renderHeatmapSection(documentRef, viewModel) {
+		renderHeatmapFilters(documentRef, viewModel);
+		var filteredHeatmap = filterHeatmap(viewModel.heatmap, heatmapFilterState(documentRef));
+		documentRef.getElementById("heatmap-label").textContent =
+			filteredHeatmap.totalSamples + " samples, max " + filteredHeatmap.maxSamples;
+		renderHeatmap(documentRef, documentRef.getElementById("heatmap-view"), filteredHeatmap);
+	}
+
 	function svgNode(documentRef, tag, attrs) {
 		var node = documentRef.createElementNS("http://www.w3.org/2000/svg", tag);
 		Object.keys(attrs).forEach(function(key) {
@@ -662,8 +779,6 @@
 			formatNumber(selectedEvent.time, 2) + "s" :
 			"-";
 		documentRef.getElementById("timeline-count").textContent = viewModel.timeline.length + " events";
-		documentRef.getElementById("heatmap-label").textContent =
-			viewModel.heatmap.totalSamples + " samples, max " + viewModel.heatmap.maxSamples;
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
@@ -672,7 +787,7 @@
 			viewModel.timeline,
 			selectedEvent ? selectedEvent.id : "",
 			onTimelineSelect);
-		renderHeatmap(documentRef, documentRef.getElementById("heatmap-view"), viewModel.heatmap);
+		renderHeatmapSection(documentRef, viewModel);
 		renderField(documentRef,
 			documentRef.getElementById("field-view"),
 			viewModel,
@@ -723,6 +838,24 @@
 		}
 	}
 
+	function initHeatmapControls(documentRef, getViewModel) {
+		var controls = [
+			documentRef.getElementById("heatmap-team-filter"),
+			documentRef.getElementById("heatmap-entity-filter")
+		];
+		controls.forEach(function(control) {
+			if(!control) {
+				return;
+			}
+			control.addEventListener("change", function() {
+				var viewModel = getViewModel();
+				if(viewModel) {
+					renderHeatmapSection(documentRef, viewModel);
+				}
+			});
+		});
+	}
+
 	function focusTimelineButton(documentRef, selectedId) {
 		var buttons = documentRef.querySelectorAll(".timeline-button");
 		for(var i = 0; i < buttons.length; i++) {
@@ -765,6 +898,7 @@
 					selectedTimelineItem(activeViewModel.timeline, selectedEventId) :
 					null;
 			});
+		initHeatmapControls(documentRef, function() { return activeViewModel; });
 
 		function selectTimelineEvent(id, options) {
 			if(!activeViewModel) {
@@ -850,6 +984,7 @@
 		fixturePath: fixturePath,
 		formatNumber: formatNumber,
 		buildHeatmap: buildHeatmap,
+		filterHeatmap: filterHeatmap,
 		buildTimelineItems: buildTimelineItems,
 		selectedEventDetails: selectedEventDetails,
 		timelineNavigationTarget: timelineNavigationTarget,

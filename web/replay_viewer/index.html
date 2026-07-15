@@ -78,7 +78,15 @@
       <section class="heatmap-strip focus-section" aria-label="Replay heatmap">
         <div class="panel-heading">
           <h3>Heatmap</h3>
-          <span id="heatmap-label">-</span>
+          <div class="heatmap-controls">
+            <select id="heatmap-team-filter" aria-label="Heatmap team">
+              <option value="all">All teams</option>
+            </select>
+            <select id="heatmap-entity-filter" aria-label="Heatmap entity">
+              <option value="all">All entities</option>
+            </select>
+            <span id="heatmap-label">-</span>
+          </div>
         </div>
         <svg id="heatmap-view" class="heatmap-view" viewBox="0 0 360 240" role="img" aria-label="Replay heatmap view"></svg>
       </section>

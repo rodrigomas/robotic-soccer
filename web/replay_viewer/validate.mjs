@@ -60,6 +60,10 @@ const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
 const heatmap = viewer.buildHeatmap(heatmapRows, [summary.teams.team01, summary.teams.team02]);
+const botafogoHeatmap = viewer.filterHeatmap(heatmap, { team: "Botafogo", entityType: "player" });
+const flamengoHeatmap = viewer.filterHeatmap(heatmap, { team: "Flamengo", entityType: "player" });
+const ballHeatmap = viewer.filterHeatmap(heatmap, { team: "all", entityType: "ball" });
+const emptyHeatmap = viewer.filterHeatmap(heatmap, { team: "Botafogo", entityType: "ball" });
 const viewModel = viewer.buildReplayViewModel(entry,
 	manifest,
 	summary,
@@ -100,6 +104,15 @@ if(viewModel.runId !== "basic_match_fixture" ||
    shotForwardSpeed?.[1] !== "15.75000" ||
    heatmap.cells.length !== 4 ||
    heatmap.maxSamples !== 2 ||
+   botafogoHeatmap.cells.length !== 2 ||
+   botafogoHeatmap.totalSamples !== 2 ||
+   botafogoHeatmap.maxSamples !== 1 ||
+   flamengoHeatmap.cells.length !== 1 ||
+   flamengoHeatmap.totalSamples !== 2 ||
+   ballHeatmap.cells.length !== 1 ||
+   ballHeatmap.totalSamples !== 2 ||
+   emptyHeatmap.cells.length !== 0 ||
+   emptyHeatmap.totalSamples !== 0 ||
    viewModel.heatmap.totalSamples !== 6) {
 	throw new Error("replay viewer view model did not match the fixture");
 }
