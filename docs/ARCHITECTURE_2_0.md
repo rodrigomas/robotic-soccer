@@ -132,7 +132,7 @@ renders
 summary cards, and lets the user switch focus between stream-backed field
 overlays, timeline, and heatmap grid views. Field overlays can isolate pass
 lanes or pressure context, with ranked pass-lane and pressure details beside the
-field.
+field plus selected-shot geometry details for shot timeline entries.
 Timeline selection highlights matching field context while exposing raw
 selected-event values. Timeline buttons support
 keyboard navigation, event-type filters, team filters, player search, and

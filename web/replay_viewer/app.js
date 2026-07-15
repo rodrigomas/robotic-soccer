@@ -141,6 +141,23 @@
 			});
 		});
 		(shotRows || []).forEach(function(row, index) {
+			var shot = {
+				team: row.team,
+				shooterNumber: asNumber(row.shooter_number),
+				shooterName: row.shooter_name,
+				shotSpeed: asNumber(row.shot_speed),
+				forwardSpeed: asNumber(row.forward_speed),
+				goalDistance: asNumber(row.goal_distance),
+				targetGoalZ: asNumber(row.target_goal_z),
+				shooterX: asNumber(row.shooter_x),
+				shooterZ: asNumber(row.shooter_z),
+				ballX: asNumber(row.ball_x),
+				ballY: asNumber(row.ball_y),
+				ballZ: asNumber(row.ball_z),
+				ballVx: asNumber(row.ball_vx),
+				ballVy: asNumber(row.ball_vy),
+				ballVz: asNumber(row.ball_vz)
+			};
 			items.push({
 				id: "shot-" + row.tick + "-" + index,
 				type: "shot",
@@ -157,11 +174,12 @@
 					"target_goal_z", "shooter_x", "shooter_z", "ball_x", "ball_y",
 					"ball_z", "ball_vx", "ball_vy", "ball_vz"
 				])),
+				shot: shot,
 				field: {
-					x: asNumber(row.ball_x),
-					z: asNumber(row.ball_z),
-					fromX: asNumber(row.shooter_x),
-					fromZ: asNumber(row.shooter_z),
+					x: shot.ballX,
+					z: shot.ballZ,
+					fromX: shot.shooterX,
+					fromZ: shot.shooterZ,
 					label: "shot"
 				}
 			});
@@ -218,6 +236,31 @@
 			["detail", item.detail],
 			["display_value", item.value]
 		].concat(item.raw || []);
+	}
+
+	function fieldPosition(x, z) {
+		return formatNumber(x, 2) + ", " + formatNumber(z, 2);
+	}
+
+	function fieldVelocity(x, y, z) {
+		return formatNumber(x, 2) + ", " + formatNumber(y, 2) + ", " + formatNumber(z, 2);
+	}
+
+	function selectedShotDetails(item) {
+		if(!item || item.type !== "shot" || !item.shot) {
+			return [];
+		}
+		return [
+			["Shooter", "#" + item.shot.shooterNumber + " " + item.shot.shooterName],
+			["Team", item.shot.team],
+			["Shot speed", formatNumber(item.shot.shotSpeed, 2)],
+			["Forward speed", formatNumber(item.shot.forwardSpeed, 2)],
+			["Goal distance", formatNumber(item.shot.goalDistance, 2)],
+			["Target goal", formatNumber(item.shot.targetGoalZ, 0)],
+			["Shooter pos", fieldPosition(item.shot.shooterX, item.shot.shooterZ)],
+			["Ball pos", fieldPosition(item.shot.ballX, item.shot.ballZ)],
+			["Ball velocity", fieldVelocity(item.shot.ballVx, item.shot.ballVy, item.shot.ballVz)]
+		];
 	}
 
 	function timelineSearchText(item) {
@@ -813,6 +856,20 @@
 		});
 	}
 
+	function renderShotDetails(documentRef, detailEl, item) {
+		detailEl.innerHTML = "";
+		var rows = selectedShotDetails(item);
+		if(rows.length === 0) {
+			detailEl.appendChild(createEl(documentRef, "dt", "", "Selection"));
+			detailEl.appendChild(createEl(documentRef, "dd", "", "No shot selected"));
+			return;
+		}
+		rows.forEach(function(row) {
+			detailEl.appendChild(createEl(documentRef, "dt", "", row[0]));
+			detailEl.appendChild(createEl(documentRef, "dd", "", row[1]));
+		});
+	}
+
 	function renderTimeline(documentRef, timelineEl, items, selectedId, onSelect) {
 		timelineEl.innerHTML = "";
 		if(items.length === 0) {
@@ -888,10 +945,6 @@
 		});
 	}
 
-	function pressurePosition(x, z) {
-		return formatNumber(x, 2) + ", " + formatNumber(z, 2);
-	}
-
 	function renderPressureDetails(documentRef, detailsEl, pressure) {
 		detailsEl.innerHTML = "";
 		if(!pressure || pressure.opponentNumber === 0) {
@@ -903,8 +956,8 @@
 		row.appendChild(createEl(documentRef, "span", "", "#" + pressure.opponentNumber + " " + pressure.opponentName));
 		row.appendChild(createEl(documentRef, "span", "", formatNumber(pressure.distance, 2)));
 		row.appendChild(createEl(documentRef, "span", "", pressure.high ? "High" : "Stable"));
-		row.appendChild(createEl(documentRef, "span", "", pressurePosition(pressure.carrierX, pressure.carrierZ)));
-		row.appendChild(createEl(documentRef, "span", "", pressurePosition(pressure.opponentX, pressure.opponentZ)));
+		row.appendChild(createEl(documentRef, "span", "", fieldPosition(pressure.carrierX, pressure.carrierZ)));
+		row.appendChild(createEl(documentRef, "span", "", fieldPosition(pressure.opponentX, pressure.opponentZ)));
 		detailsEl.appendChild(row);
 	}
 
@@ -1229,6 +1282,10 @@
 		documentRef.getElementById("scoreline").textContent = viewModel.scoreline;
 		documentRef.getElementById("match-time").textContent = viewModel.matchTime;
 		documentRef.getElementById("pass-lane-label").textContent = viewModel.passLane.label;
+		documentRef.getElementById("shot-detail-label").textContent =
+			selectedEvent && selectedEvent.type === "shot" ?
+				selectedEvent.detail :
+				"-";
 		documentRef.getElementById("event-detail-time").textContent = selectedEvent ?
 			formatNumber(selectedEvent.time, 2) + "s" :
 			"-";
@@ -1237,6 +1294,7 @@
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
+		renderShotDetails(documentRef, documentRef.getElementById("shot-detail"), selectedEvent);
 		renderPressureDetails(documentRef,
 			documentRef.getElementById("pressure-details"),
 			viewModel.pressure);
@@ -1505,6 +1563,7 @@
 		repairedTimelineSelection: repairedTimelineSelection,
 		timelineTeamCounts: timelineTeamCounts,
 		selectedEventDetails: selectedEventDetails,
+		selectedShotDetails: selectedShotDetails,
 		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,

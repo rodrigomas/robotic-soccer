@@ -55,14 +55,16 @@ const collisionText = await readText(join(repoRoot, "fixtures", "replays",
 const collisionRows = viewer.parseCsv(collisionText);
 const timeline = viewer.buildTimelineItems(derivedRows, shotRows, collisionRows);
 const selectedShot = viewer.selectedTimelineItem(timeline, "shot-20-0");
+const passCompleted = viewer.selectedTimelineItem(timeline, "pass_completed-10-0");
 const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
+const selectedShotSummary = viewer.selectedShotDetails(selectedShot);
+const nonShotSummary = viewer.selectedShotDetails(passCompleted);
 const shotEventType = selectedShotDetails.find(([key]) => key === "event_type");
 const shotSpeed = selectedShotDetails.find(([key]) => key === "shot_speed");
 const shotForwardSpeed = selectedShotDetails.find(([key]) => key === "forward_speed");
 const firstTimelineId = timeline[0].id;
 const secondTimelineId = timeline[1].id;
 const thirdTimelineId = timeline[2].id;
-const passCompleted = viewer.selectedTimelineItem(timeline, "pass_completed-10-0");
 const playerBallCollision = viewer.selectedTimelineItem(timeline, "player_ball-8-0");
 const playerPlayerCollision = viewer.selectedTimelineItem(timeline, "player_player-18-1");
 const possessionChange = viewer.selectedTimelineItem(timeline, "possession_change-25-1");
@@ -329,6 +331,16 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShot.field.x !== -1 ||
    selectedShot.field.fromZ !== 18 ||
    selectedShotDetails.length < 18 ||
+   selectedShotSummary.length !== 9 ||
+   selectedShotSummary[0][1] !== "#9 Striker" ||
+   selectedShotSummary[2][1] !== "16.25" ||
+   selectedShotSummary[3][1] !== "15.75" ||
+   selectedShotSummary[4][1] !== "42.00" ||
+   selectedShotSummary[5][1] !== "60" ||
+   selectedShotSummary[6][1] !== "-3.00, 18.00" ||
+   selectedShotSummary[7][1] !== "-1.00, 18.00" ||
+   selectedShotSummary[8][1] !== "2.00, 0.00, 16.00" ||
+   nonShotSummary.length !== 0 ||
    shotEventType?.[1] !== "shot" ||
    shotSpeed?.[1] !== "16.25000" ||
    shotForwardSpeed?.[1] !== "15.75000" ||

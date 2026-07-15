@@ -235,6 +235,7 @@ h3 {
 
 .field-panel,
 .timeline-panel,
+.shot-detail-panel,
 .event-detail-panel,
 .timeline-strip,
 .heatmap-strip {
@@ -246,7 +247,7 @@ h3 {
 }
 
 .field-panel {
-  grid-row: span 2;
+  grid-row: span 3;
 }
 
 .panel-heading {
@@ -530,6 +531,33 @@ h3 {
 
 .event-detail dt {
   color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.shot-detail {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.72fr) minmax(132px, 1fr);
+  gap: 0;
+  margin: 0;
+}
+
+.shot-detail dt,
+.shot-detail dd {
+  min-height: 38px;
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.shot-detail dt {
+  color: var(--muted);
+}
+
+.shot-detail dd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 800;
+  text-align: right;
   overflow-wrap: anywhere;
 }
 
