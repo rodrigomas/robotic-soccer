@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robotics version="0.2.1" languagefile="default.lng">
+  <teans file1="data/flamengo.xml" file2="data/botafogo.xml" arbitro="Pedro" lateral1="Jose" lateral2="Joao"/>
+  <physics method="euler" pentol="0.2" wind="true" magnus="true" drag="true" maxspeed="30.0">
+    <gravity>9.7</gravity>
+    <sndspeed>343.3</sndspeed>
+    <dopplerfactor>1.0</dopplerfactor>
+    <friction floorY="0.65" floorXZ="0.97" player="0.3"/>
+    <restitution playerBall="0.99" ballFloor="0.5"/>
+    <wind dir="0.1,0.1,0.1" random="false"/>
+    <air viscosity="0.0000183" density="1.244"/>
+  </physics>
+  <graphics enablemotion="false" motionframes="5" motionfactor="0.9" fadesteps="20" fadetimer="50" useshader="false" vextexshader="shaders/spotlight2.vert" fragshader="shaders/spotlight2.frag" gamemode="" usegamemode="false" usecubemap="false" fullscreen="false">
+    <fog enable="false" color="0.6,0.6,0.6" density="0.1" start="-80.0" end="80.0" mode="0"/>
+    <lights enable="false" ambientcolor="0.9,0.9,0.9,0.9" draw="false" nlights="5">
+      <light type="spot" ambient="0.9,0.9,0.9" diffuse="0.6,0.6,0.6" specular="0.2,0.2,0.2" position="0.0,20.0,0.0" direction="0.0,-1.0,0.0" cutoff="20.0" exponent="1.0" atenuation="0.0,0.0,0.0"/>
+      <light type="spot" ambient="0.9,0.9,0.9" diffuse="0.6,0.6,0.6" specular="0.2,0.2,0.2" position="-60.0,20.0,-70.0" direction="60.0,-20.0,-70.0" cutoff="0.0" exponent="0.0" atenuation="0.5,0.1,0.5"/>
+      <light type="spot" ambient="0.9,0.9,0.9" diffuse="0.6,0.6,0.6" specular="0.2,0.2,0.2" position="-60.0,20.0,70.0" direction="60.0,-20.0,70.0" cutoff="0.0" exponent="0.0" atenuation="0.5,0.1,0.5"/>
+      <light type="spot" ambient="0.9,0.9,0.9" diffuse="0.6,0.6,0.6" specular="0.2,0.2,0.2" position="60.0,20.0,-70.0" direction="-60.0,-20.0,70.0" cutoff="0.0" exponent="0.0" atenuation="0.5,0.1,0.5"/>
+      <light type="spot" ambient="0.9,0.9,0.9" diffuse="0.6,0.6,0.6" specular="0.2,0.2,0.2" position="60.0,20.0,70.0" direction="-60.0,-20.0,-70.0" cutoff="0.0" exponent="0.0" atenuation="0.5,0.1,0.5"/>
+    </lights>
+  </graphics>
+  <controls usejoystick="true" joypolling="100" joyx="100,-100" joyy="100,-100" joyz="100,-100">
+    <player3 up="AXIS-Y-" down="AXIS-Y+" left="AXIS-X-" right="AXIS-X+" kick1="BTN1" kick2="BTN2"/>
+    <player1 up="UP" down="DOWN" left="LEFT" right="RIGHT" kick1="X" kick2="C"/>
+    <player2 up="W" down="S" left="A" right="D" kick1="V" kick2="B"/>
+    <player4 up="AXIS-Y-" down="AXIS-Y+" left="AXIS-X-" right="AXIS-X+" kick1="BTN1" kick2="BTN2"/>
+  </controls>
+</robotics>
