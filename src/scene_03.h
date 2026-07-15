@@ -49,7 +49,7 @@ namespace soccer {
 		{
             loading = true;
             glutDisplay();
-			ChangeScene(5,(void*)nPlayers);
+			ChangeScene(5,(void *)(intptr_t)nPlayers);
 		}
 
 	public:
@@ -247,7 +247,7 @@ namespace soccer {
 
 		void getInfo( void* info )
 		{
-			nPlayers = (int)info;
+			nPlayers = (int)(intptr_t)info;
 		}
 
 	};

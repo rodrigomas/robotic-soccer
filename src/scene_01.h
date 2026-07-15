@@ -55,7 +55,7 @@ namespace soccer {
 
 		static void fadeto32(void)
 		{
-			ChangeScene(3,(void*)2);
+			ChangeScene(3,(void *)(intptr_t)2);
 		}
 
 		void btControls_click(void)
@@ -65,7 +65,7 @@ namespace soccer {
 
 		static void fadeto31(void)
 		{
-			ChangeScene(3,(void*)1);
+			ChangeScene(3,(void *)(intptr_t)1);
 		}
 
 		void btNewPxC_click(void)

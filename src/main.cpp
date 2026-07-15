@@ -383,7 +383,7 @@ void ChangeScene( int ID,  void* info )
 
 		case 5:
 			if ( !Scene05 )
-				Scene05 = new CScene05( (int)info, gdata->graphics.fadesteps );
+				Scene05 = new CScene05( (int)(intptr_t)info, gdata->graphics.fadesteps );
 
 			#ifdef USE_MUSIC
 			//StopMusic();

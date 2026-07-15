@@ -16,6 +16,19 @@ A english article will be provided soon.
 
 - GCC 4.2 or later
 
+#### macOS
+
+The current Makefile can build on Apple Silicon/macOS with Homebrew libraries:
+
+```
+brew install glew luajit mesa mesa-glu freeglut openal-soft libogg libvorbis jpeg-turbo pkg-config
+cd src
+make clean
+make
+```
+
+The binary is written to `output/darwin/soccer`.
+
 #### Libraries
 
 - OpenGL
@@ -66,7 +79,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * None Yet
-
 
 
 

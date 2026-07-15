@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <math.h>
+#include <stdint.h>
 #include <iostream>
 #include <GL/gl.h>
 
