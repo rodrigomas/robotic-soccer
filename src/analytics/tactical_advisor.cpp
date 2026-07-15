@@ -69,6 +69,29 @@ namespace soccer {
 		return best;
 	}
 
+	void TacticalAdvisor::insertRankedOption(TacticalSuggestion *suggestion,
+						 const TacticalPassOption &option)
+	{
+		int optionCount = suggestion->optionCount;
+		if(optionCount == TACTICAL_MAX_OPTIONS &&
+		   option.score <= suggestion->options[optionCount - 1].score) {
+			return;
+		}
+
+		if(optionCount < TACTICAL_MAX_OPTIONS) {
+			optionCount++;
+			suggestion->optionCount = optionCount;
+		}
+
+		int index = optionCount - 1;
+		while(index > 0 && suggestion->options[index - 1].score < option.score) {
+			suggestion->options[index] = suggestion->options[index - 1];
+			index--;
+		}
+
+		suggestion->options[index] = option;
+	}
+
 	TacticalSuggestion TacticalAdvisor::suggestPass(CPlayer **teamPlayers,
 							int teamCount,
 							CPlayer **opponentPlayers,
@@ -84,6 +107,7 @@ namespace soccer {
 		suggestion.passDistance = 0.0;
 		suggestion.targetPressure = 0.0;
 		suggestion.targetGoalDistance = 0.0;
+		suggestion.optionCount = 0;
 
 		if(!suggestion.carrier) {
 			return suggestion;
@@ -106,6 +130,14 @@ namespace soccer {
 			double score = pressure * pressureWeight -
 				passDistance * passDistanceWeight -
 				goalDistance * goalDistanceWeight;
+			TacticalPassOption option;
+			option.target = candidate;
+			option.score = score;
+			option.passDistance = passDistance;
+			option.targetPressure = pressure;
+			option.targetGoalDistance = goalDistance;
+
+			insertRankedOption(&suggestion, option);
 
 			if(score > suggestion.score) {
 				suggestion.target = candidate;

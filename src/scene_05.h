@@ -408,8 +408,9 @@ namespace soccer {
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 84, output);
 
 			if( carrier && target ) {
-				sprintf(output,"Suggested pass: %d -> %d  pressure %.1f",
-					carrier->num, target->num, suggestion.targetPressure);
+				sprintf(output,"Suggested pass: %d -> %d  pressure %.1f  options %d",
+					carrier->num, target->num, suggestion.targetPressure,
+					suggestion.optionCount);
 			} else {
 				sprintf(output,"Suggested pass: hold shape");
 			}

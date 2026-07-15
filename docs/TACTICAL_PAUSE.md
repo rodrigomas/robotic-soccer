@@ -17,7 +17,7 @@ geometry for now:
 
 - Carrier: nearest player on the possession team to the ball.
 - Target: teammate with a weighted score for pass distance, distance to goal, and nearby opponent pressure.
-- Output: carrier, target, score, pass distance, pressure, and goal distance.
+- Output: carrier, ranked pass options, score, pass distance, pressure, and goal distance.
 
 Teams can customize the scoring weights from Lua with `strategy.tactical`:
 

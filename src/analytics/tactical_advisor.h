@@ -6,6 +6,16 @@
 
 namespace soccer {
 
+	const int TACTICAL_MAX_OPTIONS = 16;
+
+	typedef struct {
+		CPlayer *target;
+		double score;
+		double passDistance;
+		double targetPressure;
+		double targetGoalDistance;
+	} TacticalPassOption;
+
 	typedef struct {
 		CPlayer *carrier;
 		CPlayer *target;
@@ -13,6 +23,8 @@ namespace soccer {
 		double passDistance;
 		double targetPressure;
 		double targetGoalDistance;
+		TacticalPassOption options[TACTICAL_MAX_OPTIONS];
+		int optionCount;
 	} TacticalSuggestion;
 
 	class TacticalAdvisor {
@@ -26,6 +38,8 @@ namespace soccer {
 						      const CVector3D &pos);
 		static CPlayer *nearestPlayerToBall(CPlayer **players, int nplayers,
 						    const CBall &ball);
+		static void insertRankedOption(TacticalSuggestion *suggestion,
+					       const TacticalPassOption &option);
 
 	public:
 		TacticalAdvisor();
