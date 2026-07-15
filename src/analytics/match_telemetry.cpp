@@ -135,6 +135,7 @@ namespace soccer {
 		metadataOut << "pressure_path," << csv(pressurePath) << "\n";
 		metadataOut << "shots_path," << csv(shotsPath) << "\n";
 		metadataOut << "collisions_path," << csv(collisionsPath) << "\n";
+		metadataOut << "pass_lanes_path," << csv(passLanesPath) << "\n";
 		metadataOut << "summary_path," << csv(summaryPath) << "\n";
 
 		return true;
@@ -158,6 +159,7 @@ namespace soccer {
 		manifest.pressurePath = pressurePath;
 		manifest.shotsPath = shotsPath;
 		manifest.collisionsPath = collisionsPath;
+		manifest.passLanesPath = passLanesPath;
 		manifest.summaryPath = summaryPath;
 
 		return manifest.write(manifestPath);
@@ -175,6 +177,7 @@ namespace soccer {
 		PressureSummary pressure = pressureTracker.getSummary();
 		ShotSummary shots = shotDetector.getSummary();
 		CollisionSummary collisions = collisionDetector.getSummary();
+		PassLaneSummary passLanes = passLaneTracker.getSummary();
 
 		out << "{\n";
 		out << "  \"format\": \"robotic-soccer-match-summary\",\n";
@@ -219,6 +222,15 @@ namespace soccer {
 		out << "    \"player_ball\": " << collisions.playerBallCollisions << ",\n";
 		out << "    \"last_relative_speed\": " << std::fixed << std::setprecision(5)
 			<< collisions.lastRelativeSpeed << "\n";
+		out << "  },\n";
+		out << "  \"pass_lanes\": {\n";
+		out << "    \"samples\": " << passLanes.samples << ",\n";
+		out << "    \"options\": " << passLanes.options << ",\n";
+		out << "    \"last_option_count\": " << passLanes.lastOptionCount << ",\n";
+		out << "    \"last_best_target_number\": " << passLanes.lastBestTargetNumber << ",\n";
+		out << "    \"last_best_score\": " << std::fixed << std::setprecision(5)
+			<< passLanes.lastBestScore << ",\n";
+		out << "    \"last_best_pass_distance\": " << passLanes.lastBestPassDistance << "\n";
 		out << "  }\n";
 		out << "}\n";
 
@@ -290,11 +302,13 @@ namespace soccer {
 		pressurePath = std::string("telemetry/pressure_") + runId + ".csv";
 		shotsPath = std::string("telemetry/shots_") + runId + ".csv";
 		collisionsPath = std::string("telemetry/collisions_") + runId + ".csv";
+		passLanesPath = std::string("telemetry/pass_lanes_") + runId + ".csv";
 		summaryPath = std::string("telemetry/summary_") + runId + ".json";
 		collisionDetector.reset();
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 		metrics.reset();
 		passDetector.reset();
+		passLaneTracker.reset();
 		pressureTracker.reset();
 		shotDetector.reset();
 
@@ -412,6 +426,43 @@ namespace soccer {
 				(secondHalf ? 60.0 : -60.0) :
 				(secondHalf ? -60.0 : 60.0);
 			shotDetector.record(shotSample);
+
+			PassLaneSample laneSample;
+			laneSample.tick = tick;
+			laneSample.matchTime = matchTime;
+			laneSample.possessionTeam = team01Ball ? team01Name : team02Name;
+			laneSample.carrierNumber = carrier->num;
+			laneSample.carrierName = carrier->name;
+			laneSample.carrierPos = carrier->pos;
+			laneSample.ballPos = ball.pos;
+			laneSample.targetGoalZ = shotSample.targetGoalZ;
+
+			for(register int i = 0; i < possessionPlayerCount; i++) {
+				if(possessionPlayers[i] == NULL || possessionPlayers[i]->ncards >= 2) {
+					continue;
+				}
+
+				PassLanePlayer teammate;
+				teammate.team = team01Ball ? team01Name : team02Name;
+				teammate.number = possessionPlayers[i]->num;
+				teammate.name = possessionPlayers[i]->name;
+				teammate.pos = possessionPlayers[i]->pos;
+				laneSample.teammates.push_back(teammate);
+			}
+
+			for(register int i = 0; i < opponentPlayerCount; i++) {
+				if(opponentPlayers[i] == NULL || opponentPlayers[i]->ncards >= 2) {
+					continue;
+				}
+
+				PassLanePlayer opponent;
+				opponent.team = team01Ball ? team02Name : team01Name;
+				opponent.number = opponentPlayers[i]->num;
+				opponent.name = opponentPlayers[i]->name;
+				opponent.pos = opponentPlayers[i]->pos;
+				laneSample.opponents.push_back(opponent);
+			}
+			passLaneTracker.record(laneSample);
 		}
 
 		CollisionDetectorSample collisionSample;
@@ -549,6 +600,10 @@ namespace soccer {
 			collisionDetector.writeCsv(collisionsPath);
 		}
 
+		if(active && passLanesPath != "") {
+			passLaneTracker.writeCsv(passLanesPath);
+		}
+
 		if(active && summaryPath != "") {
 			writeMatchSummary();
 		}
@@ -619,6 +674,11 @@ namespace soccer {
 	const std::string &MatchTelemetry::getCollisionsPath(void) const
 	{
 		return collisionsPath;
+	}
+
+	const std::string &MatchTelemetry::getPassLanesPath(void) const
+	{
+		return passLanesPath;
 	}
 
 	const std::string &MatchTelemetry::getSummaryPath(void) const

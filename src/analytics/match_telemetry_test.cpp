@@ -91,6 +91,10 @@ int main(void)
 		return fail("metadata did not include collisions path");
 	}
 
+	if(!fileContains(telemetry.getMetadataPath(), "pass_lanes_path,")) {
+		return fail("metadata did not include pass lanes path");
+	}
+
 	if(!fileContains(telemetry.getMetadataPath(), "summary_path,")) {
 		return fail("metadata did not include summary path");
 	}
@@ -133,6 +137,10 @@ int main(void)
 		return fail("manifest loader did not read collisions path");
 	}
 
+	if(manifest.passLanesPath != telemetry.getPassLanesPath()) {
+		return fail("manifest loader did not read pass lanes path");
+	}
+
 	if(manifest.summaryPath != telemetry.getSummaryPath()) {
 		return fail("manifest loader did not read summary path");
 	}
@@ -147,7 +155,8 @@ int main(void)
 	if(!fileContains(telemetry.getSummaryPath(), "\"passes\"") ||
 	   !fileContains(telemetry.getSummaryPath(), "\"pressure\"") ||
 	   !fileContains(telemetry.getSummaryPath(), "\"shots\"") ||
-	   !fileContains(telemetry.getSummaryPath(), "\"collisions\"")) {
+	   !fileContains(telemetry.getSummaryPath(), "\"collisions\"") ||
+	   !fileContains(telemetry.getSummaryPath(), "\"pass_lanes\"")) {
 		return fail("summary did not include expected sections");
 	}
 
@@ -161,6 +170,7 @@ int main(void)
 	removeFile(telemetry.getPressurePath());
 	removeFile(telemetry.getShotsPath());
 	removeFile(telemetry.getCollisionsPath());
+	removeFile(telemetry.getPassLanesPath());
 	removeFile(telemetry.getSummaryPath());
 
 	return 0;

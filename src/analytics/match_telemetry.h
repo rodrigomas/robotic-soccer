@@ -8,6 +8,7 @@
 #include "analytics/match_heatmap.h"
 #include "analytics/match_metrics.h"
 #include "analytics/pass_detector.h"
+#include "analytics/pass_lane_tracker.h"
 #include "analytics/pressure_tracker.h"
 #include "analytics/shot_detector.h"
 #include "ball.h"
@@ -35,6 +36,7 @@ namespace soccer {
 		std::string pressurePath;
 		std::string shotsPath;
 		std::string collisionsPath;
+		std::string passLanesPath;
 		std::string summaryPath;
 		std::string team01Name;
 		std::string team02Name;
@@ -42,6 +44,7 @@ namespace soccer {
 		MatchHeatmap heatmap;
 		MatchMetrics metrics;
 		PassDetector passDetector;
+		PassLaneTracker passLaneTracker;
 		PressureTracker pressureTracker;
 		ShotDetector shotDetector;
 
@@ -89,6 +92,7 @@ namespace soccer {
 		const std::string &getPressurePath(void) const;
 		const std::string &getShotsPath(void) const;
 		const std::string &getCollisionsPath(void) const;
+		const std::string &getPassLanesPath(void) const;
 		const std::string &getSummaryPath(void) const;
 		int getDerivedEventCount(void) const;
 		CollisionSummary getCollisionSummary(void) const;

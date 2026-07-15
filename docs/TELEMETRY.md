@@ -7,7 +7,7 @@ The snapshot file is sampled every five active game ticks to keep the first vers
 Each match also writes a `metadata_*.csv` key/value file and a `replay_*.json`
 manifest. They record the telemetry format version, run id, creation stamp,
 deterministic random seed, team names, sample stride, and the related
-snapshot/event/derived-event/heatmap/metrics/pressure/shot/collision/summary file paths. This is the first replay scaffold: a
+snapshot/event/derived-event/heatmap/metrics/pressure/shot/collision/pass-lane/summary file paths. This is the first replay scaffold: a
 captured match can now be tied back to the random sequence and files that
 produced it.
 
@@ -24,7 +24,7 @@ The engine reader/writer for this file lives in `src/analytics/replay_manifest.*
 - `team01`, `team02`: configured team names.
 - `sample_stride`: active game ticks between snapshot samples.
 - `manifest_path`: JSON replay manifest for this match capture.
-- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`, `shots_path`, `collisions_path`, `summary_path`: related files for the same match capture.
+- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`, `shots_path`, `collisions_path`, `pass_lanes_path`, `summary_path`: related files for the same match capture.
 
 ## Replay Manifest JSON
 
@@ -37,7 +37,7 @@ Manifest files are named `replay_*.json` and include:
 - `random_seed`: deterministic gameplay seed.
 - `teams`: `team01` and `team02` names.
 - `sample_stride`: active game ticks between snapshot samples.
-- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, pressure, shot, collision, and summary paths.
+- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, pressure, shot, collision, pass-lane, and summary paths.
 
 ## Match Summary JSON
 
@@ -51,6 +51,7 @@ without parsing every stream.
 - `run_id`, `random_seed`, `teams`: identity and replay provenance.
 - `samples`, `ticks`, `last_match_time`: capture length.
 - `passes`: derived event count, completed passes, possession changes, and longest inferred pass.
+- `pass_lanes`: recorded sample count, option count, latest option count, and latest best target summary.
 - `pressure`: sample count, high-pressure samples, average/min/latest distance.
 - `shots`: total shots, team shot counts, and latest inferred shot details.
 - `collisions`: total contacts, player-player contacts, player-ball contacts, and latest relative speed.
@@ -179,8 +180,29 @@ one collision event until the objects separate.
 - `relative_speed`: X/Z relative speed between the participants.
 - `a_x`, `a_z`, `b_x`, `b_z`: world positions used for the calculation.
 
+## Pass Lane CSV Columns
+
+Pass lane files are named `pass_lanes_*.csv`. They record the top ranked pass
+options for the inferred carrier on each telemetry sample. The first ranking is
+the engine baseline used by tactical pause: receiver pressure minus pass
+distance and goal distance. Lua strategy customization can be layered onto this
+later, but the replay export starts with deterministic engine geometry.
+
+- `tick`: scene update tick seen by the telemetry recorder.
+- `match_time`: in-game seconds from kickoff.
+- `possession_team`: team currently considered to have possession.
+- `carrier_number`, `carrier_name`: inferred ball carrier.
+- `rank`: option rank for that sample.
+- `target_number`, `target_name`: candidate receiver.
+- `score`: baseline engine score.
+- `pass_distance`: carrier-to-target distance.
+- `target_pressure`: nearest-opponent distance around the receiver.
+- `target_goal_distance`: receiver distance to the attacking goal.
+- `forward_progress`: how much closer the receiver is to the attacking goal than the carrier.
+- `carrier_x`, `carrier_z`, `target_x`, `target_z`, `ball_x`, `ball_z`: world positions used for the calculation.
+
 ## 2.0 Use
 
-These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, match timeline, and restart prototypes without changing Lua strategy scripts yet.
+These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should expose pass-lane candidates and compact match summaries for replay dashboards.
+The next slice should add a small replay report command that reads the manifest and prints the compact summary for dashboard tooling.

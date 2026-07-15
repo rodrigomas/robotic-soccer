@@ -48,7 +48,7 @@ ifeq ($(USE_MUSIC),1)
 WMUSIC = -DUSE_MUSIC
 endif
 
-OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o deterministic_random.o fixed_timestep.o lua_strategy_profile.o collision_detector.o match_heatmap.o match_metrics.o pass_detector.o pressure_tracker.o shot_detector.o replay_manifest.o match_telemetry.o tactical_advisor.o)
+OBJECTS = $(addprefix $(OBJ_DIR)/, defs.o vector3d.o camera.o tga.o wav.o ogg.o keyhelper.o lights.o color.o rigidbody.o info.o scene.o jpeg.o gamedata.o sound.o libsoccer.o button.o fade.o player.o physics.o scene_01.o scene_02.o scene_03.o scene_04.o scene_05.o scene_06.o sky.o placar.o soccerfield.o flagman.o ball.o rules.o deterministic_random.o fixed_timestep.o lua_strategy_profile.o collision_detector.o match_heatmap.o match_metrics.o pass_detector.o pass_lane_tracker.o pressure_tracker.o shot_detector.o replay_manifest.o match_telemetry.o tactical_advisor.o)
 
 $(TARGET): $(OBJ_DIR)/main.o
 	mkdir -p $(TARGET_DIR)
@@ -117,6 +117,9 @@ $(OBJ_DIR)/match_metrics.o: analytics/match_metrics.cpp analytics/match_metrics.
 $(OBJ_DIR)/pass_detector.o: analytics/pass_detector.cpp analytics/pass_detector.h vector3d.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/pass_detector.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
+$(OBJ_DIR)/pass_lane_tracker.o: analytics/pass_lane_tracker.cpp analytics/pass_lane_tracker.h vector3d.h | $(OBJ_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/pass_lane_tracker.cpp -o $@ -Wall $(LEVEL) $(ARCH)
+
 $(OBJ_DIR)/pressure_tracker.o: analytics/pressure_tracker.cpp analytics/pressure_tracker.h vector3d.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/pressure_tracker.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
@@ -126,7 +129,7 @@ $(OBJ_DIR)/shot_detector.o: analytics/shot_detector.cpp analytics/shot_detector.
 $(OBJ_DIR)/replay_manifest.o: analytics/replay_manifest.cpp analytics/replay_manifest.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/replay_manifest.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-$(OBJ_DIR)/match_telemetry.o: analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/collision_detector.h analytics/match_heatmap.h analytics/match_metrics.h analytics/pass_detector.h analytics/pressure_tracker.h analytics/shot_detector.h analytics/replay_manifest.h engine/core/deterministic_random.h ball.h player.h | $(OBJ_DIR)
+$(OBJ_DIR)/match_telemetry.o: analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/collision_detector.h analytics/match_heatmap.h analytics/match_metrics.h analytics/pass_detector.h analytics/pass_lane_tracker.h analytics/pressure_tracker.h analytics/shot_detector.h analytics/replay_manifest.h engine/core/deterministic_random.h ball.h player.h | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c analytics/match_telemetry.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
 $(OBJ_DIR)/tactical_advisor.o: analytics/tactical_advisor.cpp analytics/tactical_advisor.h ball.h player.h | $(OBJ_DIR)
@@ -211,23 +214,27 @@ $(TEST_DIR)/collision_detector_test: analytics/collision_detector_test.cpp analy
 $(TEST_DIR)/pass_detector_test: analytics/pass_detector_test.cpp analytics/pass_detector.cpp analytics/pass_detector.h | $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/pass_detector_test.cpp analytics/pass_detector.cpp -Wall $(LEVEL) $(ARCH)
 
+$(TEST_DIR)/pass_lane_tracker_test: analytics/pass_lane_tracker_test.cpp analytics/pass_lane_tracker.cpp analytics/pass_lane_tracker.h | $(TEST_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/pass_lane_tracker_test.cpp analytics/pass_lane_tracker.cpp -Wall $(LEVEL) $(ARCH)
+
 $(TEST_DIR)/pressure_tracker_test: analytics/pressure_tracker_test.cpp analytics/pressure_tracker.cpp analytics/pressure_tracker.h | $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/pressure_tracker_test.cpp analytics/pressure_tracker.cpp -Wall $(LEVEL) $(ARCH)
 
 $(TEST_DIR)/shot_detector_test: analytics/shot_detector_test.cpp analytics/shot_detector.cpp analytics/shot_detector.h | $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/shot_detector_test.cpp analytics/shot_detector.cpp -Wall $(LEVEL) $(ARCH)
 
-$(TEST_DIR)/match_telemetry_test: analytics/match_telemetry_test.cpp analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/collision_detector.cpp analytics/collision_detector.h analytics/match_heatmap.cpp analytics/match_heatmap.h analytics/match_metrics.cpp analytics/match_metrics.h analytics/pass_detector.cpp analytics/pass_detector.h analytics/pressure_tracker.cpp analytics/pressure_tracker.h analytics/shot_detector.cpp analytics/shot_detector.h analytics/replay_manifest.cpp analytics/replay_manifest.h engine/core/deterministic_random.cpp engine/core/deterministic_random.h | $(TEST_DIR)
-	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/match_telemetry_test.cpp analytics/match_telemetry.cpp analytics/collision_detector.cpp analytics/match_heatmap.cpp analytics/match_metrics.cpp analytics/pass_detector.cpp analytics/pressure_tracker.cpp analytics/shot_detector.cpp analytics/replay_manifest.cpp engine/core/deterministic_random.cpp -Wall $(LEVEL) $(ARCH)
+$(TEST_DIR)/match_telemetry_test: analytics/match_telemetry_test.cpp analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/collision_detector.cpp analytics/collision_detector.h analytics/match_heatmap.cpp analytics/match_heatmap.h analytics/match_metrics.cpp analytics/match_metrics.h analytics/pass_detector.cpp analytics/pass_detector.h analytics/pass_lane_tracker.cpp analytics/pass_lane_tracker.h analytics/pressure_tracker.cpp analytics/pressure_tracker.h analytics/shot_detector.cpp analytics/shot_detector.h analytics/replay_manifest.cpp analytics/replay_manifest.h engine/core/deterministic_random.cpp engine/core/deterministic_random.h | $(TEST_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/match_telemetry_test.cpp analytics/match_telemetry.cpp analytics/collision_detector.cpp analytics/match_heatmap.cpp analytics/match_metrics.cpp analytics/pass_detector.cpp analytics/pass_lane_tracker.cpp analytics/pressure_tracker.cpp analytics/shot_detector.cpp analytics/replay_manifest.cpp engine/core/deterministic_random.cpp -Wall $(LEVEL) $(ARCH)
 
 core-tests: $(TEST_DIR)/fixed_timestep_test $(TEST_DIR)/deterministic_random_test
 	$(TEST_DIR)/fixed_timestep_test
 	$(TEST_DIR)/deterministic_random_test
 
-analytics-tests: $(TEST_DIR)/match_telemetry_test $(TEST_DIR)/collision_detector_test $(TEST_DIR)/pass_detector_test $(TEST_DIR)/pressure_tracker_test $(TEST_DIR)/shot_detector_test
+analytics-tests: $(TEST_DIR)/match_telemetry_test $(TEST_DIR)/collision_detector_test $(TEST_DIR)/pass_detector_test $(TEST_DIR)/pass_lane_tracker_test $(TEST_DIR)/pressure_tracker_test $(TEST_DIR)/shot_detector_test
 	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/match_telemetry_test
 	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/collision_detector_test
 	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/pass_detector_test
+	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/pass_lane_tracker_test
 	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/pressure_tracker_test
 	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/shot_detector_test
 

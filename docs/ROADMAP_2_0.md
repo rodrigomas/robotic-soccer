@@ -25,7 +25,7 @@ See [`ARCHITECTURE_2_0.md`](ARCHITECTURE_2_0.md) for the first technical shape.
 
 ## First Slice In Progress
 
-- Match telemetry now writes CSV/JSON/manifest files for positions, rules events, passes, pressure, shots, collisions, heatmaps, movement metrics, and compact match summaries.
+- Match telemetry now writes CSV/JSON/manifest files for positions, rules events, passes, pass lanes, pressure, shots, collisions, heatmaps, movement metrics, and compact match summaries.
 - See [`TELEMETRY.md`](TELEMETRY.md) for the first CSV format.
 - A first tactical pause overlay is available in-match with possession, restart stats, derived analytics, and suggested pass lanes. See [`TACTICAL_PAUSE.md`](TACTICAL_PAUSE.md).
 
