@@ -322,6 +322,79 @@
 		};
 	}
 
+	function buildMovementMetrics(rows) {
+		return (rows || []).map(function(row) {
+			var metric = {
+				entityType: row.entity_type,
+				team: row.team,
+				number: asNumber(row.number),
+				name: row.name,
+				samples: asNumber(row.samples),
+				distance: asNumber(row.distance),
+				averageSpeed: asNumber(row.average_speed),
+				maxSpeed: asNumber(row.max_speed)
+			};
+			metric.playerKey = heatmapPlayerKey(metric);
+			return metric;
+		});
+	}
+
+	function movementLabel(filters) {
+		if(filters.player && filters.player !== "all") {
+			var parts = filters.player.split("|");
+			return "#" + parts[1] + " " + parts[2] + " (" + parts[0] + ")";
+		}
+		if(filters.entityType === "ball") {
+			return "Ball";
+		}
+		if(filters.entityType === "player" && filters.team !== "all") {
+			return filters.team + " players";
+		}
+		if(filters.entityType === "player") {
+			return "All players";
+		}
+		if(filters.team !== "all") {
+			return filters.team;
+		}
+		return "All movement";
+	}
+
+	function summarizeMovementMetrics(metrics, filters) {
+		var activeFilters = filters || {};
+		var team = activeFilters.team || "all";
+		var entityType = activeFilters.entityType || "all";
+		var player = activeFilters.player || "all";
+		var rows = (metrics || []).filter(function(metric) {
+			var teamMatch = team === "all" || metric.team === team;
+			var entityMatch = entityType === "all" || metric.entityType === entityType;
+			var playerMatch = player === "all" || metric.playerKey === player;
+			return teamMatch && entityMatch && playerMatch;
+		});
+		var samples = rows.reduce(function(total, row) {
+			return total + row.samples;
+		}, 0);
+		var distance = rows.reduce(function(total, row) {
+			return total + row.distance;
+		}, 0);
+		var weightedSpeed = rows.reduce(function(total, row) {
+			return total + (row.averageSpeed * row.samples);
+		}, 0);
+		var maxSpeed = rows.reduce(function(best, row) {
+			return Math.max(best, row.maxSpeed);
+		}, 0);
+		return {
+			label: movementLabel({ team: team, entityType: entityType, player: player }),
+			count: rows.length,
+			rows: [
+				["Entities", String(rows.length)],
+				["Samples", String(samples)],
+				["Distance", formatNumber(distance, 2)],
+				["Average speed", formatNumber(samples > 0 ? weightedSpeed / samples : 0, 2)],
+				["Max speed", formatNumber(maxSpeed, 2)]
+			]
+		};
+	}
+
 	function buildReplayViewModel(entry,
 				      manifest,
 				      summary,
@@ -329,6 +402,7 @@
 				      pressureRows,
 				      derivedRows,
 				      shotRows,
+				      metricsRows,
 				      heatmapRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
 		var latestPressure = latestPressureFrame(pressureRows || []);
@@ -351,6 +425,7 @@
 			false;
 		var teams = [summary.teams.team01, summary.teams.team02];
 		var heatmap = buildHeatmap(heatmapRows || [], teams);
+		var movementMetrics = buildMovementMetrics(metricsRows || []);
 
 		return {
 			id: entry.id,
@@ -440,6 +515,7 @@
 				opponentZ: latestPressure ? asNumber(latestPressure.opponent_z) : 0
 			},
 			timeline: timeline,
+			movementMetrics: movementMetrics,
 			heatmap: heatmap
 		};
 	}
@@ -664,10 +740,16 @@
 
 	function renderHeatmapSection(documentRef, viewModel) {
 		renderHeatmapFilters(documentRef, viewModel);
-		var filteredHeatmap = filterHeatmap(viewModel.heatmap, heatmapFilterState(documentRef));
+		var filters = heatmapFilterState(documentRef);
+		var filteredHeatmap = filterHeatmap(viewModel.heatmap, filters);
+		var movement = summarizeMovementMetrics(viewModel.movementMetrics, filters);
 		documentRef.getElementById("heatmap-label").textContent =
 			filteredHeatmap.totalSamples + " samples, max " + filteredHeatmap.maxSamples;
 		renderHeatmap(documentRef, documentRef.getElementById("heatmap-view"), filteredHeatmap);
+		documentRef.getElementById("movement-label").textContent = movement.label;
+		renderTacticalSummary(documentRef,
+			documentRef.getElementById("movement-metrics"),
+			movement.rows);
 	}
 
 	function svgNode(documentRef, tag, attrs) {
@@ -967,6 +1049,7 @@
 				var pressureText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pressure)));
 				var derivedText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.derived_events)));
 				var shotText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.shots)));
+				var metricsText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.metrics)));
 				var heatmapText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.heatmap)));
 				replayData[id] = {
 					manifest: manifest,
@@ -975,6 +1058,7 @@
 					pressureRows: parseCsv(pressureText),
 					derivedRows: parseCsv(derivedText),
 					shotRows: parseCsv(shotText),
+					metricsRows: parseCsv(metricsText),
 					heatmapRows: parseCsv(heatmapText)
 				};
 			}
@@ -986,6 +1070,7 @@
 				data.pressureRows,
 				data.derivedRows,
 				data.shotRows,
+				data.metricsRows,
 				data.heatmapRows);
 			activeViewModel = viewModel;
 			if(!selectedEventId && viewModel.timeline.length > 0) {
@@ -1024,6 +1109,8 @@
 		formatNumber: formatNumber,
 		buildHeatmap: buildHeatmap,
 		filterHeatmap: filterHeatmap,
+		buildMovementMetrics: buildMovementMetrics,
+		summarizeMovementMetrics: summarizeMovementMetrics,
 		buildTimelineItems: buildTimelineItems,
 		selectedEventDetails: selectedEventDetails,
 		timelineNavigationTarget: timelineNavigationTarget,

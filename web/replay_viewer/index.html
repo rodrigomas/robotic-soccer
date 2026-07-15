@@ -91,7 +91,16 @@
             <span id="heatmap-label">-</span>
           </div>
         </div>
-        <svg id="heatmap-view" class="heatmap-view" viewBox="0 0 360 240" role="img" aria-label="Replay heatmap view"></svg>
+        <div class="heatmap-layout">
+          <svg id="heatmap-view" class="heatmap-view" viewBox="0 0 360 240" role="img" aria-label="Replay heatmap view"></svg>
+          <aside class="movement-panel" aria-label="Movement metrics">
+            <div class="movement-heading">
+              <h3>Movement</h3>
+              <span id="movement-label">-</span>
+            </div>
+            <dl id="movement-metrics" class="movement-metrics"></dl>
+          </aside>
+        </div>
       </section>
     </section>
   </main>

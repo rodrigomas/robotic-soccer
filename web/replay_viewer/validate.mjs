@@ -84,6 +84,30 @@ const mismatchedPlayerHeatmap = viewer.filterHeatmap(heatmap, {
 	entityType: "player",
 	player: "Botafogo|9|Striker"
 });
+const metricsText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.metrics)));
+const metricsRows = viewer.parseCsv(metricsText);
+const movementMetrics = viewer.buildMovementMetrics(metricsRows);
+const allMovement = viewer.summarizeMovementMetrics(movementMetrics, {
+	team: "all",
+	entityType: "all",
+	player: "all"
+});
+const strikerMovement = viewer.summarizeMovementMetrics(movementMetrics, {
+	team: "Botafogo",
+	entityType: "player",
+	player: "Botafogo|9|Striker"
+});
+const botafogoMovement = viewer.summarizeMovementMetrics(movementMetrics, {
+	team: "Botafogo",
+	entityType: "player",
+	player: "all"
+});
+const ballMovement = viewer.summarizeMovementMetrics(movementMetrics, {
+	team: "all",
+	entityType: "ball",
+	player: "all"
+});
 const viewModel = viewer.buildReplayViewModel(entry,
 	manifest,
 	summary,
@@ -91,6 +115,7 @@ const viewModel = viewer.buildReplayViewModel(entry,
 	pressureRows,
 	derivedRows,
 	shotRows,
+	metricsRows,
 	heatmapRows);
 
 if(viewModel.runId !== "basic_match_fixture" ||
@@ -141,6 +166,21 @@ if(viewModel.runId !== "basic_match_fixture" ||
    markerHeatmap.totalSamples !== 2 ||
    mismatchedPlayerHeatmap.cells.length !== 0 ||
    mismatchedPlayerHeatmap.totalSamples !== 0 ||
+   movementMetrics.length !== 4 ||
+   allMovement.rows[1][1] !== "6" ||
+   allMovement.rows[2][1] !== "13.73" ||
+   allMovement.rows[3][1] !== "7.95" ||
+   allMovement.rows[4][1] !== "18.97" ||
+   strikerMovement.label !== "#9 Striker (Botafogo)" ||
+   strikerMovement.rows[1][1] !== "1" ||
+   strikerMovement.rows[2][1] !== "0.00" ||
+   strikerMovement.rows[3][1] !== "4.12" ||
+   botafogoMovement.label !== "Botafogo players" ||
+   botafogoMovement.rows[0][1] !== "2" ||
+   botafogoMovement.rows[3][1] !== "3.86" ||
+   ballMovement.label !== "Ball" ||
+   ballMovement.rows[4][1] !== "18.97" ||
+   viewModel.movementMetrics.length !== 4 ||
    viewModel.heatmap.totalSamples !== 6) {
 	throw new Error("replay viewer view model did not match the fixture");
 }
