@@ -50,7 +50,10 @@ const derivedRows = viewer.parseCsv(derivedText);
 const shotText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.shots)));
 const shotRows = viewer.parseCsv(shotText);
-const timeline = viewer.buildTimelineItems(derivedRows, shotRows);
+const collisionText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.collisions)));
+const collisionRows = viewer.parseCsv(collisionText);
+const timeline = viewer.buildTimelineItems(derivedRows, shotRows, collisionRows);
 const selectedShot = viewer.selectedTimelineItem(timeline, "shot-20-0");
 const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
 const shotEventType = selectedShotDetails.find(([key]) => key === "event_type");
@@ -59,32 +62,47 @@ const shotForwardSpeed = selectedShotDetails.find(([key]) => key === "forward_sp
 const firstTimelineId = timeline[0].id;
 const secondTimelineId = timeline[1].id;
 const thirdTimelineId = timeline[2].id;
+const passCompleted = viewer.selectedTimelineItem(timeline, "pass_completed-10-0");
+const playerBallCollision = viewer.selectedTimelineItem(timeline, "player_ball-8-0");
+const playerPlayerCollision = viewer.selectedTimelineItem(timeline, "player_player-18-1");
+const possessionChange = viewer.selectedTimelineItem(timeline, "possession_change-25-1");
 const passTimeline = viewer.filterTimelineItems(timeline, {
 	pass_completed: true,
 	shot: false,
-	possession_change: false
+	possession_change: false,
+	collision: false
 });
 const shotTimeline = viewer.filterTimelineItems(timeline, {
 	pass_completed: false,
 	shot: true,
-	possession_change: false
+	possession_change: false,
+	collision: false
 });
 const tacticalTimeline = viewer.filterTimelineItems(timeline, {
 	pass_completed: true,
 	shot: true,
-	possession_change: false
+	possession_change: false,
+	collision: false
 });
 const emptyTimeline = viewer.filterTimelineItems(timeline, {
 	pass_completed: false,
 	shot: false,
-	possession_change: false
+	possession_change: false,
+	collision: false
+});
+const collisionTimeline = viewer.filterTimelineItems(timeline, {
+	pass_completed: false,
+	shot: false,
+	possession_change: false,
+	collision: true
 });
 const botafogoTimeline = viewer.filterTimelineItems(timeline, {
 	team: "Botafogo",
 	types: {
 		pass_completed: true,
 		shot: true,
-		possession_change: true
+		possession_change: true,
+		collision: true
 	}
 });
 const flamengoTimeline = viewer.filterTimelineItems(timeline, {
@@ -92,7 +110,8 @@ const flamengoTimeline = viewer.filterTimelineItems(timeline, {
 	types: {
 		pass_completed: true,
 		shot: true,
-		possession_change: true
+		possession_change: true,
+		collision: true
 	}
 });
 const flamengoShotsTimeline = viewer.filterTimelineItems(timeline, {
@@ -100,7 +119,8 @@ const flamengoShotsTimeline = viewer.filterTimelineItems(timeline, {
 	types: {
 		pass_completed: false,
 		shot: true,
-		possession_change: false
+		possession_change: false,
+		collision: false
 	}
 });
 const strikerSearchTimeline = viewer.filterTimelineItems(timeline, {
@@ -109,7 +129,8 @@ const strikerSearchTimeline = viewer.filterTimelineItems(timeline, {
 	types: {
 		pass_completed: true,
 		shot: true,
-		possession_change: true
+		possession_change: true,
+		collision: true
 	}
 });
 const shirtSearchTimeline = viewer.filterTimelineItems(timeline, {
@@ -118,7 +139,8 @@ const shirtSearchTimeline = viewer.filterTimelineItems(timeline, {
 	types: {
 		pass_completed: true,
 		shot: true,
-		possession_change: true
+		possession_change: true,
+		collision: true
 	}
 });
 const markerSearchTimeline = viewer.filterTimelineItems(timeline, {
@@ -127,7 +149,8 @@ const markerSearchTimeline = viewer.filterTimelineItems(timeline, {
 	types: {
 		pass_completed: true,
 		shot: true,
-		possession_change: true
+		possession_change: true,
+		collision: true
 	}
 });
 const mismatchedSearchTimeline = viewer.filterTimelineItems(timeline, {
@@ -136,7 +159,8 @@ const mismatchedSearchTimeline = viewer.filterTimelineItems(timeline, {
 	types: {
 		pass_completed: true,
 		shot: true,
-		possession_change: true
+		possession_change: true,
+		collision: true
 	}
 });
 const allTimelineCounts = viewer.timelineTeamCounts(timeline, [summary.teams.team01, summary.teams.team02]);
@@ -204,6 +228,7 @@ const viewModel = viewer.buildReplayViewModel(entry,
 	pressureRows,
 	derivedRows,
 	shotRows,
+	collisionRows,
 	snapshotRows,
 	metricsRows,
 	heatmapRows);
@@ -234,56 +259,72 @@ if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.pressure.carrierZ !== 1 ||
    viewModel.pressure.opponentX !== 18 ||
    viewModel.pressure.opponentZ !== 4 ||
-   timeline.length !== 3 ||
-   timeline[0].type !== "pass_completed" ||
-   timeline[1].type !== "shot" ||
-   timeline[2].type !== "possession_change" ||
+   timeline.length !== 5 ||
+   timeline[0].type !== "player_ball" ||
+   timeline[1].type !== "pass_completed" ||
+   timeline[2].type !== "player_player" ||
+   timeline[3].type !== "shot" ||
+   timeline[4].type !== "possession_change" ||
+   playerBallCollision.detail !== "Striker #9 with Ball" ||
+   playerBallCollision.value !== "6.75" ||
+   playerBallCollision.field.x !== -5 ||
+   playerPlayerCollision.detail !== "Winger #11 with Marker #5" ||
+   playerPlayerCollision.teams.length !== 2 ||
+   playerPlayerCollision.teams[1] !== "Flamengo" ||
    passTimeline.length !== 1 ||
    passTimeline[0].type !== "pass_completed" ||
    shotTimeline.length !== 1 ||
-   shotTimeline[0].id !== secondTimelineId ||
+   shotTimeline[0].id !== selectedShot.id ||
    tacticalTimeline.length !== 2 ||
    tacticalTimeline[1].type !== "shot" ||
    emptyTimeline.length !== 0 ||
-   botafogoTimeline.length !== 2 ||
+   collisionTimeline.length !== 2 ||
+   collisionTimeline[0].type !== "player_ball" ||
+   collisionTimeline[1].type !== "player_player" ||
+   botafogoTimeline.length !== 4 ||
    botafogoTimeline[0].team !== "Botafogo" ||
-   botafogoTimeline[1].type !== "shot" ||
-   flamengoTimeline.length !== 1 ||
-   flamengoTimeline[0].type !== "possession_change" ||
+   botafogoTimeline[3].type !== "shot" ||
+   flamengoTimeline.length !== 2 ||
+   flamengoTimeline[0].type !== "player_player" ||
+   flamengoTimeline[1].type !== "possession_change" ||
    flamengoShotsTimeline.length !== 0 ||
-   strikerSearchTimeline.length !== 2 ||
-   strikerSearchTimeline[0].type !== "pass_completed" ||
-   strikerSearchTimeline[1].type !== "shot" ||
-   shirtSearchTimeline.length !== 2 ||
-   markerSearchTimeline.length !== 1 ||
-   markerSearchTimeline[0].team !== "Flamengo" ||
+   strikerSearchTimeline.length !== 3 ||
+   strikerSearchTimeline[0].type !== "player_ball" ||
+   strikerSearchTimeline[1].type !== "pass_completed" ||
+   strikerSearchTimeline[2].type !== "shot" ||
+   shirtSearchTimeline.length !== 3 ||
+   markerSearchTimeline.length !== 2 ||
+   markerSearchTimeline[0].type !== "player_player" ||
+   markerSearchTimeline[1].team !== "Flamengo" ||
    mismatchedSearchTimeline.length !== 0 ||
-   allTimelineCounts[0].total !== 2 ||
+   allTimelineCounts[0].total !== 4 ||
    allTimelineCounts[0].passCompleted !== 1 ||
    allTimelineCounts[0].shots !== 1 ||
-   allTimelineCounts[1].total !== 1 ||
+   allTimelineCounts[0].collisions !== 2 ||
+   allTimelineCounts[1].total !== 2 ||
    allTimelineCounts[1].possessionChanges !== 1 ||
-   botafogoTimelineCounts[0].total !== 2 ||
-   botafogoTimelineCounts[1].total !== 0 ||
-   flamengoTimelineCounts[0].total !== 0 ||
-   flamengoTimelineCounts[1].total !== 1 ||
+   allTimelineCounts[1].collisions !== 1 ||
+   botafogoTimelineCounts[0].total !== 4 ||
+   botafogoTimelineCounts[1].total !== 1 ||
+   flamengoTimelineCounts[0].total !== 1 ||
+   flamengoTimelineCounts[1].total !== 2 ||
    shotTimelineCounts[0].shots !== 1 ||
    shotTimelineCounts[1].shots !== 0 ||
-   viewer.repairedTimelineSelection(passTimeline, secondTimelineId) !== firstTimelineId ||
-   viewer.repairedTimelineSelection(tacticalTimeline, secondTimelineId) !== secondTimelineId ||
-   viewer.repairedTimelineSelection(flamengoTimeline, secondTimelineId) !== thirdTimelineId ||
-   viewer.repairedTimelineSelection(flamengoShotsTimeline, secondTimelineId) !== "" ||
-   viewer.repairedTimelineSelection(markerSearchTimeline, secondTimelineId) !== thirdTimelineId ||
-   viewer.repairedTimelineSelection(mismatchedSearchTimeline, secondTimelineId) !== "" ||
-   viewer.repairedTimelineSelection(emptyTimeline, secondTimelineId) !== "" ||
+   viewer.repairedTimelineSelection(passTimeline, selectedShot.id) !== passCompleted.id ||
+   viewer.repairedTimelineSelection(tacticalTimeline, selectedShot.id) !== selectedShot.id ||
+   viewer.repairedTimelineSelection(flamengoTimeline, selectedShot.id) !== playerPlayerCollision.id ||
+   viewer.repairedTimelineSelection(flamengoShotsTimeline, selectedShot.id) !== "" ||
+   viewer.repairedTimelineSelection(markerSearchTimeline, selectedShot.id) !== playerPlayerCollision.id ||
+   viewer.repairedTimelineSelection(mismatchedSearchTimeline, selectedShot.id) !== "" ||
+   viewer.repairedTimelineSelection(emptyTimeline, selectedShot.id) !== "" ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowLeft") !== firstTimelineId ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowRight") !== secondTimelineId ||
    viewer.timelineNavigationTarget(timeline, secondTimelineId, "ArrowUp") !== firstTimelineId ||
    viewer.timelineNavigationTarget(timeline, secondTimelineId, "ArrowDown") !== thirdTimelineId ||
    viewer.timelineNavigationTarget(timeline, thirdTimelineId, "Home") !== firstTimelineId ||
-   viewer.timelineNavigationTarget(timeline, firstTimelineId, "End") !== thirdTimelineId ||
+   viewer.timelineNavigationTarget(timeline, firstTimelineId, "End") !== possessionChange.id ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "Escape") !== "" ||
-   viewModel.timeline[1].value !== "16.25" ||
+   viewModel.timeline[3].value !== "16.25" ||
    selectedShot.type !== "shot" ||
    selectedShot.field.x !== -1 ||
    selectedShot.field.fromZ !== 18 ||

@@ -723,6 +723,12 @@ h3 {
   background: #fff0ee;
 }
 
+.timeline-item.player_ball .timeline-value,
+.timeline-item.player_player .timeline-value {
+  border-color: #c9b8ef;
+  background: #f4efff;
+}
+
 .empty-state {
   color: var(--muted);
   font-size: 14px;

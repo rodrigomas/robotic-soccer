@@ -127,7 +127,8 @@ The web shell can be TypeScript. The engine should remain C++.
 
 Current bridge: `web/replay_viewer/` is the first static browser shell. It reads
 the replay catalog, manifest, summary fixture, pass-lane CSV, and pressure CSV
-directly, merges derived events and shots into a compact timeline, renders
+directly, merges derived events, shots, and collisions into a compact timeline,
+renders
 summary cards, and lets the user switch focus between stream-backed field
 overlays, timeline, and heatmap grid views. Field overlays can isolate pass
 lanes or pressure context, with ranked pass-lane and pressure details beside the

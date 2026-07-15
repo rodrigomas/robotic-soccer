@@ -90,6 +90,12 @@
 		if(type === "shot") {
 			return "Shot";
 		}
+		if(type === "player_ball") {
+			return "Player-ball collision";
+		}
+		if(type === "player_player") {
+			return "Player collision";
+		}
 		return type;
 	}
 
@@ -103,19 +109,21 @@
 		});
 	}
 
-	function buildTimelineItems(derivedRows, shotRows) {
+	function buildTimelineItems(derivedRows, shotRows, collisionRows) {
 		var items = [];
 		(derivedRows || []).forEach(function(row, index) {
 			var type = row.event_type;
 			var fromLabel = row.from_name + " #" + row.from_number;
 			var toLabel = row.to_name + " #" + row.to_number;
+			var team = type === "possession_change" ? row.to_team : row.from_team;
 			items.push({
 				id: type + "-" + row.tick + "-" + index,
 				type: type,
 				tick: asNumber(row.tick),
 				time: asNumber(row.match_time),
 				title: eventTitle(type),
-				team: type === "possession_change" ? row.to_team : row.from_team,
+				team: team,
+				teams: [team],
 				detail: fromLabel + " to " + toLabel,
 				value: type === "pass_completed" ?
 					formatNumber(asNumber(row.pass_distance), 2) :
@@ -140,6 +148,7 @@
 				time: asNumber(row.match_time),
 				title: "Shot",
 				team: row.team,
+				teams: [row.team],
 				detail: row.shooter_name + " #" + row.shooter_number,
 				value: formatNumber(asNumber(row.shot_speed), 2),
 				raw: [["event_type", "shot"]].concat(eventRawRows(row, [
@@ -154,6 +163,39 @@
 					fromX: asNumber(row.shooter_x),
 					fromZ: asNumber(row.shooter_z),
 					label: "shot"
+				}
+			});
+		});
+		(collisionRows || []).forEach(function(row, index) {
+			var type = row.event_type;
+			var teamB = row.team_b || "";
+			var participantA = row.name_a + " #" + row.number_a;
+			var participantB = row.name_b === "Ball" ? "Ball" : row.name_b + " #" + row.number_b;
+			var teams = [row.team_a];
+			if(teamB && teams.indexOf(teamB) === -1) {
+				teams.push(teamB);
+			}
+			items.push({
+				id: type + "-" + row.tick + "-" + index,
+				type: type,
+				tick: asNumber(row.tick),
+				time: asNumber(row.match_time),
+				title: eventTitle(type),
+				team: row.team_a,
+				teams: teams,
+				detail: participantA + " with " + participantB,
+				value: formatNumber(asNumber(row.relative_speed), 2),
+				raw: eventRawRows(row, [
+					"event_type", "tick", "match_time", "team_a", "number_a",
+					"name_a", "team_b", "number_b", "name_b", "distance",
+					"relative_speed", "a_x", "a_z", "b_x", "b_z"
+				]),
+				field: {
+					x: asNumber(row.a_x),
+					z: asNumber(row.a_z),
+					fromX: asNumber(row.b_x),
+					fromZ: asNumber(row.b_z),
+					label: "collision"
 				}
 			});
 		});
@@ -208,8 +250,11 @@
 			return [];
 		}
 		return (items || []).filter(function(item) {
-			var typeMatch = typeState[item.type] !== false;
-			var teamMatch = team === "all" || item.team === team;
+			var typeMatch = item.type === "player_ball" || item.type === "player_player" ?
+				typeState.collision !== false :
+				typeState[item.type] !== false;
+			var itemTeams = item.teams || [item.team];
+			var teamMatch = team === "all" || itemTeams.indexOf(team) !== -1;
 			var searchMatch = !query || timelineSearchText(item).indexOf(query) !== -1;
 			return typeMatch && teamMatch && searchMatch;
 		});
@@ -235,29 +280,40 @@
 				total: 0,
 				passCompleted: 0,
 				shots: 0,
-				possessionChanges: 0
+				possessionChanges: 0,
+				collisions: 0
 			};
 		});
 		(items || []).forEach(function(item) {
-			if(!counts[item.team]) {
-				counts[item.team] = {
-					team: item.team,
-					total: 0,
-					passCompleted: 0,
-					shots: 0,
-					possessionChanges: 0
-				};
-			}
-			counts[item.team].total += 1;
-			if(item.type === "pass_completed") {
-				counts[item.team].passCompleted += 1;
-			}
-			if(item.type === "shot") {
-				counts[item.team].shots += 1;
-			}
-			if(item.type === "possession_change") {
-				counts[item.team].possessionChanges += 1;
-			}
+			var itemTeams = item.teams || [item.team];
+			itemTeams.forEach(function(team) {
+				if(!team) {
+					return;
+				}
+				if(!counts[team]) {
+					counts[team] = {
+						team: team,
+						total: 0,
+						passCompleted: 0,
+						shots: 0,
+						possessionChanges: 0,
+						collisions: 0
+					};
+				}
+				counts[team].total += 1;
+				if(item.type === "pass_completed") {
+					counts[team].passCompleted += 1;
+				}
+				if(item.type === "shot") {
+					counts[team].shots += 1;
+				}
+				if(item.type === "possession_change") {
+					counts[team].possessionChanges += 1;
+				}
+				if(item.type === "player_ball" || item.type === "player_player") {
+					counts[team].collisions += 1;
+				}
+			});
 		});
 		return Object.keys(counts).map(function(team) {
 			return counts[team];
@@ -579,12 +635,13 @@
 				      pressureRows,
 				      derivedRows,
 				      shotRows,
+				      collisionRows,
 				      snapshotRows,
 				      metricsRows,
 				      heatmapRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
 		var latestPressure = latestPressureFrame(pressureRows || []);
-		var timeline = buildTimelineItems(derivedRows || [], shotRows || []);
+		var timeline = buildTimelineItems(derivedRows || [], shotRows || [], collisionRows || []);
 		var bestPassLane = latestOptions[0] || null;
 		var bestTargetNumber = bestPassLane ?
 			asNumber(bestPassLane.target_number) :
@@ -806,7 +863,8 @@
 			item.appendChild(createEl(documentRef, "small", "",
 				count.passCompleted + " passes, " +
 				count.shots + " shots, " +
-				count.possessionChanges + " changes"));
+				count.possessionChanges + " changes, " +
+				count.collisions + " collisions"));
 			summaryEl.appendChild(item);
 		});
 	}
@@ -1373,6 +1431,7 @@
 				var pressureText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pressure)));
 				var derivedText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.derived_events)));
 				var shotText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.shots)));
+				var collisionText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.collisions)));
 				var metricsText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.metrics)));
 				var heatmapText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.heatmap)));
 				replayData[id] = {
@@ -1383,6 +1442,7 @@
 					pressureRows: parseCsv(pressureText),
 					derivedRows: parseCsv(derivedText),
 					shotRows: parseCsv(shotText),
+					collisionRows: parseCsv(collisionText),
 					metricsRows: parseCsv(metricsText),
 					heatmapRows: parseCsv(heatmapText)
 				};
@@ -1395,6 +1455,7 @@
 				data.pressureRows,
 				data.derivedRows,
 				data.shotRows,
+				data.collisionRows,
 				data.snapshotRows,
 				data.metricsRows,
 				data.heatmapRows);
