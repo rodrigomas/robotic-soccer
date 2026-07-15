@@ -79,6 +79,30 @@ const emptyTimeline = viewer.filterTimelineItems(timeline, {
 	shot: false,
 	possession_change: false
 });
+const botafogoTimeline = viewer.filterTimelineItems(timeline, {
+	team: "Botafogo",
+	types: {
+		pass_completed: true,
+		shot: true,
+		possession_change: true
+	}
+});
+const flamengoTimeline = viewer.filterTimelineItems(timeline, {
+	team: "Flamengo",
+	types: {
+		pass_completed: true,
+		shot: true,
+		possession_change: true
+	}
+});
+const flamengoShotsTimeline = viewer.filterTimelineItems(timeline, {
+	team: "Flamengo",
+	types: {
+		pass_completed: false,
+		shot: true,
+		possession_change: false
+	}
+});
 const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
@@ -165,8 +189,16 @@ if(viewModel.runId !== "basic_match_fixture" ||
    tacticalTimeline.length !== 2 ||
    tacticalTimeline[1].type !== "shot" ||
    emptyTimeline.length !== 0 ||
+   botafogoTimeline.length !== 2 ||
+   botafogoTimeline[0].team !== "Botafogo" ||
+   botafogoTimeline[1].type !== "shot" ||
+   flamengoTimeline.length !== 1 ||
+   flamengoTimeline[0].type !== "possession_change" ||
+   flamengoShotsTimeline.length !== 0 ||
    viewer.repairedTimelineSelection(passTimeline, secondTimelineId) !== firstTimelineId ||
    viewer.repairedTimelineSelection(tacticalTimeline, secondTimelineId) !== secondTimelineId ||
+   viewer.repairedTimelineSelection(flamengoTimeline, secondTimelineId) !== thirdTimelineId ||
+   viewer.repairedTimelineSelection(flamengoShotsTimeline, secondTimelineId) !== "" ||
    viewer.repairedTimelineSelection(emptyTimeline, secondTimelineId) !== "" ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowLeft") !== firstTimelineId ||
    viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowRight") !== secondTimelineId ||

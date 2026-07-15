@@ -178,8 +178,10 @@
 		].concat(item.raw || []);
 	}
 
-	function filterTimelineItems(items, activeTypes) {
-		var typeState = activeTypes || {};
+	function filterTimelineItems(items, filters) {
+		var activeFilters = filters || {};
+		var typeState = activeFilters.types || activeFilters;
+		var team = activeFilters.team || "all";
 		var hasEnabledType = Object.keys(typeState).some(function(type) {
 			return typeState[type];
 		});
@@ -187,7 +189,9 @@
 			return [];
 		}
 		return (items || []).filter(function(item) {
-			return typeState[item.type] !== false;
+			var typeMatch = typeState[item.type] !== false;
+			var teamMatch = team === "all" || item.team === team;
+			return typeMatch && teamMatch;
 		});
 	}
 
@@ -907,11 +911,25 @@
 
 	function timelineFilterState(documentRef) {
 		var filters = documentRef.querySelectorAll(".timeline-filter");
-		var state = {};
+		var team = documentRef.getElementById("timeline-team-filter");
+		var state = { team: team && team.value ? team.value : "all", types: {} };
 		for(var i = 0; i < filters.length; i++) {
-			state[filters[i].value] = filters[i].checked;
+			state.types[filters[i].value] = filters[i].checked;
 		}
 		return state;
+	}
+
+	function renderTimelineFilters(documentRef, viewModel) {
+		var teamSelect = documentRef.getElementById("timeline-team-filter");
+		if(!teamSelect) {
+			return;
+		}
+		var currentTeam = teamSelect.value || "all";
+		var teams = [{ value: "all", label: "All teams" }];
+		viewModel.teams.forEach(function(team) {
+			teams.push({ value: team, label: team });
+		});
+		setSelectOptions(documentRef, teamSelect, teams, currentTeam);
 	}
 
 	function renderField(documentRef, svgEl, viewModel, layers, selectedEvent) {
@@ -1027,6 +1045,7 @@
 	}
 
 	function renderReplay(documentRef, viewModel, selectedEventId, onTimelineSelect) {
+		renderTimelineFilters(documentRef, viewModel);
 		var visibleTimeline = filterTimelineItems(viewModel.timeline, timelineFilterState(documentRef));
 		var repairedEventId = repairedTimelineSelection(visibleTimeline, selectedEventId);
 		var selectedEvent = selectedTimelineItem(visibleTimeline, repairedEventId);
@@ -1120,8 +1139,16 @@
 
 	function initTimelineControls(documentRef, getViewModel, getSelectedEventId, onSelect) {
 		var filters = documentRef.querySelectorAll(".timeline-filter");
+		var teamFilter = documentRef.getElementById("timeline-team-filter");
+		var controls = [];
 		for(var i = 0; i < filters.length; i++) {
-			filters[i].addEventListener("change", function() {
+			controls.push(filters[i]);
+		}
+		if(teamFilter) {
+			controls.push(teamFilter);
+		}
+		controls.forEach(function(control) {
+			control.addEventListener("change", function() {
 				var viewModel = getViewModel();
 				if(!viewModel) {
 					return;
@@ -1130,7 +1157,7 @@
 				var nextId = repairedTimelineSelection(visibleTimeline, getSelectedEventId());
 				onSelect(nextId, { stayInView: true });
 			});
-		}
+		});
 	}
 
 	function focusTimelineButton(documentRef, selectedId) {

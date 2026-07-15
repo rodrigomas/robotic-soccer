@@ -480,6 +480,18 @@ h3 {
   font-weight: 800;
 }
 
+.timeline-controls select {
+  min-width: 124px;
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .timeline-controls input {
   width: 14px;
   height: 14px;
