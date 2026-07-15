@@ -93,6 +93,16 @@
 		return type;
 	}
 
+	function rowValue(row, key) {
+		return row[key] === undefined || row[key] === "" ? "-" : row[key];
+	}
+
+	function eventRawRows(row, keys) {
+		return keys.map(function(key) {
+			return [key, rowValue(row, key)];
+		});
+	}
+
 	function buildTimelineItems(derivedRows, shotRows) {
 		var items = [];
 		(derivedRows || []).forEach(function(row, index) {
@@ -110,6 +120,11 @@
 				value: type === "pass_completed" ?
 					formatNumber(asNumber(row.pass_distance), 2) :
 					row.to_team,
+				raw: eventRawRows(row, [
+					"event_type", "tick", "match_time", "from_team", "from_number",
+					"from_name", "to_team", "to_number", "to_name", "pass_distance",
+					"ball_x", "ball_y", "ball_z"
+				]),
 				field: {
 					x: asNumber(row.ball_x),
 					z: asNumber(row.ball_z),
@@ -127,6 +142,12 @@
 				team: row.team,
 				detail: row.shooter_name + " #" + row.shooter_number,
 				value: formatNumber(asNumber(row.shot_speed), 2),
+				raw: [["event_type", "shot"]].concat(eventRawRows(row, [
+					"tick", "match_time", "team", "shooter_number",
+					"shooter_name", "shot_speed", "forward_speed", "goal_distance",
+					"target_goal_z", "shooter_x", "shooter_z", "ball_x", "ball_y",
+					"ball_z", "ball_vx", "ball_vy", "ball_vz"
+				])),
 				field: {
 					x: asNumber(row.ball_x),
 					z: asNumber(row.ball_z),
@@ -143,6 +164,18 @@
 			}
 			return a.time - b.time;
 		});
+	}
+
+	function selectedEventDetails(item) {
+		if(!item) {
+			return [];
+		}
+		return [
+			["title", item.title],
+			["team", item.team],
+			["detail", item.detail],
+			["display_value", item.value]
+		].concat(item.raw || []);
 	}
 
 	function selectedTimelineItem(items, selectedId) {
@@ -375,6 +408,14 @@
 		});
 	}
 
+	function renderEventDetails(documentRef, detailEl, item) {
+		detailEl.innerHTML = "";
+		selectedEventDetails(item).forEach(function(row) {
+			detailEl.appendChild(createEl(documentRef, "dt", "", row[0]));
+			detailEl.appendChild(createEl(documentRef, "dd", "", row[1]));
+		});
+	}
+
 	function renderTimeline(documentRef, timelineEl, items, selectedId, onSelect) {
 		timelineEl.innerHTML = "";
 		items.forEach(function(item) {
@@ -580,11 +621,15 @@
 		documentRef.getElementById("scoreline").textContent = viewModel.scoreline;
 		documentRef.getElementById("match-time").textContent = viewModel.matchTime;
 		documentRef.getElementById("pass-lane-label").textContent = viewModel.passLane.label;
+		documentRef.getElementById("event-detail-time").textContent = selectedEvent ?
+			formatNumber(selectedEvent.time, 2) + "s" :
+			"-";
 		documentRef.getElementById("timeline-count").textContent = viewModel.timeline.length + " events";
 		documentRef.getElementById("heatmap-label").textContent =
 			viewModel.heatmap.totalSamples + " samples, max " + viewModel.heatmap.maxSamples;
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
+		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
 		renderTimeline(documentRef,
 			documentRef.getElementById("match-timeline"),
 			viewModel.timeline,
@@ -753,6 +798,7 @@
 		formatNumber: formatNumber,
 		buildHeatmap: buildHeatmap,
 		buildTimelineItems: buildTimelineItems,
+		selectedEventDetails: selectedEventDetails,
 		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,
 		joinPath: joinPath,

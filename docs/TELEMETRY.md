@@ -34,7 +34,7 @@ file paths, parses the pass-lane and pressure CSV streams, merges derived events
 and shots into a compact timeline, and lets the user switch focus between
 dashboard field overlays, timeline, and heatmap views. The field focus can
 toggle pass-lane and pressure layers independently, and timeline selections
-highlight matching field context.
+highlight matching field context with the selected event's raw CSV values.
 
 ## Metadata CSV Keys
 
@@ -224,7 +224,7 @@ later, but the replay export starts with deterministic engine geometry.
 
 ## 2.0 Use
 
-These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
+These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, selected-event inspection, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add a selected-event detail panel with raw values from the
-active timeline event.
+The next slice should add timeline keyboard navigation and keep field, detail,
+and timeline selection synchronized for review sessions.

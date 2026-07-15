@@ -235,6 +235,7 @@ h3 {
 
 .field-panel,
 .timeline-panel,
+.event-detail-panel,
 .timeline-strip,
 .heatmap-strip {
   border: 1px solid var(--line);
@@ -242,6 +243,10 @@ h3 {
   background: var(--surface);
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+
+.field-panel {
+  grid-row: span 2;
 }
 
 .panel-heading {
@@ -338,6 +343,34 @@ h3 {
 .tactical-summary dd {
   font-weight: 800;
   text-align: right;
+}
+
+.event-detail {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.78fr) minmax(120px, 1fr);
+  gap: 0;
+  margin: 0;
+}
+
+.event-detail dt,
+.event-detail dd {
+  min-height: 38px;
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.event-detail dt {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.event-detail dd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 800;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .match-timeline {
@@ -450,6 +483,10 @@ h3 {
   .analysis-grid,
   .match-timeline {
     grid-template-columns: 1fr;
+  }
+
+  .field-panel {
+    grid-row: auto;
   }
 
   .view-switch {

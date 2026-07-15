@@ -49,6 +49,10 @@ const shotText = await readText(join(repoRoot, "fixtures", "replays",
 const shotRows = viewer.parseCsv(shotText);
 const timeline = viewer.buildTimelineItems(derivedRows, shotRows);
 const selectedShot = viewer.selectedTimelineItem(timeline, "shot-20-0");
+const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
+const shotEventType = selectedShotDetails.find(([key]) => key === "event_type");
+const shotSpeed = selectedShotDetails.find(([key]) => key === "shot_speed");
+const shotForwardSpeed = selectedShotDetails.find(([key]) => key === "forward_speed");
 const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
@@ -80,6 +84,10 @@ if(viewModel.runId !== "basic_match_fixture" ||
    selectedShot.type !== "shot" ||
    selectedShot.field.x !== -1 ||
    selectedShot.field.fromZ !== 18 ||
+   selectedShotDetails.length < 18 ||
+   shotEventType?.[1] !== "shot" ||
+   shotSpeed?.[1] !== "16.25000" ||
+   shotForwardSpeed?.[1] !== "15.75000" ||
    heatmap.cells.length !== 4 ||
    heatmap.maxSamples !== 2 ||
    viewModel.heatmap.totalSamples !== 6) {
