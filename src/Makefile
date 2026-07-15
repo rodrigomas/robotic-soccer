@@ -180,7 +180,7 @@ $(OBJ_DIR)/rigidbody.o: rigidbody.cpp rigidbody.h | $(OBJ_DIR)
 $(OBJ_DIR)/main.o: common.h main.cpp $(OBJECTS) | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) $(WSOUND) $(WMUSIC) -c main.cpp -o $@ -Wall $(LEVEL) $(ARCH)
 
-.PHONY: all test smoke core-tests clean
+.PHONY: all test smoke core-tests analytics-tests clean
 
 all: $(TARGET)
 
@@ -190,11 +190,17 @@ $(TEST_DIR)/fixed_timestep_test: engine/core/fixed_timestep_test.cpp engine/core
 $(TEST_DIR)/deterministic_random_test: engine/core/deterministic_random_test.cpp engine/core/deterministic_random.cpp engine/core/deterministic_random.h | $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ engine/core/deterministic_random_test.cpp engine/core/deterministic_random.cpp -Wall $(LEVEL) $(ARCH)
 
+$(TEST_DIR)/match_telemetry_test: analytics/match_telemetry_test.cpp analytics/match_telemetry.cpp analytics/match_telemetry.h analytics/match_heatmap.cpp analytics/match_heatmap.h analytics/match_metrics.cpp analytics/match_metrics.h engine/core/deterministic_random.cpp engine/core/deterministic_random.h | $(TEST_DIR)
+	$(CXX) $(CPPFLAGS) $(INCPATH) -o $@ analytics/match_telemetry_test.cpp analytics/match_telemetry.cpp analytics/match_heatmap.cpp analytics/match_metrics.cpp engine/core/deterministic_random.cpp -Wall $(LEVEL) $(ARCH)
+
 core-tests: $(TEST_DIR)/fixed_timestep_test $(TEST_DIR)/deterministic_random_test
 	$(TEST_DIR)/fixed_timestep_test
 	$(TEST_DIR)/deterministic_random_test
 
-smoke: core-tests
+analytics-tests: $(TEST_DIR)/match_telemetry_test
+	cd ../config && ../build/$(shell uname -s | tr A-Z a-z)/tests/match_telemetry_test
+
+smoke: core-tests analytics-tests
 	cd ../config && $(XMLLINT) --noout config.xml data/*.xml
 	cd ../config && $(LUA) -e 'dofile("scripts/botafogo.lua"); dofile("scripts/flamengo.lua")'
 	cd ../config && $(LUA) scripts/smoke_strategy.lua

@@ -48,6 +48,7 @@ make smoke
 ```
 
 This also runs the current `engine/core` unit-style checks.
+It verifies that match telemetry can write replay metadata and a manifest.
 It also validates that the sample Lua strategy files can rank a tactical pass
 option with the current Strategy API fields.
 
