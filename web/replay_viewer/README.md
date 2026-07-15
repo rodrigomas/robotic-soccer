@@ -5,7 +5,8 @@ It loads `fixtures/replays/index.json`, follows the selected replay manifest,
 reads the summary plus pass-lane and pressure CSV streams, and renders dashboard
 cards with switchable field, timeline, and heatmap focus views. The field view
 can toggle pass-lane and pressure overlays independently, and timeline clicks
-highlight matching field context with a raw selected-event detail panel.
+or keyboard navigation highlight matching field context with a raw
+selected-event detail panel.
 
 Run it from the repository root with a local static server:
 

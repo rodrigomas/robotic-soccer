@@ -178,6 +178,32 @@
 		].concat(item.raw || []);
 	}
 
+	function timelineNavigationTarget(items, selectedId, key) {
+		if(!items || items.length === 0) {
+			return "";
+		}
+		var index = 0;
+		for(var i = 0; i < items.length; i++) {
+			if(items[i].id === selectedId) {
+				index = i;
+				break;
+			}
+		}
+		if(key === "ArrowLeft" || key === "ArrowUp") {
+			return items[Math.max(0, index - 1)].id;
+		}
+		if(key === "ArrowRight" || key === "ArrowDown") {
+			return items[Math.min(items.length - 1, index + 1)].id;
+		}
+		if(key === "Home") {
+			return items[0].id;
+		}
+		if(key === "End") {
+			return items[items.length - 1].id;
+		}
+		return "";
+	}
+
 	function selectedTimelineItem(items, selectedId) {
 		for(var i = 0; i < items.length; i++) {
 			if(items[i].id === selectedId) {
@@ -424,8 +450,10 @@
 			button.type = "button";
 			button.setAttribute("data-event-id", item.id);
 			button.setAttribute("aria-pressed", item.id === selectedId ? "true" : "false");
+			button.setAttribute("tabindex", item.id === selectedId ? "0" : "-1");
 			if(item.id === selectedId) {
 				button.classList.add("active");
+				button.setAttribute("aria-current", "true");
 			}
 			button.appendChild(createEl(documentRef, "span", "timeline-time", formatNumber(item.time, 2) + "s"));
 			var body = createEl(documentRef, "span", "timeline-body", "");
@@ -435,6 +463,15 @@
 			button.appendChild(createEl(documentRef, "span", "timeline-value", item.value));
 			button.addEventListener("click", function() {
 				onSelect(item.id);
+			});
+			button.addEventListener("keydown", function(event) {
+				var nextId = timelineNavigationTarget(items, item.id, event.key);
+				if(nextId) {
+					event.preventDefault();
+					if(nextId !== item.id) {
+						onSelect(nextId, { focusTimeline: true, stayInView: true });
+					}
+				}
 			});
 			row.appendChild(button);
 			timelineEl.appendChild(row);
@@ -686,6 +723,16 @@
 		}
 	}
 
+	function focusTimelineButton(documentRef, selectedId) {
+		var buttons = documentRef.querySelectorAll(".timeline-button");
+		for(var i = 0; i < buttons.length; i++) {
+			if(buttons[i].getAttribute("data-event-id") === selectedId) {
+				buttons[i].focus();
+				return;
+			}
+		}
+	}
+
 	async function loadJson(path) {
 		var response = await fetch(path);
 		if(!response.ok) {
@@ -719,13 +766,19 @@
 					null;
 			});
 
-		function selectTimelineEvent(id) {
+		function selectTimelineEvent(id, options) {
 			if(!activeViewModel) {
 				return;
 			}
+			options = options || {};
 			selectedEventId = id;
-			setFocusView(documentRef, "field");
+			if(!options.stayInView) {
+				setFocusView(documentRef, "field");
+			}
 			renderReplay(documentRef, activeViewModel, selectedEventId, selectTimelineEvent);
+			if(options.focusTimeline) {
+				focusTimelineButton(documentRef, selectedEventId);
+			}
 		}
 
 		async function selectReplay(id) {
@@ -799,6 +852,7 @@
 		buildHeatmap: buildHeatmap,
 		buildTimelineItems: buildTimelineItems,
 		selectedEventDetails: selectedEventDetails,
+		timelineNavigationTarget: timelineNavigationTarget,
 		selectedTimelineItem: selectedTimelineItem,
 		setFocusView: setFocusView,
 		joinPath: joinPath,

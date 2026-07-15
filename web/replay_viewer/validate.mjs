@@ -53,6 +53,9 @@ const selectedShotDetails = viewer.selectedEventDetails(selectedShot);
 const shotEventType = selectedShotDetails.find(([key]) => key === "event_type");
 const shotSpeed = selectedShotDetails.find(([key]) => key === "shot_speed");
 const shotForwardSpeed = selectedShotDetails.find(([key]) => key === "forward_speed");
+const firstTimelineId = timeline[0].id;
+const secondTimelineId = timeline[1].id;
+const thirdTimelineId = timeline[2].id;
 const heatmapText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.heatmap)));
 const heatmapRows = viewer.parseCsv(heatmapText);
@@ -80,6 +83,13 @@ if(viewModel.runId !== "basic_match_fixture" ||
    timeline[0].type !== "pass_completed" ||
    timeline[1].type !== "shot" ||
    timeline[2].type !== "possession_change" ||
+   viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowLeft") !== firstTimelineId ||
+   viewer.timelineNavigationTarget(timeline, firstTimelineId, "ArrowRight") !== secondTimelineId ||
+   viewer.timelineNavigationTarget(timeline, secondTimelineId, "ArrowUp") !== firstTimelineId ||
+   viewer.timelineNavigationTarget(timeline, secondTimelineId, "ArrowDown") !== thirdTimelineId ||
+   viewer.timelineNavigationTarget(timeline, thirdTimelineId, "Home") !== firstTimelineId ||
+   viewer.timelineNavigationTarget(timeline, firstTimelineId, "End") !== thirdTimelineId ||
+   viewer.timelineNavigationTarget(timeline, firstTimelineId, "Escape") !== "" ||
    viewModel.timeline[1].value !== "16.25" ||
    selectedShot.type !== "shot" ||
    selectedShot.field.x !== -1 ||
