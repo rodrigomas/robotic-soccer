@@ -37,3 +37,6 @@ Thumbs.db
 
 # Runtime logs
 log.log
+
+# Runtime telemetry
+config/telemetry/

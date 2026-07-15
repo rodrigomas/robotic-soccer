@@ -23,6 +23,11 @@ The web target is first-class, but the engine should remain portable C++ rather 
 
 See [`ARCHITECTURE_2_0.md`](ARCHITECTURE_2_0.md) for the first technical shape.
 
+## First Slice In Progress
+
+- Match snapshot telemetry now writes CSV files for ball and player positions from the existing match loop.
+- See [`TELEMETRY.md`](TELEMETRY.md) for the first CSV format.
+
 ## Phase 0 - Preservation
 
 - Restore the original runtime assets: `config.xml`, team XML files, Lua AI scripts, textures, materials, sounds, and music.

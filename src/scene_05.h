@@ -25,6 +25,7 @@
 #include "placar.h"
 #include "player.h"
 #include "keyhelper.h"
+#include "match_telemetry.h"
 
 using std::string;
 using std::ostringstream;
@@ -114,6 +115,8 @@ namespace soccer {
 		bool ApperMap;
 
 		bool motionblur;
+
+		CMatchTelemetry Telemetry;
 
 	public:
 
@@ -1387,6 +1390,11 @@ namespace soccer {
 
 				updateListener(cameraVel);
 
+				Telemetry.sample(ClockMin, ClockSec, Ball,
+						Team01Players, gdata->team1->nplayers,
+						Team02Players, gdata->team2->nplayers,
+						Team01Ball);
+
 				glutPostRedisplay();
 			}
 
@@ -1684,6 +1692,12 @@ namespace soccer {
 			Team01 = createInfo();
 			Team02 = createInfo();
 
+			Telemetry.begin(gdata->team1->name, gdata->team2->name);
+			Telemetry.sample(ClockMin, ClockSec, Ball,
+					Team01Players, gdata->team1->nplayers,
+					Team02Players, gdata->team2->nplayers,
+					Team01Ball);
+
 			ruleState = esNone;
 
 			motionblur = gdata->graphics.enablemotion;
@@ -1693,6 +1707,8 @@ namespace soccer {
 
 		~CScene05()
 		{
+			Telemetry.finish();
+
 			deleteJPG(team01);
 			deleteJPG(team02);
 			deleteJPG(imclock);
