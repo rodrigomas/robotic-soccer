@@ -39,11 +39,20 @@ const pressureText = await readText(join(repoRoot, "fixtures", "replays",
 	viewer.joinPath(manifestBase, manifest.files.pressure)));
 const pressureRows = viewer.parseCsv(pressureText);
 const latestPressure = viewer.latestPressureFrame(pressureRows);
+const derivedText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.derived_events)));
+const derivedRows = viewer.parseCsv(derivedText);
+const shotText = await readText(join(repoRoot, "fixtures", "replays",
+	viewer.joinPath(manifestBase, manifest.files.shots)));
+const shotRows = viewer.parseCsv(shotText);
+const timeline = viewer.buildTimelineItems(derivedRows, shotRows);
 const viewModel = viewer.buildReplayViewModel(entry,
 	manifest,
 	summary,
 	passLaneRows,
-	pressureRows);
+	pressureRows,
+	derivedRows,
+	shotRows);
 
 if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.scoreline !== "Botafogo 1 - 0 Flamengo" ||
@@ -54,7 +63,12 @@ if(viewModel.runId !== "basic_match_fixture" ||
    latestPassLanes[0].target_number !== "9" ||
    latestPressure.carrier_number !== "11" ||
    viewModel.pressure.opponentNumber !== 5 ||
-   viewModel.pressure.distance !== 12) {
+   viewModel.pressure.distance !== 12 ||
+   timeline.length !== 3 ||
+   timeline[0].type !== "pass_completed" ||
+   timeline[1].type !== "shot" ||
+   timeline[2].type !== "possession_change" ||
+   viewModel.timeline[1].value !== "16.25") {
 	throw new Error("replay viewer view model did not match the fixture");
 }
 

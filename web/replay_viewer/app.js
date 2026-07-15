@@ -77,9 +77,65 @@
 		}, rows[0]);
 	}
 
-	function buildReplayViewModel(entry, manifest, summary, passLaneRows, pressureRows) {
+	function eventTitle(type) {
+		if(type === "pass_completed") {
+			return "Pass completed";
+		}
+		if(type === "possession_change") {
+			return "Possession change";
+		}
+		if(type === "shot") {
+			return "Shot";
+		}
+		return type;
+	}
+
+	function buildTimelineItems(derivedRows, shotRows) {
+		var items = [];
+		(derivedRows || []).forEach(function(row) {
+			var type = row.event_type;
+			var fromLabel = row.from_name + " #" + row.from_number;
+			var toLabel = row.to_name + " #" + row.to_number;
+			items.push({
+				type: type,
+				time: asNumber(row.match_time),
+				title: eventTitle(type),
+				team: type === "possession_change" ? row.to_team : row.from_team,
+				detail: fromLabel + " to " + toLabel,
+				value: type === "pass_completed" ?
+					formatNumber(asNumber(row.pass_distance), 2) :
+					row.to_team
+			});
+		});
+		(shotRows || []).forEach(function(row) {
+			items.push({
+				type: "shot",
+				time: asNumber(row.match_time),
+				title: "Shot",
+				team: row.team,
+				detail: row.shooter_name + " #" + row.shooter_number,
+				value: formatNumber(asNumber(row.shot_speed), 2)
+			});
+		});
+
+		return items.sort(function(a, b) {
+			if(a.time === b.time) {
+				return a.title.localeCompare(b.title);
+			}
+			return a.time - b.time;
+		});
+	}
+
+	function buildReplayViewModel(entry,
+				      manifest,
+				      summary,
+				      passLaneRows,
+				      pressureRows,
+				      derivedRows,
+				      shotRows) {
 		var latestOptions = latestPassLaneOptions(passLaneRows || []);
 		var latestPressure = latestPressureFrame(pressureRows || []);
+		var timeline = buildTimelineItems(derivedRows || [], shotRows || []);
 		var bestPassLane = latestOptions[0] || null;
 		var bestTargetNumber = bestPassLane ?
 			asNumber(bestPassLane.target_number) :
@@ -183,7 +239,8 @@
 				carrierZ: latestPressure ? asNumber(latestPressure.carrier_z) : 0,
 				opponentX: latestPressure ? asNumber(latestPressure.opponent_x) : 0,
 				opponentZ: latestPressure ? asNumber(latestPressure.opponent_z) : 0
-			}
+			},
+			timeline: timeline
 		};
 	}
 
@@ -230,6 +287,20 @@
 		rows.forEach(function(row) {
 			summaryEl.appendChild(createEl(documentRef, "dt", "", row[0]));
 			summaryEl.appendChild(createEl(documentRef, "dd", "", row[1]));
+		});
+	}
+
+	function renderTimeline(documentRef, timelineEl, items) {
+		timelineEl.innerHTML = "";
+		items.forEach(function(item) {
+			var row = createEl(documentRef, "li", "timeline-item " + item.type, "");
+			row.appendChild(createEl(documentRef, "span", "timeline-time", formatNumber(item.time, 2) + "s"));
+			var body = createEl(documentRef, "span", "timeline-body", "");
+			body.appendChild(createEl(documentRef, "strong", "", item.title));
+			body.appendChild(createEl(documentRef, "span", "", item.detail));
+			row.appendChild(body);
+			row.appendChild(createEl(documentRef, "span", "timeline-value", item.value));
+			timelineEl.appendChild(row);
 		});
 	}
 
@@ -335,8 +406,10 @@
 		documentRef.getElementById("scoreline").textContent = viewModel.scoreline;
 		documentRef.getElementById("match-time").textContent = viewModel.matchTime;
 		documentRef.getElementById("pass-lane-label").textContent = viewModel.passLane.label;
+		documentRef.getElementById("timeline-count").textContent = viewModel.timeline.length + " events";
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
+		renderTimeline(documentRef, documentRef.getElementById("match-timeline"), viewModel.timeline);
 		renderField(documentRef, documentRef.getElementById("field-view"), viewModel);
 	}
 
@@ -373,11 +446,15 @@
 				var summary = await loadJson(fixturePath(joinPath(manifestBase, manifest.files.summary)));
 				var passLaneText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pass_lanes)));
 				var pressureText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.pressure)));
+				var derivedText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.derived_events)));
+				var shotText = await loadText(fixturePath(joinPath(manifestBase, manifest.files.shots)));
 				replayData[id] = {
 					manifest: manifest,
 					summary: summary,
 					passLaneRows: parseCsv(passLaneText),
-					pressureRows: parseCsv(pressureText)
+					pressureRows: parseCsv(pressureText),
+					derivedRows: parseCsv(derivedText),
+					shotRows: parseCsv(shotText)
 				};
 			}
 			var data = replayData[id];
@@ -385,7 +462,9 @@
 				data.manifest,
 				data.summary,
 				data.passLaneRows,
-				data.pressureRows);
+				data.pressureRows,
+				data.derivedRows,
+				data.shotRows);
 			renderCatalog(documentRef, documentRef.getElementById("catalog"), entries, id, selectReplay);
 			renderReplay(documentRef, viewModel);
 		}
@@ -414,6 +493,7 @@
 		fieldPoint: fieldPoint,
 		fixturePath: fixturePath,
 		formatNumber: formatNumber,
+		buildTimelineItems: buildTimelineItems,
 		joinPath: joinPath,
 		latestPassLaneOptions: latestPassLaneOptions,
 		latestPressureFrame: latestPressureFrame,
