@@ -26,6 +26,7 @@
 #include "player.h"
 #include "keyhelper.h"
 #include "analytics/match_telemetry.h"
+#include "analytics/tactical_advisor.h"
 
 using std::string;
 using std::ostringstream;
@@ -117,6 +118,7 @@ namespace soccer {
 		bool motionblur;
 
 		MatchTelemetry Telemetry;
+		TacticalAdvisor Advisor;
 
 	public:
 
@@ -314,13 +316,6 @@ namespace soccer {
 
 		}
 
-		double distanceXZ(const CVector3D &a, const CVector3D &b)
-		{
-			double dx = a.x - b.x;
-			double dz = a.z - b.z;
-			return sqrt(dx * dx + dz * dz);
-		}
-
 		void drawText2D(double x, double y, const char *text)
 		{
 			glRasterPos2f(x, y);
@@ -344,79 +339,6 @@ namespace soccer {
 					glVertex2f(x + r * cos(a), y + r * sin(a));
 				}
 			glEnd();
-		}
-
-		CPlayer *nearestPlayerToBall(CPlayer **players, int nplayers)
-		{
-			CPlayer *best = NULL;
-			double bestDistance = 1000000.0;
-
-			for( register int i = 0 ; i < nplayers ; i++ ) {
-				if( players[i]->ncards >= 2 ) {
-					continue;
-				}
-
-				double d = distanceXZ(players[i]->pos, Ball.pos);
-				if( d < bestDistance ) {
-					best = players[i];
-					bestDistance = d;
-				}
-			}
-
-			return best;
-		}
-
-		double nearestOpponentDistance(CPlayer **players, int nplayers, const CVector3D &pos)
-		{
-			double bestDistance = 1000000.0;
-
-			for( register int i = 0 ; i < nplayers ; i++ ) {
-				if( players[i]->ncards >= 2 ) {
-					continue;
-				}
-
-				double d = distanceXZ(players[i]->pos, pos);
-				if( d < bestDistance ) {
-					bestDistance = d;
-				}
-			}
-
-			return bestDistance;
-		}
-
-		CPlayer *suggestPassTarget(CPlayer **teamPlayers, int teamCount,
-					   CPlayer **opponentPlayers, int opponentCount,
-					   CPlayer *carrier, bool team01)
-		{
-			if( !carrier ) {
-				return NULL;
-			}
-
-			double goalZ = team01 ? ((ClockMin >= 45) ? 60.0 : -60.0)
-					      : ((ClockMin >= 45) ? -60.0 : 60.0);
-			CVector3D goal(0, 0, goalZ);
-			CPlayer *best = NULL;
-			double bestScore = -1000000.0;
-
-			for( register int i = 0 ; i < teamCount ; i++ ) {
-				CPlayer *candidate = teamPlayers[i];
-
-				if( candidate == carrier || candidate->ncards >= 2 ) {
-					continue;
-				}
-
-				double passDistance = distanceXZ(carrier->pos, candidate->pos);
-				double goalDistance = distanceXZ(candidate->pos, goal);
-				double pressure = nearestOpponentDistance(opponentPlayers, opponentCount, candidate->pos);
-				double score = pressure * 0.65 - passDistance * 0.35 - goalDistance * 0.20;
-
-				if( score > bestScore ) {
-					best = candidate;
-					bestScore = score;
-				}
-			}
-
-			return best;
 		}
 
 		void drawPlayerOnTacticalField(CPlayer *player, double centerX, double centerY,
@@ -451,8 +373,11 @@ namespace soccer {
 			CPlayer **opponentPlayers = Team01Ball ? Team02Players : Team01Players;
 			int teamCount = Team01Ball ? gdata->team1->nplayers : gdata->team2->nplayers;
 			int opponentCount = Team01Ball ? gdata->team2->nplayers : gdata->team1->nplayers;
-			CPlayer *carrier = nearestPlayerToBall(teamPlayers, teamCount);
-			CPlayer *target = suggestPassTarget(teamPlayers, teamCount, opponentPlayers, opponentCount, carrier, Team01Ball);
+			TacticalSuggestion suggestion = Advisor.suggestPass(teamPlayers, teamCount,
+							opponentPlayers, opponentCount,
+							Ball, Team01Ball, ClockMin >= 45);
+			CPlayer *carrier = suggestion.carrier;
+			CPlayer *target = suggestion.target;
 
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -480,7 +405,8 @@ namespace soccer {
 			drawText2D(panelX - panelW / 2.0 + 12, panelY + panelH / 2.0 - 84, output);
 
 			if( carrier && target ) {
-				sprintf(output,"Suggested pass: %d -> %d", carrier->num, target->num);
+				sprintf(output,"Suggested pass: %d -> %d  pressure %.1f",
+					carrier->num, target->num, suggestion.targetPressure);
 			} else {
 				sprintf(output,"Suggested pass: hold shape");
 			}
