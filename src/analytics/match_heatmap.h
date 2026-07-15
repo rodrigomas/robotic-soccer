@@ -44,6 +44,12 @@ namespace soccer {
 			    int number,
 			    const std::string &name,
 			    const CVector3D &pos);
+		int getColumns(void) const;
+		int getRows(void) const;
+		int getTeamSamples(const std::string &teamName,
+				   int column,
+				   int row) const;
+		int getTeamMaxSamples(const std::string &teamName) const;
 		bool writeCsv(const std::string &path) const;
 	};
 

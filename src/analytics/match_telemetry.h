@@ -58,6 +58,12 @@ namespace soccer {
 		const std::string &getEventsPath(void) const;
 		const std::string &getHeatmapPath(void) const;
 		const std::string &getMetricsPath(void) const;
+		int getHeatmapColumns(void) const;
+		int getHeatmapRows(void) const;
+		int getTeamHeatmapSamples(const std::string &teamName,
+					  int column,
+					  int row) const;
+		int getTeamHeatmapMaxSamples(const std::string &teamName) const;
 	};
 
 };

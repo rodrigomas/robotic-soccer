@@ -111,6 +111,52 @@ namespace soccer {
 		target->cells[index]++;
 	}
 
+	int MatchHeatmap::getColumns(void) const
+	{
+		return columns;
+	}
+
+	int MatchHeatmap::getRows(void) const
+	{
+		return rows;
+	}
+
+	int MatchHeatmap::getTeamSamples(const std::string &teamName,
+					 int column,
+					 int row) const
+	{
+		if(column < 0 || column >= columns || row < 0 || row >= rows) {
+			return 0;
+		}
+
+		int index = row * columns + column;
+		int samples = 0;
+
+		for(std::vector<Series>::const_iterator it = series.begin(); it != series.end(); ++it) {
+			if(it->entityType == "player" && it->teamName == teamName) {
+				samples += it->cells[index];
+			}
+		}
+
+		return samples;
+	}
+
+	int MatchHeatmap::getTeamMaxSamples(const std::string &teamName) const
+	{
+		int best = 0;
+
+		for(int row = 0; row < rows; row++) {
+			for(int column = 0; column < columns; column++) {
+				int samples = getTeamSamples(teamName, column, row);
+				if(samples > best) {
+					best = samples;
+				}
+			}
+		}
+
+		return best;
+	}
+
 	bool MatchHeatmap::writeCsv(const std::string &path) const
 	{
 		std::ofstream out(path.c_str());

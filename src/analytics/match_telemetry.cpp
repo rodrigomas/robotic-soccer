@@ -279,4 +279,26 @@ namespace soccer {
 		return metricsPath;
 	}
 
+	int MatchTelemetry::getHeatmapColumns(void) const
+	{
+		return heatmap.getColumns();
+	}
+
+	int MatchTelemetry::getHeatmapRows(void) const
+	{
+		return heatmap.getRows();
+	}
+
+	int MatchTelemetry::getTeamHeatmapSamples(const std::string &teamName,
+						  int column,
+						  int row) const
+	{
+		return heatmap.getTeamSamples(teamName, column, row);
+	}
+
+	int MatchTelemetry::getTeamHeatmapMaxSamples(const std::string &teamName) const
+	{
+		return heatmap.getTeamMaxSamples(teamName);
+	}
+
 };
