@@ -214,6 +214,14 @@ if(viewModel.runId !== "basic_match_fixture" ||
    viewModel.tactical.length < 8 ||
    viewModel.passLane.targetNumber !== 9 ||
    viewModel.passLane.options.length !== 2 ||
+   viewModel.passLane.options[0].targetName !== "Striker" ||
+   viewModel.passLane.options[0].score !== 13.5 ||
+   viewModel.passLane.options[0].targetPressure !== 12 ||
+   viewModel.passLane.options[0].targetGoalDistance !== 42 ||
+   viewModel.passLane.options[0].forwardProgress !== 10 ||
+   viewModel.passLane.options[1].targetNumber !== 7 ||
+   viewModel.passLane.options[1].targetGoalDistance !== 50 ||
+   viewModel.passLane.options[1].forwardProgress !== 4 ||
    latestPassLanes[0].target_number !== "9" ||
    latestPressure.carrier_number !== "11" ||
    viewModel.pressure.opponentNumber !== 5 ||

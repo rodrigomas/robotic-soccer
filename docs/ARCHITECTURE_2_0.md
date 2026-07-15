@@ -130,8 +130,9 @@ the replay catalog, manifest, summary fixture, pass-lane CSV, and pressure CSV
 directly, merges derived events and shots into a compact timeline, renders
 summary cards, and lets the user switch focus between stream-backed field
 overlays, timeline, and heatmap grid views. Field overlays can isolate pass
-lanes or pressure context, and timeline selection highlights matching field
-context while exposing raw selected-event values. Timeline buttons support
+lanes or pressure context, with ranked pass-lane details beside the field.
+Timeline selection highlights matching field context while exposing raw
+selected-event values. Timeline buttons support
 keyboard navigation, event-type filters, team filters, player search, and
 per-team counts over the same selected-event model.
 Heatmap controls can filter the replay grid by team, entity type, and player,

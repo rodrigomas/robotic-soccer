@@ -669,6 +669,8 @@
 						score: asNumber(row.score),
 						passDistance: asNumber(row.pass_distance),
 						targetPressure: asNumber(row.target_pressure),
+						targetGoalDistance: asNumber(row.target_goal_distance),
+						forwardProgress: asNumber(row.forward_progress),
 						carrierX: asNumber(row.carrier_x),
 						carrierZ: asNumber(row.carrier_z),
 						targetX: asNumber(row.target_x),
@@ -806,6 +808,25 @@
 				count.shots + " shots, " +
 				count.possessionChanges + " changes"));
 			summaryEl.appendChild(item);
+		});
+	}
+
+	function renderPassLaneDetails(documentRef, detailsEl, passLane) {
+		detailsEl.innerHTML = "";
+		if(!passLane || passLane.options.length === 0) {
+			detailsEl.appendChild(createEl(documentRef, "div", "pass-lane-empty", "No pass lanes available."));
+			return;
+		}
+		passLane.options.forEach(function(option) {
+			var row = createEl(documentRef, "div", "pass-lane-row", "");
+			row.appendChild(createEl(documentRef, "span", "pass-lane-rank", "#" + option.rank));
+			row.appendChild(createEl(documentRef, "span", "", "#" + option.targetNumber + " " + option.targetName));
+			row.appendChild(createEl(documentRef, "span", "", formatNumber(option.score, 2)));
+			row.appendChild(createEl(documentRef, "span", "", formatNumber(option.passDistance, 2)));
+			row.appendChild(createEl(documentRef, "span", "", formatNumber(option.targetPressure, 2)));
+			row.appendChild(createEl(documentRef, "span", "", formatNumber(option.targetGoalDistance, 2)));
+			row.appendChild(createEl(documentRef, "span", "", formatNumber(option.forwardProgress, 2)));
+			detailsEl.appendChild(row);
 		});
 	}
 
@@ -1138,6 +1159,9 @@
 		renderMetrics(documentRef, documentRef.getElementById("metrics"), viewModel.metrics);
 		renderTacticalSummary(documentRef, documentRef.getElementById("tactical-summary"), viewModel.tactical);
 		renderEventDetails(documentRef, documentRef.getElementById("event-detail"), selectedEvent);
+		renderPassLaneDetails(documentRef,
+			documentRef.getElementById("pass-lane-details"),
+			viewModel.passLane);
 		renderTimelineSummary(documentRef,
 			documentRef.getElementById("timeline-summary"),
 			timelineTeamCounts(visibleTimeline, viewModel.teams));
