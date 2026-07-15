@@ -23,6 +23,11 @@ small, stable bundles for command-line tools, future browser dashboards, and
 documentation screenshots. Runtime telemetry remains ignored under
 `config/telemetry/`.
 
+`fixtures/replays/index.json` is the first replay catalog. It uses
+`robotic-soccer-replay-catalog` format version 1 and lists sample replay ids,
+titles, manifest paths, teams, and descriptions. The catalog reader lives in
+`src/analytics/replay_catalog.*`.
+
 ## Metadata CSV Keys
 
 - `format_version`: metadata schema version.
@@ -213,6 +218,5 @@ later, but the replay export starts with deterministic engine geometry.
 
 These CSV files are intentionally simple. They can drive the first heatmap, possession-zone, distance, average-speed, pressure, shots, collisions, pass-lane, match timeline, and restart prototypes without changing Lua strategy scripts yet.
 
-The next slice should add a small browser-facing replay index or JSON fixture
-catalog so the web dashboard can discover sample matches without hard-coded
-paths.
+The next slice should add the first static browser replay viewer shell that can
+load the catalog and render the text summary or summary cards.

@@ -1,0 +1,14 @@
+{
+  "format": "robotic-soccer-replay-catalog",
+  "format_version": 1,
+  "replays": [
+    {
+      "id": "basic_match",
+      "title": "Basic Match Fixture",
+      "manifest": "basic_match/replay_basic_match.json",
+      "team01": "Botafogo",
+      "team02": "Flamengo",
+      "description": "Small deterministic replay bundle for analytics tools and dashboard prototypes."
+    }
+  ]
+}
