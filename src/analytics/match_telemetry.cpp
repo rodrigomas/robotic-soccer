@@ -23,7 +23,8 @@ namespace soccer {
 		active(false),
 		tick(0),
 		sampleIndex(0),
-		sampleStride(5)
+		sampleStride(5),
+		lastMatchTime(0.0)
 	{
 	}
 
@@ -41,6 +42,43 @@ namespace soccer {
 				result += "\"\"";
 			} else {
 				result += *it;
+			}
+		}
+
+		result += "\"";
+		return result;
+	}
+
+	std::string MatchTelemetry::json(const std::string &value)
+	{
+		std::string result = "\"";
+
+		for(std::string::const_iterator it = value.begin(); it != value.end(); ++it) {
+			switch(*it) {
+				case '"':
+					result += "\\\"";
+					break;
+				case '\\':
+					result += "\\\\";
+					break;
+				case '\b':
+					result += "\\b";
+					break;
+				case '\f':
+					result += "\\f";
+					break;
+				case '\n':
+					result += "\\n";
+					break;
+				case '\r':
+					result += "\\r";
+					break;
+				case '\t':
+					result += "\\t";
+					break;
+				default:
+					result += *it;
+					break;
 			}
 		}
 
@@ -97,6 +135,7 @@ namespace soccer {
 		metadataOut << "pressure_path," << csv(pressurePath) << "\n";
 		metadataOut << "shots_path," << csv(shotsPath) << "\n";
 		metadataOut << "collisions_path," << csv(collisionsPath) << "\n";
+		metadataOut << "summary_path," << csv(summaryPath) << "\n";
 
 		return true;
 	}
@@ -119,8 +158,71 @@ namespace soccer {
 		manifest.pressurePath = pressurePath;
 		manifest.shotsPath = shotsPath;
 		manifest.collisionsPath = collisionsPath;
+		manifest.summaryPath = summaryPath;
 
 		return manifest.write(manifestPath);
+	}
+
+	bool MatchTelemetry::writeMatchSummary(void) const
+	{
+		std::ofstream out(summaryPath.c_str());
+
+		if(!out.is_open()) {
+			return false;
+		}
+
+		PassDetectorSummary passes = passDetector.getSummary();
+		PressureSummary pressure = pressureTracker.getSummary();
+		ShotSummary shots = shotDetector.getSummary();
+		CollisionSummary collisions = collisionDetector.getSummary();
+
+		out << "{\n";
+		out << "  \"format\": \"robotic-soccer-match-summary\",\n";
+		out << "  \"format_version\": 1,\n";
+		out << "  \"run_id\": " << json(runId) << ",\n";
+		out << "  \"random_seed\": " << getDeterministicRandomSeed() << ",\n";
+		out << "  \"teams\": {\n";
+		out << "    \"team01\": " << json(team01Name) << ",\n";
+		out << "    \"team02\": " << json(team02Name) << "\n";
+		out << "  },\n";
+		out << "  \"samples\": " << sampleIndex << ",\n";
+		out << "  \"ticks\": " << tick << ",\n";
+		out << "  \"last_match_time\": " << std::fixed << std::setprecision(3)
+			<< lastMatchTime << ",\n";
+		out << "  \"passes\": {\n";
+		out << "    \"derived_events\": " << passes.totalEvents << ",\n";
+		out << "    \"completed\": " << passes.completedPasses << ",\n";
+		out << "    \"possession_changes\": " << passes.possessionChanges << ",\n";
+		out << "    \"longest_distance\": " << std::fixed << std::setprecision(5)
+			<< passes.longestPassDistance << "\n";
+		out << "  },\n";
+		out << "  \"pressure\": {\n";
+		out << "    \"samples\": " << pressure.samples << ",\n";
+		out << "    \"high_pressure_samples\": " << pressure.highPressureSamples << ",\n";
+		out << "    \"average_distance\": " << std::fixed << std::setprecision(5)
+			<< pressure.averagePressureDistance << ",\n";
+		out << "    \"min_distance\": " << pressure.minPressureDistance << ",\n";
+		out << "    \"last_distance\": " << pressure.lastPressureDistance << "\n";
+		out << "  },\n";
+		out << "  \"shots\": {\n";
+		out << "    \"total\": " << shots.totalShots << ",\n";
+		out << "    \"team01\": " << shotDetector.getTeamShotCount(team01Name) << ",\n";
+		out << "    \"team02\": " << shotDetector.getTeamShotCount(team02Name) << ",\n";
+		out << "    \"last_team\": " << json(shots.lastShotTeam) << ",\n";
+		out << "    \"last_shooter_number\": " << shots.lastShooterNumber << ",\n";
+		out << "    \"last_speed\": " << std::fixed << std::setprecision(5)
+			<< shots.lastShotSpeed << "\n";
+		out << "  },\n";
+		out << "  \"collisions\": {\n";
+		out << "    \"total\": " << collisions.totalCollisions << ",\n";
+		out << "    \"player_player\": " << collisions.playerPlayerCollisions << ",\n";
+		out << "    \"player_ball\": " << collisions.playerBallCollisions << ",\n";
+		out << "    \"last_relative_speed\": " << std::fixed << std::setprecision(5)
+			<< collisions.lastRelativeSpeed << "\n";
+		out << "  }\n";
+		out << "}\n";
+
+		return true;
 	}
 
 	CPlayer *MatchTelemetry::nearestCarrier(CPlayer **players,
@@ -158,6 +260,7 @@ namespace soccer {
 		sampleStride = stride > 0 ? stride : 1;
 		tick = 0;
 		sampleIndex = 0;
+		lastMatchTime = 0.0;
 
 #ifdef _WIN32
 		_mkdir("telemetry");
@@ -187,6 +290,7 @@ namespace soccer {
 		pressurePath = std::string("telemetry/pressure_") + runId + ".csv";
 		shotsPath = std::string("telemetry/shots_") + runId + ".csv";
 		collisionsPath = std::string("telemetry/collisions_") + runId + ".csv";
+		summaryPath = std::string("telemetry/summary_") + runId + ".json";
 		collisionDetector.reset();
 		heatmap.reset(-45.0, 45.0, -60.0, 60.0, 18, 24);
 		metrics.reset();
@@ -250,6 +354,7 @@ namespace soccer {
 		}
 
 		double matchTime = clockMin * 60.0 + clockSec;
+		lastMatchTime = matchTime;
 
 		heatmap.record("ball", "", 0, "Ball", ball.pos);
 		metrics.record("ball", "", 0, "Ball", ball.pos, ball.vel);
@@ -444,6 +549,10 @@ namespace soccer {
 			collisionDetector.writeCsv(collisionsPath);
 		}
 
+		if(active && summaryPath != "") {
+			writeMatchSummary();
+		}
+
 		if(snapshotsOut.is_open()) {
 			snapshotsOut.flush();
 			snapshotsOut.close();
@@ -510,6 +619,11 @@ namespace soccer {
 	const std::string &MatchTelemetry::getCollisionsPath(void) const
 	{
 		return collisionsPath;
+	}
+
+	const std::string &MatchTelemetry::getSummaryPath(void) const
+	{
+		return summaryPath;
 	}
 
 	int MatchTelemetry::getDerivedEventCount(void) const

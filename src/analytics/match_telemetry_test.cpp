@@ -91,6 +91,10 @@ int main(void)
 		return fail("metadata did not include collisions path");
 	}
 
+	if(!fileContains(telemetry.getMetadataPath(), "summary_path,")) {
+		return fail("metadata did not include summary path");
+	}
+
 	ReplayManifest manifest;
 	if(!ReplayManifest::load(telemetry.getManifestPath(), &manifest)) {
 		return fail("manifest loader could not read generated manifest");
@@ -129,7 +133,23 @@ int main(void)
 		return fail("manifest loader did not read collisions path");
 	}
 
+	if(manifest.summaryPath != telemetry.getSummaryPath()) {
+		return fail("manifest loader did not read summary path");
+	}
+
 	telemetry.finish();
+
+	if(!fileContains(telemetry.getSummaryPath(),
+			 "\"format\": \"robotic-soccer-match-summary\"")) {
+		return fail("summary did not include expected format");
+	}
+
+	if(!fileContains(telemetry.getSummaryPath(), "\"passes\"") ||
+	   !fileContains(telemetry.getSummaryPath(), "\"pressure\"") ||
+	   !fileContains(telemetry.getSummaryPath(), "\"shots\"") ||
+	   !fileContains(telemetry.getSummaryPath(), "\"collisions\"")) {
+		return fail("summary did not include expected sections");
+	}
 
 	removeFile(telemetry.getManifestPath());
 	removeFile(telemetry.getMetadataPath());
@@ -141,6 +161,7 @@ int main(void)
 	removeFile(telemetry.getPressurePath());
 	removeFile(telemetry.getShotsPath());
 	removeFile(telemetry.getCollisionsPath());
+	removeFile(telemetry.getSummaryPath());
 
 	return 0;
 }

@@ -7,7 +7,7 @@ The snapshot file is sampled every five active game ticks to keep the first vers
 Each match also writes a `metadata_*.csv` key/value file and a `replay_*.json`
 manifest. They record the telemetry format version, run id, creation stamp,
 deterministic random seed, team names, sample stride, and the related
-snapshot/event/derived-event/heatmap/metrics/pressure/shot/collision file paths. This is the first replay scaffold: a
+snapshot/event/derived-event/heatmap/metrics/pressure/shot/collision/summary file paths. This is the first replay scaffold: a
 captured match can now be tied back to the random sequence and files that
 produced it.
 
@@ -24,7 +24,7 @@ The engine reader/writer for this file lives in `src/analytics/replay_manifest.*
 - `team01`, `team02`: configured team names.
 - `sample_stride`: active game ticks between snapshot samples.
 - `manifest_path`: JSON replay manifest for this match capture.
-- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`, `shots_path`, `collisions_path`: related files for the same match capture.
+- `snapshots_path`, `events_path`, `derived_events_path`, `heatmap_path`, `metrics_path`, `pressure_path`, `shots_path`, `collisions_path`, `summary_path`: related files for the same match capture.
 
 ## Replay Manifest JSON
 
@@ -37,7 +37,23 @@ Manifest files are named `replay_*.json` and include:
 - `random_seed`: deterministic gameplay seed.
 - `teams`: `team01` and `team02` names.
 - `sample_stride`: active game ticks between snapshot samples.
-- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, pressure, shot, and collision paths.
+- `files`: related metadata, snapshot, event, derived event, heatmap, metrics, pressure, shot, collision, and summary paths.
+
+## Match Summary JSON
+
+Summary files are named `summary_*.json`. They are compact dashboard entry
+points generated when telemetry finishes. They do not replace the detailed CSV
+files; they collect the first replay cards a browser or post-match screen needs
+without parsing every stream.
+
+- `format`: `robotic-soccer-match-summary`.
+- `format_version`: summary schema version.
+- `run_id`, `random_seed`, `teams`: identity and replay provenance.
+- `samples`, `ticks`, `last_match_time`: capture length.
+- `passes`: derived event count, completed passes, possession changes, and longest inferred pass.
+- `pressure`: sample count, high-pressure samples, average/min/latest distance.
+- `shots`: total shots, team shot counts, and latest inferred shot details.
+- `collisions`: total contacts, player-player contacts, player-ball contacts, and latest relative speed.
 
 ## Snapshot CSV Columns
 

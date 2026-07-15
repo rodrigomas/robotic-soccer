@@ -21,6 +21,7 @@ namespace soccer {
 		int tick;
 		int sampleIndex;
 		int sampleStride;
+		double lastMatchTime;
 		std::ofstream snapshotsOut;
 		std::ofstream eventsOut;
 		std::string runId;
@@ -34,6 +35,7 @@ namespace soccer {
 		std::string pressurePath;
 		std::string shotsPath;
 		std::string collisionsPath;
+		std::string summaryPath;
 		std::string team01Name;
 		std::string team02Name;
 		CollisionDetector collisionDetector;
@@ -44,9 +46,11 @@ namespace soccer {
 		ShotDetector shotDetector;
 
 		static std::string csv(const std::string &value);
+		static std::string json(const std::string &value);
 		static std::string fileSafe(const std::string &value);
 		bool writeMetadata(const std::string &stamp);
 		bool writeReplayManifest(const std::string &stamp);
+		bool writeMatchSummary(void) const;
 		CPlayer *nearestCarrier(CPlayer **players,
 					int nplayers,
 					const CVector3D &ballPos) const;
@@ -85,6 +89,7 @@ namespace soccer {
 		const std::string &getPressurePath(void) const;
 		const std::string &getShotsPath(void) const;
 		const std::string &getCollisionsPath(void) const;
+		const std::string &getSummaryPath(void) const;
 		int getDerivedEventCount(void) const;
 		CollisionSummary getCollisionSummary(void) const;
 		PassDetectorSummary getDerivedEventSummary(void) const;
